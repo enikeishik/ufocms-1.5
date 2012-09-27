@@ -2,7 +2,7 @@
 
 use Codeception\Util\Stub;
 
-class cachefsTest extends \Codeception\TestCase\Test
+class UfoCacheFsTest extends \Codeception\TestCase\Test
 {
    /**
     * @var CodeGuy
@@ -24,6 +24,12 @@ class cachefsTest extends \Codeception\TestCase\Test
     {
         $this->dispatcher->dispatch('test.after', new \Codeception\Event\Test($this));
     }
+    /*
+    public function getTrace()
+    {
+        
+    }
+    */
 
     // tests
 

@@ -1,20 +1,29 @@
 <?php
+require_once 'cache.php';
+
 /**
- *
+ * Класс кэширования данных с хранилищем в виде набора текстовых файлов.
  */
-abstract class UfoCacheFs extends UfoCache
+class UfoCacheFs extends UfoCache
 {
     /**
      * Хеш кэшируемых данных (URL страницы, идентификатор блока и т.п.).
      *
-     * string
+     * @var string
      */
     private $hash = '';
     
     /**
+     * Время жизни кэшируемых данных, сек., 0 - вечно.
+     *
+     * @var int
+     */
+    private $lifetime = 0;
+
+    /**
      * Файл, в котором хранится кэш для текущего хеша.
      *
-     * string
+     * @var string
      */
     private $file = '';
     
@@ -26,16 +35,23 @@ abstract class UfoCacheFs extends UfoCache
      */
     public function __construct($hash, $settings)
     {
-        $this->hash = $hash;
-        $this->file = $settings['CachePath'] . DIRECTORY_SEPARATOR . 
+        if (preg_match('/[^A-Za-z0-9~_,\.\/\-]|(\.{2})/', $hash)) {
+            $this->hash = md5($hash);
+        } else {
+            $this->hash = str_replace('/', ',', $hash);
+        }
+        $this->lifetime = $settings['Lifetime'];
+        $this->file = $settings['Path'] . DIRECTORY_SEPARATOR . 
                       $this->hash . '.' . 
-                      $settings['CacheFileExt'];
+                      $settings['FileExt'];
     }
     
     /**
+     * Получение кэша.
      *
+     * @return string
      */
-    public function load_()
+    public function load()
     {
         if (!is_readable($this->file)) {
             return false;
@@ -44,7 +60,10 @@ abstract class UfoCacheFs extends UfoCache
     }
     
     /**
+     * Сохранение данных в кэш
      *
+     * @param string $data  данные
+     * @return boolean
      */
     public function save($data)
     {
@@ -57,22 +76,26 @@ abstract class UfoCacheFs extends UfoCache
     }
     
     /**
+     * Проверка существования кэша.
      *
+     * @return boolean
      */
-    protected function exists()
+    public function exists()
     {
         return file_exists($this->file);
     }
     
     /**
+     * Проверка не устарел ли кэш.
      *
+     * @return boolean
      */
-    protected function expired()
+    public function expired()
     {
-        if (!exists()) {
+        if (!$this->exists()) {
             return true;
         }
         clearstatcache();
-        return C_CACHE_LIFETIME < (time() - filectime($this->file));
+        return $this->lifetime < (time() - filectime($this->file));
     }
 }

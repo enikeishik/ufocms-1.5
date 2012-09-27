@@ -7,15 +7,22 @@ abstract class UfoCache
     /**
      * Хеш кэшируемых данных (URL страницы, идентификатор блока и т.п.).
      *
-     * string
+     * @var string
      */
     private $hash = '';
     
     /**
+     * Время жизни кэшируемых данных, сек., 0 - вечно.
+     *
+     * @var int
+     */
+    private $lifetime = 0;
+    
+    /**
      * Конструктор класса.
      *
-     * @param string $hash  хэш кэша
-     * @param array $settings  параметры кэширования
+     * @param string $hash        хэш кэша
+     * @param array  $settings    параметры кэширования
      */
     abstract public function __construct($hash, $settings);
     
@@ -39,12 +46,12 @@ abstract class UfoCache
      *
      * @return boolean
      */
-    abstract protected function exists();
+    abstract public function exists();
     
     /**
      * Проверка не устарел ли кэш.
      *
      * @return boolean
      */
-    abstract protected function expired();
+    abstract public function expired();
 }
