@@ -1,5 +1,5 @@
 <?php
-class Config
+class UfoConfig
 {
     public $dbHost = '';
     public $dbLogin = '';
