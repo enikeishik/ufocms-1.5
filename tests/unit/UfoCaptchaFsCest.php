@@ -11,7 +11,7 @@ class UfoCaptchaFsCest
      * с данными CAPTCHA.
      * Смотрим чтобы возвращаемое значение было не пустым массивом.
      */
-    public function getCaptcha(\CodeGuy $I) {
+    public function getCaptchaTest(\CodeGuy $I) {
         $I->wantTo('execute method `getCaptcha`');
         $captcha = new UfoCaptchaFs($this->tempPath);
         $I->executeMethod($captcha, 'getCaptcha');
@@ -21,7 +21,7 @@ class UfoCaptchaFsCest
     /**
      * Проверяем выполнение метода генерирующего изображение CAPTCHA.
      */
-    public function showImage(\CodeGuy $I) {
+    public function showImageTest(\CodeGuy $I) {
         $I->wantTo('execute method `showImage`');
         $captcha = new UfoCaptchaFs($this->tempPath);
         $I->executeMethod($captcha, 'showImage');

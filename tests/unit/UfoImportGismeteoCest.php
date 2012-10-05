@@ -11,7 +11,7 @@ class UfoImportGismeteoCest
      * ѕровер€ем выполнение метода возвращающего массив элементов.
      * —мотрим чтобы возвращаемое значение было не false.
      */
-    public function getItems(\CodeGuy $I) {
+    public function getItemsTest(\CodeGuy $I) {
         $I->wantTo('execute method `getItems`');
         $cache = new UfoCacheFs('gismeteo', $this->cacheSettings);
         $gm = new UfoImportGismeteo($cache);

@@ -26,7 +26,7 @@ class UfoCacheFsCest
     
     // Tests for UfoCacheFs.save
     
-    public function save(\CodeGuy $I) {
+    public function saveTest(\CodeGuy $I) {
         $I->wantTo('save some data into cache with hash `' . $this->testDataHash . '`');
         $cache = new UfoCacheFs($this->testDataHash, $this->cacheSettings);
         $I->executeMethod($cache, 'save', $this->testData);
@@ -46,7 +46,7 @@ class UfoCacheFsCest
     
     // Tests for UfoCacheFs.load
     
-    public function load(\CodeGuy $I) {
+    public function loadTest(\CodeGuy $I) {
         $I->wantTo('load some data from cache with hash `' . $this->testDataHash . '`');
         $cache = new UfoCacheFs($this->testDataHash, $this->cacheSettings);
         $I->executeMethod($cache, 'load');

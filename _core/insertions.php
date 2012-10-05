@@ -1,4 +1,10 @@
 <?php
+UfoInsertions::show(array('PlaceId' => 2, 
+                          'Offset' => 0, 
+                          'Limit' => 5, 
+                          'HideTitleInTemplate' => true, 
+                          'ReplaceTitleWith' => 'My new title'));
+
 class UfoInsertions
 {
     /**
@@ -16,7 +22,7 @@ class UfoInsertions
         if (!array_key_exists('PlaceId', $options)) {
             $options = array_merge($options, array('PlaceId' => 0));
         }
-        
+        /*
         $sql = 'SELECT Id,TargetId,PlaceId,OrderId,SourceId,SourcesIds,Title,' . 
                'ItemsIds,ItemsStart,ItemsCount,ItemsLength,ItemsStartMark,ItemsStopMark,ItemsOptions' . 
                ' FROM ' . C_DB_TABLE_PREFIX . 'insertions' . 
@@ -45,6 +51,7 @@ class UfoInsertions
             }
         }
         mysql_free_result($result);
+        */
     }
     
     /**
@@ -106,7 +113,7 @@ class UfoInsertions
                                        array $insertion, 
                                        array $options = null)
     {
-        self::showFrom(UfoCore::getIdByUrl($url), $insertion, $options);
+        self::showFrom(UfoCore::getSectionIdByUrl($url), $insertion, $options);
     }
     
     /**
@@ -118,7 +125,7 @@ class UfoInsertions
      *
      * @return void
      */
-    protected static function showItem(array $insertion, 
+    public /*protected*/ static function showItem(array $insertion, 
                                        array $options)
     {
         /*
@@ -138,46 +145,74 @@ class UfoInsertions
         mysql_free_result($result);
         */
         
-        $moduleInsetionClass = '';
-        $moduleInsetionTemplateClass = '';
+        $moduleInsetionClass = 'UfoInsertionNews';
+        $moduleInsetionTemplateClass = 'UfoInsertionTemplateNews';
         
-        UfoCore::loadClass('_modules,' . $moduleInsetionClass);
-        UfoCore::loadClass('_templates,' . $moduleInsetionTemplateClass);
+        UfoTools::loadClass($moduleInsetionClass, '');
+        UfoTools::loadClass($moduleInsetionTemplateClass, '');
         $moduleInsetionClass::show($insertion, $options, 
                                    new $moduleInsetionTemplateClass());
     }
 }
 
-class UfoInsertionNews
+interface UfoInsertion
+{
+    public static function show(array $insertion, 
+                                array $options, 
+                                UfoInsertionTemplate &$template);
+}
+
+class UfoInsertionNews implements UfoInsertion
 {
     public static function show(array $insertion, 
                                 array $options, 
                                 UfoInsertionTemplate &$template)
     {
-        if (...) {
-            $template->begin($options);
-            while (...) {
-                $template->item($row, $options);
+        if (true) {
+            $template->begin($insertion, $options);
+            $i = 0;
+            while ($i < 1) {
+                $i++;
+                $row = array('Title' => 'ItemTitle');
+                $template->item($row, $insertion, $options);
             }
-            $template->end($options);
+            $template->end($insertion, $options);
         } else {
-            $template->blank($options);
+            $template->blank($insertion, $options);
         }
     }
 }
 
 interface UfoInsertionTemplate
 {
-    public function begin($options);
+    public function begin(array $insertion, array $options);
     
-    public function item($data, $options);
+    public function item(array $data, array $insertion, array $options);
     
-    public function end($options);
+    public function end(array $insertion, array $options);
     
-    public function blank($options);
+    public function blank(array $insertion, array $options);
 }
 
-class UfoInsertionNewsTemplate implements UfoInsertionTemplate
+class UfoInsertionTemplateNews implements UfoInsertionTemplate
 {
+    public function begin(array $insertion, array $options)
+    {
+        echo '<h2>' . $insertion['Title'] . '</h2>';
+    }
     
+    public function item(array $data, array $insertion, array $options)
+    {
+        echo $data['Title'] . '<br />';
+    }
+    
+    public function end(array $insertion, array $options)
+    {
+        echo 'see more in ' . $insertion['Path'];
+    }
+    
+    public function blank(array $insertion, array $options)
+    {
+        echo 'There is nothing to show';
+    }
 }

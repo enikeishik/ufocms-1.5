@@ -37,7 +37,7 @@ EOD;
     /**
      * Закрытие соединения с БД.
      */
-    public function close(\CodeGuy $I) {
+    public function closeTest(\CodeGuy $I) {
         $I->wantTo('execute method `close`');
         $db = new UfoDb($this->dbSettings['Host'], 
                         $this->dbSettings['Username'], 

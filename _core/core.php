@@ -1,6 +1,9 @@
 <?php
 /**
+ * Класс базовой функциональности системы.
  *
+ * Предоставляет статичные методы 
+ * для получения различной информации о системе.
  */
 class UfoCore
 {
@@ -11,7 +14,7 @@ class UfoCore
      *
      * @return int|false
      */
-    public static function getIdByUrl($url)
+    public static function getSectionIdByUrl($url)
     {
         $sql = 'SELECT ' . C_DB_SECTIONS_FIELDS . 
                ' FROM ' . C_DB_TABLE_PREFIX . 'sections' . 
@@ -24,25 +27,5 @@ class UfoCore
             mysql_free_result($result);
             return false;
         }
-    }
-    
-    /**
-     * Динамическая загрузка классов и интерфейсов.
-     *
-     * @param string $class    [путь]имя загружаемого класса
-     *
-     * @return void
-     */
-    public static function loadClass($class)
-    {
-        if (class_exists($class, false) || interface_exists($class, false)) {
-            return;
-        }
-        if (false === strpos($class, DIRECTORY_SEPARATOR) && false !== strpos($class, ',')) {
-            $file = str_replace(',', DIRECTORY_SEPARATOR, $class) . '.php';
-        } else {
-            $file = $class . '.php';
-        }
-        include $file;
     }
 }

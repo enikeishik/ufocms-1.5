@@ -10,7 +10,7 @@ class UfoCalendarCest
      * ѕровер€ем выполнение метода возвращающего массив элементов.
      * —мотрим чтобы возвращаемое значение было не false.
      */
-    public function getAllEvents(\CodeGuy $I) {
+    public function getAllEventsTest(\CodeGuy $I) {
         $I->wantTo('execute method `getAllEvents`');
         $cal = new UfoCalendar($this->storagePath);
         $I->executeMethod($cal, 'getAllEvents');
@@ -23,7 +23,7 @@ class UfoCalendarCest
      * —мотрим чтобы возвращаемое значение было не false 
      * и не пустой массив.
      */
-    public function getDayEvents(\CodeGuy $I) {
+    public function getDayEventsTest(\CodeGuy $I) {
         $I->wantTo('execute method `getDayEvents`');
         $cal = new UfoCalendar($this->storagePath);
         $I->executeMethod($cal, 'getDayEvents', '1', '1');
@@ -37,7 +37,7 @@ class UfoCalendarCest
      * —мотрим чтобы возвращаемое значение было не false.
      *
      */
-    public function getEvent(\CodeGuy $I) {
+    public function getEventTest(\CodeGuy $I) {
         $I->wantTo('execute method `getEvent`');
         $cal = new UfoCalendar($this->storagePath);
         $I->executeMethod($cal, 'getEvent', '0000-01-01-0000');

@@ -11,4 +11,6 @@ require_once __DIR__ . '/../../_core/importcbr.php';
 require_once __DIR__ . '/../../_core/importgismeteo.php';
 require_once __DIR__ . '/../../_core/importrss.php';
 require_once __DIR__ . '/../../_core/db.php';
-require_once __DIR__ . '/../../_core/core.php';
+require_once __DIR__ . '/../../_core/tools.php';
+require_once __DIR__ . '/../../_core/insertions.php';
+require_once __DIR__ . '/../../config.php';
