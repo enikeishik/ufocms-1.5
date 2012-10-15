@@ -123,6 +123,138 @@ class UfoToolsCest
     }
     
     /**
+     * Тесты метода safeSql с разными параметрами.
+     */
+    public function safeSql(\CodeGuy $I) {
+        $vals[] = array('SELECT * FROM mytable WHERE myid=123', 
+                        'SELECT * FROM mytable WHERE myid=123');
+        $vals[] = array("SELECT * FROM mytable WHERE mystring='abc'", 
+                        "SELECT * FROM mytable WHERE mystring=\'abc\'");
+        $I->wantTo('execute method `safeSql`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                $res = UfoTools::safeSql($v[0]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода jsAsString с разными параметрами.
+     */
+    public function jsAsString(\CodeGuy $I) {
+        $vals[] = array('var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
+                        'var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
+                        true);
+        $vals[] = array("var s = '';\r\nfunction retVal(v)\r\n{\r\n\treturn v;\r\n}\r\nvar newS = retVal(s);", 
+                        "var s = \'\';\\r\\nfunction retVal(v)\\r\\n{\\r\\n\treturn v;\\r\\n}\\r\\nvar newS = retVal(s);", 
+                        true);
+        $vals[] = array('var s = "<p>abc</p>";', 
+                        'var s = "<!p>abc<!/p>";', 
+                        true);
+        $vals[] = array('var s = "<p>abc</p>";', 
+                        'var s = "<p>abc</p>";', 
+                        false);
+        $I->wantTo('execute method `jsAsString`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                echo 'flag `' . (int) $v[2] . '`' . "\r\n";
+                $res = UfoTools::jsAsString($v[0], $v[2]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода insertParagraphs с разными параметрами.
+     */
+    public function insertParagraphs(\CodeGuy $I) {
+        $vals[] = array(" Тестовый текст\r\nразбитый на строки ", 
+                        "<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "\r\n");
+        $vals[] = array("Тестовый текст в одну строку", 
+                        "<p>Тестовый текст в одну строку</p>\r\n", 
+                        "\r\n");
+        $I->wantTo('execute method `insertParagraphs`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                echo 'flag `' . $v[2] . '`' . "\r\n";
+                $res = UfoTools::insertParagraphs($v[0], $v[2]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода removeParagraphs с разными параметрами.
+     */
+    public function removeParagraphs(\CodeGuy $I) {
+        $vals[] = array("<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "Тестовый текст\r\nразбитый на строки", 
+                        "\r\n");
+        $vals[] = array("<p>Тестовый текст в одну строку</p>\r\n", 
+                        "Тестовый текст в одну строку", 
+                        "\r\n");
+        $I->wantTo('execute method `removeParagraphs`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                echo 'flag `' . $v[2] . '`' . "\r\n";
+                $res = UfoTools::removeParagraphs($v[0], $v[2]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода getFirstParagraph с разными параметрами.
+     */
+    public function getFirstParagraph(\CodeGuy $I) {
+        $vals[] = array("<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст</p>\r\n");
+        $vals[] = array("Тестовый текст<p>Параграф после текста</p>\r\n", 
+                        "Тестовый текст");
+        $vals[] = array("Тестовый текст.<br />Текст после текста", 
+                        "");
+        $I->wantTo('execute method `getFirstParagraph`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                $res = UfoTools::getFirstParagraph($v[0]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
      * Тест загрузки существующего класса.
      */
     public function loadExistingClass(\CodeGuy $I) {

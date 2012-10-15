@@ -81,6 +81,93 @@ class UfoTools
     }
     
     /**
+     * Преобразование SQL выражения в безопасное.
+     * В текущей реализации просто экранируются апострофы посредством 
+     * PHP функции addslashes.
+     *
+     * @param string $str    преобразуемая строка SQL выражения
+     *
+     * @return string
+     */
+    public static function safeSql($str)
+    {
+        return addslashes($str);
+    }
+    
+    /**
+     * Преобразование JS выражения в строку.
+     * Преобразование производится за счет экранирования 
+     * всех спец. символов (\, ', \r, \n).
+     *
+     * @param string  $str                 преобразуемая строка JS выражения
+     * @param boolean $convertLt = true    преобразовывать также симполы `<'
+     *
+     * @return string
+     */
+    public static function jsAsString($str, $convertLt = true)
+    {
+        if ($convertLt) {
+            return str_replace(array("\\", "'", '<', "\r", "\n"),
+                               array("\\\\", "\\'", '<!', '\r', '\n'),
+                               $str);
+        } else {
+            return str_replace(array("\\", "'", "\r", "\n"),
+                               array("\\\\", "\\'", '\r', '\n'),
+                               $str);
+        }
+    }
+    
+    /**
+     * Вставка в текст тэгов параграфа.
+     *
+     * @param string $str            преобразуемая строка
+     * @param string $nl = "\r\n"    символ(ы) перевода строк
+     *
+     * @return string
+     */
+    public static function insertParagraphs($str, $nl = "\r\n")
+    {
+        return str_replace('<p></p>' . $nl, 
+                           '', 
+                           '<p>' . str_replace($nl, 
+                                               '</p>' . $nl . '<p>', 
+                                               trim($str)) . '</p>' . $nl);
+    }
+    
+    /**
+     * Удаление тэгов параграфа из текста.
+     *
+     * @param string $str            преобразуемая строка
+     * @param string $nl = "\r\n"    символ(ы) перевода строк
+     *
+     * @return string
+     */
+    public static function removeParagraphs($str, $nl = "\r\n")
+    {
+        return trim(preg_replace('/(' . addcslashes($nl, '\0\r\n\f\v\t') . '){2}/', 
+                                 $nl, 
+                                 str_replace(array('<p>', '</p>'), 
+                                             array('', $nl), 
+                                             $str)));
+    }
+    
+    /**
+     * Получение первого параграфа текста.
+     * Если текст разбит на параграфы тэгами <p>, 
+     * эта функция возвращает первый параграф 
+     * (вместе с тэгами параграфа).
+     * Иначе возвращает пустую строку.
+     *
+     * @param string $str    исходный текст
+     *
+     * @return string
+     */
+    public static function getFirstParagraph($str)
+    {
+        return substr($str, 0, stripos($str, '<p>', 3));
+    }
+    
+    /**
      * Динамическая загрузка классов и интерфейсов.
      *
      * @param string $class                имя загружаемого класса
