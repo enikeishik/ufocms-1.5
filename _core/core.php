@@ -8,24 +8,36 @@
 class UfoCore
 {
     /**
-     * Получение идентификатора раздела по его URL.
+     * Получение идентификатора раздела по его пути.
      *
-     * @param string $url    URL раздела
+     * @param string $path    путь раздела (часть URL)
      *
      * @return int|false
      */
-    public static function getSectionIdByUrl($url)
+    public static function getSectionIdByPath($path)
+    {
+        if (!UfoTools::isPath($path)) {
+            return false;
+        }
+        $sql = 'SELECT ' . C_DB_SECTIONS_FIELDS . 
+               ' FROM ' . C_DB_TABLE_PREFIX . 'sections' . 
+               " WHERE path='" . $path . "'";
+        return UfoDb::getRowByQuery($sql);
+    }
+    
+    public static function getSectionById($id)
     {
         $sql = 'SELECT ' . C_DB_SECTIONS_FIELDS . 
                ' FROM ' . C_DB_TABLE_PREFIX . 'sections' . 
-               " WHERE path='" . api_GetSafePath($path) . "'";
-        $result = mysql_query($sql);
-        if ($row = mysql_fetch_array($result, MYSQL_BOTH)) {
-            mysql_free_result($result);
-            return $row;
-        } else {
-            mysql_free_result($result);
-            return false;
-        }
+               ' WHERE id=' . $id;
+        return UfoDb::getRowByQuery($sql);
+    }
+    
+    public static function getSectionsByParentId($id)
+    {
+        $sql = 'SELECT ' . C_DB_SECTIONS_FIELDS . 
+               ' FROM ' . C_DB_TABLE_PREFIX . 'sections' . 
+               ' WHERE parentid=' . $id;
+        return UfoDb::getRowsByQuery($sql);
     }
 }

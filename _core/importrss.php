@@ -41,7 +41,7 @@ class UfoImportRss extends UfoImport
                 if (function_exists('mb_convert_variables')) {
                     mb_convert_variables('windows-1251', 'UTF-8', $val);
                 } else if (function_exists('iconv')) {
-                    $val = iconv('UTF-8', 'windows-1251//TRANSLIT', $val);
+                    $val = iconv('UTF-8', 'windows-1251//IGNORE', $val);
                 } else {
                     return FALSE;
                 }

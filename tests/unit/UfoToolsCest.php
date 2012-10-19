@@ -181,20 +181,40 @@ class UfoToolsCest
      * Тесты метода insertParagraphs с разными параметрами.
      */
     public function insertParagraphs(\CodeGuy $I) {
+        $vals[] = array(" Тестовый текст\r\nразбитый на строки\r\n", 
+                        "<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>", 
+                        "\r\n");
         $vals[] = array(" Тестовый текст\r\nразбитый на строки ", 
-                        "<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>", 
                         "\r\n");
         $vals[] = array("Тестовый текст в одну строку", 
-                        "<p>Тестовый текст в одну строку</p>\r\n", 
+                        "<p>Тестовый текст в одну строку</p>", 
                         "\r\n");
+        $vals[] = array("", 
+                        "<p></p>", 
+                        "\r\n");
+        $vals[] = array(" Тестовый текст\r\nразбитый на строки ", 
+                        "<p>Тестовый текст\r\nразбитый на строки</p>", 
+                        "");
+        $vals[] = array("Тестовый текст в одну строку", 
+                        "<p>Тестовый текст в одну строку</p>", 
+                        "");
+        $vals[] = array("", 
+                        "<p></p>", 
+                        "\r\n");
+        $vals[] = array("", 
+                        "<p></p>", 
+                        "");
         $I->wantTo('execute method `insertParagraphs`');
         foreach ($vals as $v) {
             $I->execute(function() use ($v) {
-                echo 'test `' . $v[0] . '`' . "\r\n";
-                echo 'expected result `' . $v[1] . '`' . "\r\n";
-                echo 'flag `' . $v[2] . '`' . "\r\n";
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                echo 'flag `' . str_replace($sc, $scr, $v[2]) . '`' . "\r\n";
                 $res = UfoTools::insertParagraphs($v[0], $v[2]);
-                echo 'actual result `' . $res . '`' . "\r\n";
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
                 $ret = ($v[1] == $res);
                 var_dump($ret);
                 return $ret;
@@ -213,14 +233,28 @@ class UfoToolsCest
         $vals[] = array("<p>Тестовый текст в одну строку</p>\r\n", 
                         "Тестовый текст в одну строку", 
                         "\r\n");
+        $vals[] = array("<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "Тестовый текст\r\nразбитый на строки", 
+                        "");
+        $vals[] = array("<p>Тестовый текст в одну строку</p>\r\n", 
+                        "Тестовый текст в одну строку", 
+                        "");
+        $vals[] = array("", 
+                        "", 
+                        "\r\n");
+        $vals[] = array("", 
+                        "", 
+                        "");
         $I->wantTo('execute method `removeParagraphs`');
         foreach ($vals as $v) {
             $I->execute(function() use ($v) {
-                echo 'test `' . $v[0] . '`' . "\r\n";
-                echo 'expected result `' . $v[1] . '`' . "\r\n";
-                echo 'flag `' . $v[2] . '`' . "\r\n";
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                echo 'flag `' . str_replace($sc, $scr, $v[2]) . '`' . "\r\n";
                 $res = UfoTools::removeParagraphs($v[0], $v[2]);
-                echo 'actual result `' . $res . '`' . "\r\n";
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
                 $ret = ($v[1] == $res);
                 var_dump($ret);
                 return $ret;
@@ -242,9 +276,289 @@ class UfoToolsCest
         $I->wantTo('execute method `getFirstParagraph`');
         foreach ($vals as $v) {
             $I->execute(function() use ($v) {
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                $res = UfoTools::getFirstParagraph($v[0]);
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода сutNice с разными параметрами.
+     */
+    public function сutNice(\CodeGuy $I) {
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "Тестовый текст,", 
+                        20, 0, true);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст,", 
+                        20, 0, false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "екст, первая строка", 
+                        20, 10, true);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "й текст, первая", 
+                        20, 10, false);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "", 
+                        0, 10, false);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "", 
+                        -10, 10, false);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "", 
+                        20, -10, false);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "Тестовый текст", 
+                        20, 0, true);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "<p>Тестовый", 
+                        20, 0, false);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "", 
+                        20, 20, true);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "", 
+                        20, 20, false);
+        $vals[] = array("<p>Тестовый текст</p>\r\n", 
+                        "й", 
+                        20, 10, false);
+        $I->wantTo('execute method `сutNice`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                echo 'length `' . $v[2] . '`' . "\r\n";
+                echo 'offset `' . $v[3] . '`' . "\r\n";
+                echo 'removeTags `' . (int) $v[4] . '`' . "\r\n";
+                $res = UfoTools::сutNice($v[0], $v[2], $v[3], $v[4]);
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода cutMiddle с разными параметрами.
+     */
+    public function cutMiddle(\CodeGuy $I) {
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый ...строки\r\n", 
+                        20, '...');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый ... троки\r\n", 
+                        20, ' ... ');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый .. строки\r\n", 
+                        20, '..');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый .. строки\r\n", 
+                        20, ' .. ');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый те...на строки\r\n", 
+                        25, '...');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый т ... а строки\r\n", 
+                        25, ' ... ');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый тек..на строки\r\n", 
+                        25, '..');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Тестовый те .. а строки\r\n", 
+                        25, ' .. ');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "...", 
+                        3, '...');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Т..", 
+                        3, '..');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "", 
+                        2, '...');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "", 
+                        0, '');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "", 
+                        -10, '');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Т\n", 
+                        2, '');
+        $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
+                        "Те\n", 
+                        3, '');
+        $I->wantTo('execute method `cutMiddle`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                echo 'length `' . $v[2] . '`' . "\r\n";
+                echo 'cutStub `' . $v[3] . '`' . "\r\n";
+                $res = UfoTools::cutMiddle($v[0], $v[2], $v[3]);
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода cutBySeparator с разными параметрами.
+     */
+    public function cutBySeparator(\CodeGuy $I) {
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --></p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>", 
+                        '<!-- separator -->', false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p><!-- separator -->\r\n<p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>", 
+                        '<!-- separator -->', false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<!-- separator --><p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>", 
+                        '<!-- separator -->', false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<!-- separator --><p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>", 
+                        '<!-- separator -->', true);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p><!-- separator -->разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n", 
+                        '<!-- separator -->', false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --> </p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "", 
+                        '<!-- separator -->', false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --> </p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс. </p>", 
+                        '<!-- separator -->', true);
+        $I->wantTo('execute method `cutBySeparator`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                echo 'separator `' . $v[2] . '`' . "\r\n";
+                echo 'more `' . (int) $v[3] . '`' . "\r\n";
+                $res = UfoTools::cutBySeparator($v[0], $v[2], $v[3]);
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода getTextPartBySeparator с разными параметрами.
+     */
+    public function getTextPartBySeparator(\CodeGuy $I) {
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --></p>\r\n<p>разбитый на строки<!-- separator --></p>\r\n<p>несколько раз</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>", 
+                        '<!-- separator -->', 0, false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --></p>\r\n<p>разбитый на строки<!-- separator --></p>\r\n<p>несколько раз</p>\r\n", 
+                        "</p>\r\n<p>разбитый на строки</p>", 
+                        '<!-- separator -->', 1, false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --></p>\r\n<p>разбитый на строки<!-- separator --></p>\r\n<p>несколько раз</p>\r\n", 
+                        "\r\n<p>несколько раз</p>\r\n", 
+                        '<!-- separator -->', 2, false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p><!-- separator -->разбитый на строки</p>\r\n<p><!-- separator -->несколько раз</p>\r\n", 
+                        "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n", 
+                        '<!-- separator -->', 0, false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p><!-- separator -->разбитый на строки</p>\r\n<p><!-- separator -->несколько раз</p>\r\n", 
+                        "разбитый на строки</p>\r\n", 
+                        '<!-- separator -->', 1, false);
+        $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p><!-- separator -->разбитый на строки</p>\r\n<p><!-- separator -->несколько раз</p>\r\n", 
+                        "\r\n", 
+                        '<!-- separator -->', 2, false);
+        $I->wantTo('execute method `getTextPartBySeparator`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                echo 'separator `' . $v[2] . '`' . "\r\n";
+                echo 'part `' . $v[3] . '`' . "\r\n";
+                echo 'more `' . (int) $v[4] . '`' . "\r\n";
+                $res = UfoTools::getTextPartBySeparator($v[0], $v[2], $v[3], $v[4]);
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода srcFromImg с разными параметрами.
+     */
+    public function srcFromImg(\CodeGuy $I) {
+        $vals[] = array("<img src=\"/path/image.jpg\" alt=\"\" />", 
+                        "/path/image.jpg");
+        $vals[] = array("<p>Тестовый <img src=\"/path/image.jpg\" alt=\"\" /> текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "/path/image.jpg");
+        $vals[] = array("<p>Тестовый <img src=\"/Путь%20к%20картинке/Фото0001.JPG\" alt=\"\" /> текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "/Путь%20к%20картинке/Фото0001.JPG");
+        $vals[] = array("Тестовый текст<p>Параграф <IMG SRC='/path-with_smth.spec,chars/~image.jpeg' ALT=''>после текста</p>\r\n", 
+                        "/path-with_smth.spec,chars/~image.jpeg");
+        $vals[] = array("<p>Тестовый <img border=\"0\" src=\"/path/image.jpg\" alt=\"\" /> текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "/path/image.jpg");
+        $vals[] = array("<p>Тестовый <img border=0 src=/path/image.jpg alt=ABC /> текст</p>\r\n<p>разбитый на строки</p>\r\n", 
+                        "/path/image.jpg");
+        $vals[] = array("Тестовый текст.<br />Текст после текста", 
+                        "");
+        $I->wantTo('execute method `srcFromImg`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
+                $sc = array("\r\n", "\r", "\n");
+                $scr = array('\r\n', '\r', '\n');
+                echo 'test `' . str_replace($sc, $scr, $v[0]) . '`' . "\r\n";
+                echo 'expected result `' . str_replace($sc, $scr, $v[1]) . '`' . "\r\n";
+                $res = UfoTools::srcFromImg($v[0]);
+                echo 'actual result `' . str_replace($sc, $scr, $res) . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    /**
+     * Тесты метода appendDigits с разными параметрами.
+     */
+    public function appendDigits(\CodeGuy $I) {
+        $vals[] = array(1, '01', 2, true);
+        $vals[] = array(1, '10', 2, false);
+        $vals[] = array('1', '01', 2, true);
+        $vals[] = array('1', '10', 2, false);
+        $vals[] = array('11', '11', 2, true);
+        $vals[] = array('11', '11', 2, false);
+        $vals[] = array('11', '00011', 5, true);
+        $vals[] = array('11', '11000', 5, false);
+        $I->wantTo('execute method `appendDigits`');
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v) {
                 echo 'test `' . $v[0] . '`' . "\r\n";
                 echo 'expected result `' . $v[1] . '`' . "\r\n";
-                $res = UfoTools::getFirstParagraph($v[0]);
+                echo 'digitsTotal `' . $v[2] . '`' . "\r\n";
+                echo 'left `' . (int) $v[3] . '`' . "\r\n";
+                $res = UfoTools::appendDigits($v[0], $v[2], $v[3]);
                 echo 'actual result `' . $res . '`' . "\r\n";
                 $ret = ($v[1] == $res);
                 var_dump($ret);
