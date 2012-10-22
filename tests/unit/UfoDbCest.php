@@ -3,10 +3,10 @@
 class UfoDbCest
 {
     public $class = 'UfoDb';
-    private $dbSettings = array('Host'     => 'sql09.freemysql.net', 
-                                'Username' => 'lifehacker', 
-                                'Password' => 'ahbvecrekm', 
-                                'Database' => 'lifehacker');
+    private $dbSettings = array('Host'     => '', 
+                                'Username' => '', 
+                                'Password' => '', 
+                                'Database' => '');
 const SQL_CREATE_TABLE = <<<'EOD'
 CREATE TABLE IF NOT EXISTS 
 codeception_unit_test (

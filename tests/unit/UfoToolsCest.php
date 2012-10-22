@@ -3,10 +3,6 @@
 class UfoToolsCest
 {
     public $class = 'UfoTools';
-    private $dbSettings = array('Host'     => 'sql09.freemysql.net', 
-                                'Username' => 'lifehacker', 
-                                'Password' => 'ahbvecrekm', 
-                                'Database' => 'lifehacker');
     private $corePath = '';
     
     function __construct()
