@@ -2,19 +2,24 @@
 
 class UfoCacheFsCest
 {
-    public $class = 'UfoCacheFs';
-    
+    const DS = DIRECTORY_SEPARATOR;
+    private $root = '';
     private $testData = 'some test data';
     private $testDataHash = 'a';
     private $testLargeData = '';
     private $testLargeDataHash = 'large';
     private $testNonExistingHash = 'b';
     private $testComplexHash = 'сложный хэш + .,;:\'"/\\[]()-_=*&^%$#@!~`1234567890|?';
-    private $cacheSettings = array('Path'     => 'c:\tmp', 
-                                   'FileExt'  => 'txt', 
-                                   'Lifetime' => 10);
+    private $cacheSettings = null;
     
     function __construct() {
+        $this->root = __DIR__ . self::DS . '..' . self::DS . '..';
+        require_once $this->root . self::DS . 'config.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCacheFs.php';
+        //$config = new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache'));
+        $config = new UfoConfig();
+        $this->cacheSettings = $config->cacheFsSettings;
+        
         $s = '';
         for ($i = 0; $i < 256; $i++) {
             $s .= chr($i);
