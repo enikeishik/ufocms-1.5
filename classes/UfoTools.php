@@ -74,6 +74,23 @@ trait UfoTools
         include $path . DIRECTORY_SEPARATOR . $layout . '.' . $extention;
     }
     
+    public function redirect($url, $code = 301)
+    {
+        $hdrs[] = 'HTTP/1.0 301 Moved Permanently';
+        $hdrs[] = 'Location: ' . $url;
+        $out = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' . "\r\n" . 
+               '<HTML><HEAD>' . "\r\n" .
+               '<TITLE>301 Moved Permanently</TITLE>' . "\r\n" .
+               '</HEAD><BODY>' . "\r\n" .
+               '<H1>Moved Permanently</H1>' . "\r\n" .
+               'The document has moved <a href="' . $url . '">here</a>.<P>' . "\r\n" .
+               '</BODY></HTML>' . "\r\n";
+        foreach ($hdrs as $hdr) {
+            header($hdr);
+        }
+        echo $out;
+    }
+    
     /**
      * Проверка строки содержащий путь раздела на соответствие шаблону 
      * `/some/section-path/` и отсутствие нежелательных символов (`//`, `..`).
@@ -101,7 +118,7 @@ trait UfoTools
      *
      * @return boolean
      */
-    public static function isSafeForPath($str)
+    public function isSafeForPath($str)
     {
         return (0 == preg_match('/[^A-Za-z0-9~_\/\-\.]|(\/{2})|(\.{2})/i', 
                                 $str));

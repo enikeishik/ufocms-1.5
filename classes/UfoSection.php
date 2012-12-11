@@ -16,70 +16,75 @@ class UfoSection
     use UfoTools;
     
     /**
-     * Объект конфигурации
+     * Ссылка на объект-контейнер ссылок на объекты.
+     * @var UfoContainer
+     */
+    protected $container = null;
+    
+    /**
+     * Ссылка на объект конфигурации.
      * @var UfoConfig
      */
-    private $config = null;
+    protected $config = null;
     
     /**
-     * Объект для работы с базой данных.
+     * Ссылка на объект для работы с базой данных.
      * @var UfoDb
      */
-    private $db = null;
+    protected $db = null;
     
     /**
-     * Объект отладки.
+     * Ссылка на объект отладки.
      * @var UfoDebug
      */
-    private $debug = null;
+    protected $debug = null;
     
     /**
      * Часть SQL запроса, содержащая список полей раздела в таблице базы данных.
      * @var string
      */
-    private $fieldsSql = '';
+    protected $fieldsSql = '';
     
     /**
      * Объект-структура для хранения данных раздела сайта.
      * @var UfoSectionStruct
      */
-    private $fields = null;
+    protected $fields = null;
     
     /**
      * Имя модуля, обслуживающего раздел.
      * @var string
      */
-    private $moduleName = '';
+    protected $moduleName = '';
     
     /**
      * Объект модуля, обслуживающего раздел.
      * @var UfoModule
      */
-    private $module = null;
+    protected $module = null;
     
     /**
      * Локальное хранилище данных, полученных из базы данных для повторного использования.
      * @var array
      */
-    private $cache = array();
+    protected $cache = array();
     
     /**
      * Конструктор, формирует объект по идентификатору или пути.
      *
      * @todo использовать константу/переменнут вместо строки в throw
      *
-     * @param UfoConfig &$config        ссылка на объект конфигурации
-     * @param UfoDb     &$db            ссылка на объект для работы с базой данных
-     * @param mixed     $section        идентификатор, путь или данные раздела сайта
-     * @param UfoDebug &$debug =null    ссылка на объект отладки
+     * @param mixed        $section       идентификатор, путь или данные раздела сайта
+     * @param UfoContainer &$container    ссылка на объект-контейнер ссылок на объекты
      * 
      * @throws Exception
      */
-    public function __construct(UfoConfig &$config, UfoDb &$db, $section, UfoDebug &$debug = null)
+    public function __construct($section, UfoContainer &$container)
     {
-        $this->config =& $config;
-        $this->db =& $db;
-        $this->debug =& $debug;
+        $this->container =& $container;
+        $this->config =& $container->getConfig();
+        $this->db =& $container->getDb();
+        $this->debug =& $container->getDebug();
         
         $this->loadClass('UfoSectionStruct');
         
@@ -127,8 +132,9 @@ class UfoSection
      */
     public function initModule()
     {
+        $this->container->setSection($this);
         $this->loadModule($this->moduleName);
-        $this->module = new $this->moduleName($this->db, $this, $this->debug);
+        $this->module = new $this->moduleName($this->container);
         if (!is_a($this->module, 'UfoModule')) {
             throw new Exception('Module class must extends UfoModule abstract class');
         }

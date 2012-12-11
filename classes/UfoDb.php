@@ -6,8 +6,8 @@
  */
 class UfoDb extends mysqli
 {
-    private $connected = false;
-    private $tablePrefix = '';
+    protected $connected = false;
+    protected $tablePrefix = '';
     
     public function __construct(UfoDbSettings $settings)
     {
@@ -21,11 +21,20 @@ class UfoDb extends mysqli
         }
     }
     
+    /**
+     * Получение глобального префикса таблиц базы данных.
+     * @return string
+     */
     public function getTablePrefix()
     {
         return $this->tablePrefix;
     }
     
+    /**
+     * Получение строки из базы данных по SQL запросу.
+     * @param string $sql
+     * @return array|false
+     */
     public function getRowByQuery($sql)
     {
         $result = $this->query($sql);
@@ -41,6 +50,11 @@ class UfoDb extends mysqli
         }
     }
     
+    /**
+     * Получение строк из базы данных по SQL запросу.
+     * @param string $sql
+     * @return array|false
+     */
     public function getRowsByQuery($sql)
     {
         $rows = array();

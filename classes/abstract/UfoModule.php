@@ -11,6 +11,12 @@ abstract class UfoModule implements UfoModuleInterface
     use UfoTools;
     
     /**
+     * Ссылка на объект-контейнер ссылок на объекты.
+     * @var UfoContainer
+     */
+    protected $container = null;
+    
+    /**
      * Объект для работы с базой данных.
      * @var UfoDb
      */
@@ -42,18 +48,21 @@ abstract class UfoModule implements UfoModuleInterface
     
     /**
      * Конструктор.
-     * @param UfoDb      &$db            ссылка на объект для работы с базой данных
-     * @param UfoSection &$section         ссылка на объект текущего раздела
-     * @param UfoDebug   &$debug = null    ссылка на объект отладки
+     * @param UfoSection   &$section      ссылка на объект текущего раздела
+     * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      */
-    public function __construct(UfoDb &$db, UfoSection &$section, UfoDebug &$debug = null)
+    public function __construct(UfoContainer &$container)
     {
-        $this->db =& $db;
-        $this->section =& $section;
-        $this->debug =& $debug;
+        $this->container =& $container;
+        $this->section =& $container->getSection();
+        $this->db =& $container->getDb();
+        $this->debug =& $container->getDebug();
         $this->sectionFields = $this->section->getFields();
+        
+        $this->container->setModule($this);
+        
         $templateName = str_replace('UfoMod', 'UfoTpl', get_class($this));
         $this->loadTemplate($templateName);
-        $this->template = new $templateName($this->section, $this, $this->debug);
+        $this->template = new $templateName($this->container);
     }
 }

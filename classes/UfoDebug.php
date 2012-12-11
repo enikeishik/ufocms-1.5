@@ -1,7 +1,7 @@
 <?php
 class UfoDebug
 {
-    private $pageStartTime = 0;
+    protected $pageStartTime = 0;
     
     public function setPageStartTime($time = null)
     {

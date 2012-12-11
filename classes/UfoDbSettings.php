@@ -1,11 +1,11 @@
 <?php
 class UfoDbSettings
 {
-    private $host = '';
-    private $user = '';
-    private $password = '';
-    private $name = '';
-    private $prefix = '';
+    protected $host = '';
+    protected $user = '';
+    protected $password = '';
+    protected $name = '';
+    protected $prefix = '';
     
     public function __construct($host, $user, $password, $name, $prefix = '')
     {

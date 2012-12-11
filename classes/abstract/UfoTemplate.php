@@ -9,6 +9,12 @@ require_once 'UfoTemplateInterface.php';
 abstract class UfoTemplate implements UfoTemplateInterface
 {
     /**
+     * Ссылка на объект-контейнер ссылок на объекты.
+     * @var UfoContainer
+     */
+    protected $container = null;
+    
+    /**
      * Ссылка на объект текущего раздела.
      * @var UfoSection
      */
@@ -34,15 +40,14 @@ abstract class UfoTemplate implements UfoTemplateInterface
     
     /**
      * Конструктор.
-     * @param UfoSection &$section         ссылка на объект текущего раздела
-     * @param UfoModule  &$module          ссылка на объект модуля текущего раздела
-     * @param UfoDebug   &$debug = null    ссылка на объект отладки
+     * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      */
-    public function __construct(UfoSection &$section, UfoModule &$module, UfoDebug &$debug = null)
+    public function __construct(UfoContainer &$container)
     {
-        $this->section =& $section;
-        $this->module =& $module;
-        $this->debug =& $debug;
+        $this->container =& $container;
+        $this->module =& $container->getModule();
+        $this->section =& $container->getSection();
+        $this->debug =& $container->getDebug();
         $this->fields = $this->section->getFields(); 
     }
 }
