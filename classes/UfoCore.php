@@ -126,12 +126,11 @@ final class UfoCore
         //require_once('__errors.php');
         //set_error_handler('err_Php');
         
-        if ($this->config->debug) {
-            //DEBUG: время выполнения скрипта
-            $this->loadClass('UfoDebug');
-            $this->debug = new UfoDebug();
-            $this->debug->setPageStartTime();
-        }
+        $this->loadClass('UfoDebug');
+        $this->debug = new UfoDebug($this->config->debug);
+        //время выполнения скрипта
+        $this->debug->setPageStartTime();
+        $this->debug->log('Execution started');
     }
     
     /**
@@ -148,6 +147,7 @@ final class UfoCore
         } else {
             $this->pathRaw = '/';
         }
+        $this->debug->log('PathRaw: ' . $this->pathRaw);
     }
     
     /**
@@ -156,10 +156,12 @@ final class UfoCore
      */
     public function tryCache()
     {
+        $this->debug->log('Trying use cache');
         $this->loadClass('UfoCacheFs');
         $this->cache = new UfoCacheFs($this->pathRaw, 
                                       $this->config->cacheFsSettings);
         $this->page = $this->loadCache($this->cache);
+        $this->debug->log(is_null($this->page) ? 'Cache not used' : 'Using cache');
         return !is_null($this->page);
     }
     
@@ -171,16 +173,21 @@ final class UfoCore
      */
     public function initDb()
     {
+        $this->debug->log('Trying connect to database');
         $this->loadClass('UfoDb');
         try {
             $this->db = new UfoDb($this->config->dbSettings);
+            $this->debug->log('Connected to database successfully');
             return true;
         } catch (Exception $e) {
+            $this->debug->log('Connection to database failed, trying cache');
             //пытаемся получить данные из кэша
             $this->page = $this->loadCache($this->cache);
             if (!is_null($this->page)) {
+                $this->debug->log('Using cache');
                 return false;
             } else {
+                $this->debug->log('Cache not exists, generating error');
                 //$this->module =& errorHamdlerModule(500)
                 throw new Exception($e->getMessage());
             }
@@ -192,11 +199,13 @@ final class UfoCore
      */
     public function initSite()
     {
+        $this->debug->log('Preparing container');
         $container =& $this->getContainer();
         $container->setConfig($this->config);
         $container->setDb($this->db);
         $container->setDebug($this->debug);
         
+        $this->debug->log('Trying get site object');
         $this->loadClass('UfoSite');
         $error = true;
         try {
@@ -204,33 +213,42 @@ final class UfoCore
                 new UfoSite($this->pathRaw, 
                             $container);
             $error = false;
+            $this->debug->log('Site object created');
         } catch (UfoExceptionPathEmpty $e) {
+            $this->debug->log('UfoExceptionPathEmpty');
             if (isset($_SERVER['HTTP_HOST'])) {
                 $this->redirect('http://' . $_SERVER['HTTP_HOST'] . '/');
             } else {
                 //err http 404
             }
         } catch (UfoExceptionPathBad $e) {
+            $this->debug->log('UfoExceptionPathBad');
             //err http 404
         } catch (UfoExceptionPathUnclosed $e) {
+            $this->debug->log('UfoExceptionPathUnclosed');
             if (isset($_SERVER['HTTP_HOST'])) {
                 $this->redirect('http://' . $_SERVER['HTTP_HOST'] . $this->pathRaw . '/');
             } else {
                 //err http 404
             }
         } catch (UfoExceptionPathFilenotexists $e) {
+            $this->debug->log('UfoExceptionPathFilenotexists');
             //err http 404
         } catch (UfoExceptionPathComplex $e) {
+            $this->debug->log('UfoExceptionPathComplex');
             //err http 404
         } catch (UfoExceptionPathNotexists $e) {
+            $this->debug->log('UfoExceptionPathNotexists');
             //err http 404
         } catch (Exception $e) {
+            $this->debug->log('Exception: ' . $e->getMessage());
             throw new Exception($e->getMessage());
         }
         if ($error) {
             exit();
         }
         $this->path = $this->site->getParsedPath();
+        $this->debug->log('Path: ' . $this->path);
     }
     
     /**
@@ -240,15 +258,19 @@ final class UfoCore
      */
     public function initSection()
     {
+        $this->debug->log('Preparing container');
         $container =& $this->getContainer();
         $container->setSite($this->site);
         
+        $this->debug->log('Trying get section object');
         $this->loadClass('UfoSection');
         try {
             $this->section = 
                 new UfoSection($this->path, 
                                $container);
+            $this->debug->log('Section object created');
         } catch (Exception $e) {
+            $this->debug->log('Exception: ' . $e->getMessage());
             //$this->module =& errorHamdlerModule(404)
             throw new Exception($e->getMessage());
             return;
@@ -261,7 +283,14 @@ final class UfoCore
      */
     public function generatePage()
     {
-        $this->section->initModule();
+        $this->debug->log('Initialize module');
+        try {
+            $this->section->initModule();
+        } catch (Exception $e) {
+            $this->debug->log('Exception: ' . $e->getMessage());
+            throw new Exception($e->getMessage());
+        }
+        $this->debug->log('Generating page');
         $this->page = $this->section->getPage();
     }
     
@@ -270,6 +299,7 @@ final class UfoCore
      */
     public function finalize()
     {
+        $this->debug->log('Finalization');
         if (!is_null($this->db)) {
             $this->db->close();
             unset($this->db);
@@ -281,6 +311,7 @@ final class UfoCore
      */
     public function shutdown()
     {
+        $this->debug->log('Shutdown');
         if ($this->config->cacheFsSavetime > 0) {
             //восстанавливаем перехватчик ошибок по-умолчанию
             restore_error_handler();

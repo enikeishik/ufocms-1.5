@@ -3,6 +3,13 @@ require_once 'classes/abstract/UfoModule.php';
 
 class UfoModDocuments extends UfoModule
 {
+    /**
+     * Переопределена здесь чтобы получить тип текущего класса, 
+     * а не абстрактного родительского класса (для IDE).
+     * @var UfoModDocumentsParams
+     */
+    protected $params = null;
+    
     public function getTitle()
     {
         return '';

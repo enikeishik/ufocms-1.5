@@ -32,9 +32,7 @@ class UfoSite
     
     protected $path = '';
     protected $pathRaw = '';
-    protected $params = array();
-    protected $paramsRaw = array();
-    protected $paramsSet = array();
+    protected $pathParams = array();
     
     /**
      * Конструктор.
@@ -61,8 +59,10 @@ class UfoSite
         $this->pathRaw = $pathRaw;
         $this->parsePath();
         if ($this->path != $this->pathRaw) {
-            $params = substr($this->pathRaw, strlen($this->path), -1);
-            $this->pathRaw = explode('/', $params);
+            $this->pathParams = explode('/', 
+                                        substr($this->pathRaw, 
+                                               strlen($this->path), 
+                                               -1));
         }
     }
     
@@ -74,34 +74,39 @@ class UfoSite
         return (array_key_exists($name, $this->siteParams) ? $this->siteParams[$name] : $default);
     }
     
+    /**
+     * Возвращает ассоциативный массив параметров сайта.
+     * @return array
+     */
     public function getSiteParams()
     {
         return $this->siteParams;
     }
     
+    /**
+     * Возвращает собственно путь (раздела) без параметров.
+     * @return string
+     */
     public function getPath()
     {
         return $this->path;
     }
     
+    /**
+     * @see UfoSite::getPath()
+     */
     public function getParsedPath()
     {
         return $this->getPath();
     }
     
+    /**
+     * Возвращает массив параметров, оставшихся в URL после отделения пути раздела.
+     * @return array
+     */
     public function getPathParams()
     {
-        return $this->params;
-    }
-    
-    public function getPathParamsRaw()
-    {
-        return $this->paramsRaw;
-    }
-
-    public function getPathParamsSet()
-    {
-        return $this->paramsSet;
+        return $this->pathParams;
     }
     
     /**

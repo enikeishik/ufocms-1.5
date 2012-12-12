@@ -6,6 +6,8 @@ final class UfoConfig
 {
     private $_debug = true;
     
+    private $_directorySeparator = DIRECTORY_SEPARATOR;
+    
     private $_siteRoot = __DIR__;
     
     private $_classesDir = 'classes';
