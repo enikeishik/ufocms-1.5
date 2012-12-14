@@ -48,6 +48,8 @@ abstract class UfoTemplate implements UfoTemplateInterface
         $this->module =& $container->getModule();
         $this->section =& $container->getSection();
         $this->debug =& $container->getDebug();
-        $this->fields = $this->section->getFields(); 
+        if (!is_null($this->section)) {
+            $this->fields = $this->section->getFields();
+        }
     }
 }

@@ -1,6 +1,7 @@
 <?php
 require_once 'UfoModuleInterface.php';
-//require_once '../exceptions/UfoExceptionPathNotexists.php';
+require_once 'classes/UfoToolsExt.php';
+require_once 'classes/exceptions/UfoExceptionPathNotexists.php';
 /**
  * јбрстрактный класс модул€, обслуживающего раздел, 
  * дочерние классы должны реализовывать 
@@ -9,7 +10,7 @@ require_once 'UfoModuleInterface.php';
  */
 abstract class UfoModule implements UfoModuleInterface
 {
-    use UfoTools;
+    use UfoTools, UfoToolsExt;
     
     /**
      * —сылка на объект-контейнер ссылок на объекты.
@@ -28,6 +29,12 @@ abstract class UfoModule implements UfoModuleInterface
      * @var UfoDb
      */
     protected $db = null;
+    
+    /**
+     * —сылка на объект UfoSite, представл€ющий сайт.
+     * @var UfoSite
+     */
+    protected $site = null;
     
     /**
      * —сылка на объект UfoSection, представл€ющий текущий раздел.
@@ -63,11 +70,13 @@ abstract class UfoModule implements UfoModuleInterface
      *  онструктор.
      * @param UfoSection   &$section      ссылка на объект текущего раздела
      * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
+     * @throws UfoExceptionPathNotexists
      */
     public function __construct(UfoContainer &$container)
     {
         $this->container =& $container;
         $this->config =& $container->getConfig();
+        $this->site =& $container->getSite();
         $this->section =& $container->getSection();
         $this->db =& $container->getDb();
         $this->debug =& $container->getDebug();
@@ -88,7 +97,7 @@ abstract class UfoModule implements UfoModuleInterface
      */
     protected function parseParams()
     {
-        $pathParams = $this->container->getSite()->getPathParams();
+        $pathParams = $this->site->getPathParams();
         
         $class = get_class($this);
         $struct = $class . 'Params';

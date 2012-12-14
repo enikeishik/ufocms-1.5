@@ -1,4 +1,7 @@
 <?php
+/**
+ * Трейт вспомогательных функционалов.
+ */
 trait UfoTools
 {
     /**
@@ -9,8 +12,6 @@ trait UfoTools
      * @param string $class                имя загружаемого класса
      * @param string $path                 путь к пакте с файлами классов
      * @param string $extention = 'php'    расширение файлов с классами
-     *
-     * @return void
      */
     public function loadClass($class, 
                               $path = 'classes', 
@@ -33,8 +34,6 @@ trait UfoTools
      * @param string $module               имя загружаемого модуля (основного класса модуля)
      * @param string $path                 путь к пакте с файлами модулей
      * @param string $extention = 'php'    расширение файлов с основными классами модулей
-     *
-     * @return void
      */
     public function loadModule($module, 
                                $path = 'modules', 
@@ -47,15 +46,13 @@ trait UfoTools
     
     
     /**
-     * Динамическая загрузка шаблонов/макетов.
+     * Динамическая загрузка шаблонов.
      *
      * @todo заменить значения по-умолчанию константами (глобальными?)
      *
-     * @param string $module               имя загружаемого модуля (основного класса модуля)
-     * @param string $path                 путь к пакте с файлами модулей
-     * @param string $extention = 'php'    расширение файлов с основными классами модулей
-     *
-     * @return void
+     * @param string $module               имя загружаемого шаблона (основного класса шаблона)
+     * @param string $path                 путь к пакте с файлами шаблонов
+     * @param string $extention = 'php'    расширение файлов с основными классами шаблонов
      */
     public function loadTemplate($template, 
                                  $path = 'templates', 
@@ -66,6 +63,16 @@ trait UfoTools
                          $extention);
     }
     
+    /**
+     * Динамическая загрузка макетов.
+     *
+     * @todo заменить значения по-умолчанию константами (глобальными?)
+     *
+     * @param UtoTemplate &$tpl                 ссылка на объект шаблона модуля
+     * @param string      $layout = 'index'     имя загружаемого макета (имя файла макета без расширения)
+     * @param string      $path                 путь к пакте с файлами макетов
+     * @param string      $extention = 'php'    расширение файлов с макетами
+     */
     public function loadLayout(UfoTemplate &$tpl, 
                                $layout = 'index', 
                                $path = 'templates', 

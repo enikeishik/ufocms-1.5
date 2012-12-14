@@ -1,7 +1,10 @@
 <?php
+require_once 'Tools.php';
 
 class UfoSectionCest
 {
+    use Tools;
+    
     const DS = DIRECTORY_SEPARATOR;
     private $container = null;
     private $mainSectionId = -1;
@@ -13,14 +16,18 @@ class UfoSectionCest
         require_once $root . self::DS . 'config.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoDb.php';
+        require_once $root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSection.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         $this->container = new UfoContainer();
         $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $root . self::DS . '_cache')));
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
+        $this->container->setSite(new UfoSite('/', $this->container));
     }
     
     public function createObject(\CodeGuy $I) {
+        $this->showTestCase(__CLASS__);
+        $this->showTest(__FUNCTION__);
         $I->wantTo('create object `UfoSection`');
         $I->execute(function() {
             $obj = null;
@@ -36,6 +43,7 @@ class UfoSectionCest
     }
     
     public function initModule(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $obj = new UfoSection($this->sectionId,  
                               $this->container);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
@@ -43,6 +51,7 @@ class UfoSectionCest
     }
     
     public function getModule(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -55,6 +64,7 @@ class UfoSectionCest
     }
     
     public function getPage(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -67,6 +77,7 @@ class UfoSectionCest
     }
     
     public function getField(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
     	$I->testMethod('UfoSection.' . __FUNCTION__);
         $obj = new UfoSection($this->sectionId,  
@@ -76,6 +87,7 @@ class UfoSectionCest
     }
     
     public function getFields(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -87,6 +99,7 @@ class UfoSectionCest
     }
 
     public function isMain(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->testMethod('UfoSection.' . __FUNCTION__);
         $obj = new UfoSection($this->sectionId,  
@@ -96,6 +109,7 @@ class UfoSectionCest
     }
     
     public function getParentArray(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -107,6 +121,7 @@ class UfoSectionCest
     }
     
     public function getParent(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -118,6 +133,7 @@ class UfoSectionCest
     }
     
     public function getTopArray(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -129,6 +145,7 @@ class UfoSectionCest
     }
     
     public function getTop(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -140,6 +157,7 @@ class UfoSectionCest
     }
     
     public function getChildrenArray(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -151,6 +169,7 @@ class UfoSectionCest
     }
     
     public function getChildren(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -162,6 +181,7 @@ class UfoSectionCest
     }
     
     public function getNeighborsArray(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  
@@ -173,6 +193,7 @@ class UfoSectionCest
     }
     
     public function getNeighbors(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
             $obj = new UfoSection($this->sectionId,  

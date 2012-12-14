@@ -1,7 +1,10 @@
 <?php
+require_once 'Tools.php';
 
 class UfoCacheFsCest
 {
+    use Tools;
+    
     const DS = DIRECTORY_SEPARATOR;
     private $root = '';
     private $testData = 'some test data';
@@ -32,18 +35,22 @@ class UfoCacheFsCest
     // Tests for UfoCacheFs.save
     
     public function saveTest(\CodeGuy $I) {
+        $this->showTestCase(__CLASS__);
+        $this->showTest(__FUNCTION__);
         $I->wantTo('save some data into cache with hash `' . $this->testDataHash . '`');
         $cache = new UfoCacheFs($this->testDataHash, $this->cacheSettings);
         $I->executeMethod($cache, 'save', $this->testData);
     }
     
     public function saveLargeData(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('save some large data into cache with hash `' . $this->testLargeDataHash . '`');
         $cache = new UfoCacheFs($this->testLargeDataHash, $this->cacheSettings);
         $I->executeMethod($cache, 'save', $this->testLargeData);
     }
     
     public function saveComplexHash(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('save some data into cache with complex hash `' . $this->testComplexHash . '`');
         $cache = new UfoCacheFs($this->testComplexHash, $this->cacheSettings);
         $I->executeMethod($cache, 'save', $this->testData);
@@ -52,18 +59,21 @@ class UfoCacheFsCest
     // Tests for UfoCacheFs.load
     
     public function loadTest(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('load some data from cache with hash `' . $this->testDataHash . '`');
         $cache = new UfoCacheFs($this->testDataHash, $this->cacheSettings);
         $I->executeMethod($cache, 'load');
     }
     
     public function loadLargeData(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('load some large data from cache with hash `' . $this->testLargeDataHash . '`');
         $cache = new UfoCacheFs($this->testLargeDataHash, $this->cacheSettings);
         $I->executeMethod($cache, 'load');
     }
     
     public function loadComplexHash(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('load some data from cache with complex hash `' . $this->testComplexHash . '`');
         $cache = new UfoCacheFs($this->testComplexHash, $this->cacheSettings);
         $I->executeMethod($cache, 'load');
@@ -71,6 +81,7 @@ class UfoCacheFsCest
     
     // Compare cached data with original
     public function compareLoadWithSave(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('load data and compare it with saved data');
         $cache = new UfoCacheFs($this->testDataHash, $this->cacheSettings);
         $I->seeMethodReturns($cache, 'load', $this->testData);
@@ -78,6 +89,7 @@ class UfoCacheFsCest
     
     // Test for UfoCacheFs.load for non existing cache
     public function loadNonExisting(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $I->wantTo('load some data from cache with non existing hash `' . $this->testNonExistingHash . '`');
         $cache = new UfoCacheFs($this->testNonExistingHash, $this->cacheSettings);
         $I->executeMethod($cache, 'load');
