@@ -109,29 +109,39 @@ class UfoToolsCest
     
     public function isPath(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
-        $I->wantTo('execute method `' . __FUNCTION__ . '`');
-        $paths[] = array('/asd/', true);
-        $paths[] = array('/asd/qwe-zxc/~123_vfr/index.html', true);
-        $paths[] = array('/', false);
-        $paths[] = array('', false);
-        $paths[] = array('/as..d/', false);
-        foreach ($paths as $path) {
-            $I->executeMethod($this->obj, __FUNCTION__, $path[0]);
-            $I->seeMethodReturns($this->obj, __FUNCTION__, $path[1], array($path[0]));
+        $vals[] = array('/asd/', true);
+        $vals[] = array('/asd/qwe-zxc/~123_vfr/index.html', true);
+        $vals[] = array('/', false);
+        $vals[] = array('', false);
+        $vals[] = array('/as..d/', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
         }
     }
 
     public function isSafeForPath(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
-        $I->wantTo('execute method `' . __FUNCTION__ . '`');
-        $paths[] = array('/asd/', true);
-        $paths[] = array('/asd/qwe-zxc/~123_vfr/index.html', true);
-        $paths[] = array('/', true);
-        $paths[] = array('', true);
-        $paths[] = array('/as..d/', false);
-        foreach ($paths as $path) {
-            $I->executeMethod($this->obj, __FUNCTION__, $path[0]);
-            $I->seeMethodReturns($this->obj, __FUNCTION__, $path[1], array($path[0]));
+        $vals[] = array('/asd/', true);
+        $vals[] = array('/asd/qwe-zxc/~123_vfr/index.html', true);
+        $vals[] = array('/', true);
+        $vals[] = array('', true);
+        $vals[] = array('/as..d/', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
         }
     }
 }

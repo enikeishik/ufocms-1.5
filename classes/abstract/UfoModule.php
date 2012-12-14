@@ -80,7 +80,9 @@ abstract class UfoModule implements UfoModuleInterface
         $this->section =& $container->getSection();
         $this->db =& $container->getDb();
         $this->debug =& $container->getDebug();
-        $this->sectionFields = $this->section->getFields();
+        if (!is_null($this->section)) {
+            $this->sectionFields = $this->section->getFields();
+        }
         
         $this->parseParams();
         
@@ -109,8 +111,11 @@ abstract class UfoModule implements UfoModuleInterface
         
         foreach ($pathParams as $param) {
             $parsed = false;
-            foreach ($paramsArray as $paramName => $paramValue) {
-                $value = $this->parseParam($param, $paramName, gettype($paramValue), $paramValue);
+            foreach ($paramsArray as $paramName => $paramDefaultValue) {
+                $value = $this->parseParam($param, 
+                                           $paramName, 
+                                           gettype($paramDefaultValue), 
+                                           $paramDefaultValue);
                 if (!is_null($value)) {
                     $this->params->$paramName = $value;
                     $parsed = true;
@@ -144,9 +149,21 @@ abstract class UfoModule implements UfoModuleInterface
                 case 'boolean':
                     return true;
             }
+        
+        //проверяем состоит ли параметр только из цифр
+        //случай, когда идентификатор записи указывается в URL без префикса id
         } else if (10 > strlen($paramRaw) && $this->isInt($paramRaw)) {
             $ret = (int) substr($paramRaw, strlen($paramName));
             return ($ret < $min ? $min : $ret);
+        
+        //проверяем на дату вида nnnn-nn-nn, 
+        //случай идентификатора даты без префикса dt
+        } else if (10 == strlen($paramRaw)) {
+            $dt = $this->dateFromString($paramRaw);
+            if (!is_null($dt)) {
+                return $dt;
+            }
+            return $min;
         }
         return null;
     }

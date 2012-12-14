@@ -7,9 +7,9 @@ class UfoModDocumentsCest
     
     const DS = DIRECTORY_SEPARATOR;
     /**
-     * @var UfoCore
+     * @var UfoContainer
      */
-    private $obj = null;
+    private $container = null;
     /**
      * @var string
      */
@@ -23,22 +23,61 @@ class UfoModDocumentsCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoToolsExt.php';
         require_once $this->root . self::DS . 'modules' . self::DS . 'UfoModDocuments' . self::DS . 'UfoModDocuments.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSectionStruct.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
+        $this->container = new UfoContainer();
+        $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache')));
+        $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
+        $this->container->setSite(new UfoSite('/', $this->container));
+        $this->container->setSection(new UfoSection(new UfoSectionStruct(array('moduleid' => -1)), $this->container));
     }
     
-    /*
-    public function initPhp(\CodeGuy $I) {
+    public function createObject(\CodeGuy $I) {
         $this->showTestCase(__CLASS__);
         $this->showTest(__FUNCTION__);
-        $I->wantTo('execute method `' . __FUNCTION__ . '`');
-        $I->executeMethod($this->obj, __FUNCTION__);
-    }
-    
-    public function main(\CodeGuy $I) {
+        $I->wantTo('create object `UfoModDocuments`');
         $I->execute(function() {
-            UfoCore::main();
-            return true;
+            $obj = null;
+            try {
+                $obj = new UfoModDocuments($this->container);
+            } catch (Exception $e) {
+                echo 'Exception occurred: ' . $e . "\r\n";
+            }
+            return !is_null($obj);
         });
         $I->seeResultEquals(true);
     }
-    */
+    
+    public function getTitle(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+    	$I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $obj = new UfoModDocuments($this->container);
+        	return is_string($obj->getTitle());
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function getContent(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+    	$I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $obj = new UfoModDocuments($this->container);
+        	return is_string($obj->getContent());
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function getPage(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+    	$I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $obj = new UfoModDocuments($this->container);
+        	return is_string($obj->getPage());
+        });
+        $I->seeResultEquals(true);
+    }
 }

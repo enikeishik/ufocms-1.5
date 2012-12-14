@@ -1,5 +1,15 @@
 <?php
+require_once 'classes/abstract/UfoStruct.php';
+
+/**
+ *  ласс-структура дл€ хранени€ данных модул€.
+ * @author enikeishik
+ */
 class UfoModDocumentsParams extends UfoStruct
 {
-    public $page = 0;
+    /**
+     * Ќомер страницы при постраничном выводе.
+     * @var int
+     */
+    public $page = 1;
 }

@@ -473,4 +473,33 @@ trait UfoToolsExt
                        '0', 
                        $left ? STR_PAD_LEFT : STR_PAD_RIGHT);
     }
+    
+    /**
+     * Проверяет, может ли отформатированная строка представлять дату/время.
+     * 
+     * @param string $str                  исходная строка с датой
+     * @param string $formst = 'Y-m-d|'    формат даты
+     * 
+     * @return boolean
+     */
+    public function isDate($str, $format = 'Y-m-d|')
+    {
+        return (false !== DateTime::createFromFormat($format, $str));
+    }
+    
+    /**
+     * Возвращает объект даты/времени из отформатированной строки.
+     * 
+     * @param string $str                  исходная строка с датой
+     * @param string $formst = 'Y-m-d|'    формат даты
+     * 
+     * @return DateTime
+     */
+    public function dateFromString($str, $format = 'Y-m-d|')
+    {
+        if (false !== $dtm = DateTime::createFromFormat($format, $str)) {
+            return $dtm;
+        }
+        return null;
+    }
 }
