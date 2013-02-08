@@ -14,21 +14,10 @@ final class UfoConfig
     private $_modulesDir = 'modules';
     private $_templatesDir = 'templates';
     
-    private $_dbHost = 'db4free.net';
-    private $_dbLogin = 'ufocms';
-    private $_dbPassword = 'hi98tgIYGV98g';
-    private $_dbName = 'ufocms';
-    /*
-    private $_dbHost = 'sql09.freemysql.net';
-    private $_dbLogin = 'lifehacker';
-    private $_dbPassword = 'ahbvecrekm';
-    private $_dbName = 'lifehacker';
-    
-    private $_dbHost = 's16dl1.royaltelesystems.net';
-    private $_dbLogin = 'fazlyeva_ufocms';
-    private $_dbPassword = 'i87fcweywfdJYFGV';
-    private $_dbName = 'fazlyeva_ufocms';
-    */
+    private $_dbHost = '';
+    private $_dbLogin = '';
+    private $_dbPassword = '';
+    private $_dbName = '';
     
     private $_dbTablePrefix = 'ufo_';
     
