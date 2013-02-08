@@ -101,6 +101,7 @@ class UfoToolsExtCest
             $I->seeResultEquals($v[1]);
         }
     }
+    
     public function safeSql(\CodeGuy $I) {
         $vals[] = array('SELECT * FROM mytable WHERE myid=123', 
                         'SELECT * FROM mytable WHERE myid=123');
@@ -254,7 +255,7 @@ class UfoToolsExtCest
         }
     }
     
-    public function сutNice(\CodeGuy $I) {
+    public function cutNice(\CodeGuy $I) {
         $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>\r\n", 
                         "Тестовый текст,", 
                         20, 0, true);
@@ -511,6 +512,52 @@ class UfoToolsExtCest
                 return $ret;
             });
             $I->seeResultEquals(true);
+        }
+    }
+    
+    public function isDate(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('2015-02-01', true);
+        $vals[] = array('1960-12-5', true);
+        $vals[] = array('2000-1-13', true);
+        $vals[] = array('01-01-01', true);
+        $vals[] = array('2012-13-01', true);
+        $vals[] = array('2222-22-22', true); //2223-10-22
+        $vals[] = array('20-12-13-01', false);
+        $vals[] = array('20-01', false);
+        $vals[] = array('', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
+    
+    public function dateFromString(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('2015-02-01', true);
+        $vals[] = array('1960-12-5', true);
+        $vals[] = array('2000-1-13', true);
+        $vals[] = array('01-01-01', true);
+        $vals[] = array('2012-13-01', true);
+        $vals[] = array('2222-22-22', true); //2223-10-22
+        $vals[] = array('20-12-13-01', false);
+        $vals[] = array('20-01', false);
+        $vals[] = array('', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return is_a($ret, 'DateTime');
+            });
+            $I->seeResultEquals($v[1]);
         }
     }
 }

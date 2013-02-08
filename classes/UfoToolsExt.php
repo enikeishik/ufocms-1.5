@@ -180,7 +180,7 @@ trait UfoToolsExt
      *
      * @return string
      */
-    public function ñutNice($str, 
+    public function cutNice($str, 
                             $length, 
                             $offset = 0, 
                             $removeTags = true)
@@ -484,7 +484,17 @@ trait UfoToolsExt
      */
     public function isDate($str, $format = 'Y-m-d|')
     {
-        return (false !== DateTime::createFromFormat($format, $str));
+        if (false === $dtm = DateTime::createFromFormat($format, $str)) {
+            return false;
+        }
+        if (false === $str = $dtm->format('Y-m-d')) {
+            return false;
+        }
+        $arr = explode('-', $str);
+        if (3 != count($arr)) {
+            return false;
+        }
+        return checkdate($arr[1], $arr[2], $arr[0]);
     }
     
     /**

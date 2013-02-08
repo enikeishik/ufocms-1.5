@@ -85,7 +85,7 @@ final class UfoCore
             echo $core->page;
             return;
         }
-        if (!$core->initDb()) {
+        if (!$core->initDb() && !is_null($core->page)) {
             echo $core->page;
             return;
         }
