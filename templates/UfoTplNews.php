@@ -11,26 +11,6 @@ class UfoTplNews extends UfoTemplate
      */
     protected $module = null;
     
-    public function drawMetaTags()
-    {
-        
-    }
-    
-    public function drawHeadTitle()
-    {
-        echo '<title>' . $this->sectionFields->title . '</title>' . "\r\n";
-    }
-
-    public function drawHeadCode()
-    {
-    
-    }
-    
-    public function drawBodyTitle()
-    {
-        return '<h1>' . $this->sectionFields->title . '</h1>' . "\r\n";
-    }
-    
     public function drawItem(&$item)
     {
         echo '<p>One item from news feed</p>' . "\r\n";

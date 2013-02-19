@@ -62,9 +62,45 @@ abstract class UfoTemplate implements UfoTemplateInterface
         $this->debug =& $this->container->getDebug();
     }
     
+    /*
+     * Следующие методы могут быть переопределены в дочерних классах 
+     * для реализации специфического вывода.
+     */
+    
+    /**
+     * Вывод заголовка, отображаемого в заголовке документа.
+     */
+    public function drawHeadTitle()
+    {
+        echo '<title>' . $this->sectionFields->title . '</title>' . "\r\n";
+    }
+    
+    /**
+     * Вывод мета тэгов.
+     */
+    public function drawMetaTags()
+    {
+        
+    }
+    
+    /**
+     * Вывод дополнительного кода (JS, CSS, ...) в заголовке документа.
+     */
+    public function drawHeadCode()
+    {
+        
+    }
+    
+    /**
+     * Вывод заголовка, отображаемого на странице.
+     */
+    public function drawBodyTitle()
+    {
+        return '<h1>' . $this->sectionFields->title . '</h1>' . "\r\n";
+    }
+    
     /**
      * Вывод информации отладки (в конце страницы, в виде комментария HTML).
-     * Может быть переопределен в дочерних классах для реализации специфического вывода.
      */
     public function drawDebug()
     {

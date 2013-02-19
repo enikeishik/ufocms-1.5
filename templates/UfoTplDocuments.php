@@ -17,26 +17,6 @@ class UfoTplDocuments extends UfoTemplate
      */
     protected $module = null;
     
-    public function drawMetaTags()
-    {
-        
-    }
-    
-    public function drawHeadTitle()
-    {
-        echo '<title>' . $this->sectionFields->title . '</title>' . "\r\n";
-    }
-    
-    public function drawHeadCode()
-    {
-        
-    }
-    
-    public function drawBodyTitle()
-    {
-        echo '<h1>' . $this->sectionFields->title . '</h1>' . "\r\n";
-    }
-    
     public function drawBodyContent()
     {
 ?>
