@@ -36,7 +36,7 @@ abstract class UfoTemplate implements UfoTemplateInterface
      * Копия объекта-структуры содержащего данные раздела.
      * @var UfoSectionStruct
      */
-    protected $fields = null;
+    protected $sectionFields = null;
     
     /**
      * Конструктор.
@@ -45,11 +45,32 @@ abstract class UfoTemplate implements UfoTemplateInterface
     public function __construct(UfoContainer &$container)
     {
         $this->container =& $container;
-        $this->module =& $container->getModule();
-        $this->section =& $container->getSection();
-        $this->debug =& $container->getDebug();
+        $this->unpackContainer();
+        
         if (!is_null($this->section)) {
-            $this->fields = $this->section->getFields();
+            $this->sectionFields = $this->section->getFields();
         }
+    }
+    
+    /**
+     * Присванивание ссылок объектов контейнера локальным переменным.
+     */
+    protected function unpackContainer()
+    {
+        $this->module =& $this->container->getModule();
+        $this->section =& $this->container->getSection();
+        $this->debug =& $this->container->getDebug();
+    }
+    
+    /**
+     * Вывод информации отладки (в конце страницы, в виде комментария HTML).
+     * Может быть переопределен в дочерних классах для реализации специфического вывода.
+     */
+    public function drawDebug()
+    {
+        if (is_null($this->debug)) {
+            return;
+        }
+        echo '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->' . "\r\n";
     }
 }

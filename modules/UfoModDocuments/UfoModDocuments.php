@@ -25,11 +25,4 @@ class UfoModDocuments extends UfoModule
         }
         return '';
     }
-    
-    public function getPage()
-    {
-        ob_start();
-        $this->loadLayout($this->template);
-        return ob_get_clean();
-    }
 }

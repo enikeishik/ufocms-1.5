@@ -7,26 +7,27 @@
 interface UfoTemplateInterface
 {
     /**
-     * Получение мета тэгов.
-     * @return string
+     * Вывод мета тэгов.
      */
-    public function getMetaTags();
+    public function drawMetaTags();
     
     /**
-     * Получение заголовка, отображаемого в тэге <title>.
-     * @return string
+     * Вывод заголовка, отображаемого в заголовке документа.
      */
-    public function getHeadTitle();
+    public function drawHeadTitle();
     
     /**
-     * Получение заголовка, отображаемого на странице.
-     * @return string
+     * Вывод дополнительного кода (JS, CSS, ...) в заголовке документа.
      */
-    public function getBodyTitle();
+    public function drawHeadCode();
     
     /**
-     * Получение основного содержимого страницы.
-     * @return string
+     * Вывод заголовка, отображаемого на странице.
      */
-    public function getBodyContent();
+    public function drawBodyTitle();
+    
+    /**
+     * Вывод основного содержимого страницы.
+     */
+    public function drawBodyContent();
 }

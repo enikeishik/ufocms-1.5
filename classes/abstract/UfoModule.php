@@ -75,11 +75,8 @@ abstract class UfoModule implements UfoModuleInterface
     public function __construct(UfoContainer &$container)
     {
         $this->container =& $container;
-        $this->config =& $container->getConfig();
-        $this->site =& $container->getSite();
-        $this->section =& $container->getSection();
-        $this->db =& $container->getDb();
-        $this->debug =& $container->getDebug();
+        $this->unpackContainer();
+        
         if (!is_null($this->section)) {
             $this->sectionFields = $this->section->getFields();
         }
@@ -91,6 +88,30 @@ abstract class UfoModule implements UfoModuleInterface
         $templateName = str_replace('UfoMod', 'UfoTpl', get_class($this));
         $this->loadTemplate($templateName);
         $this->template = new $templateName($this->container);
+    }
+
+    /**
+     * Генерация основного содержимого страницы.
+     * Может быть переопределен в дочерних классах для реализации специфического вывода.
+     * @return string
+     */
+    public function getPage()
+    {
+        ob_start();
+        $this->loadLayout($this->template);
+        return ob_get_clean();
+    }
+    
+    /**
+     * Присванивание ссылок объектов контейнера локальным переменным.
+     */
+    protected function unpackContainer()
+    {
+        $this->config =& $this->container->getConfig();
+        $this->site =& $this->container->getSite();
+        $this->section =& $this->container->getSection();
+        $this->db =& $this->container->getDb();
+        $this->debug =& $this->container->getDebug();
     }
     
     /**

@@ -17,24 +17,28 @@ class UfoTplDocuments extends UfoTemplate
      */
     protected $module = null;
     
-    public function getMetaTags()
+    public function drawMetaTags()
     {
         
     }
     
-    public function getHeadTitle()
+    public function drawHeadTitle()
     {
-        return '<title>' . $this->fields->title . '</title>' . "\r\n";
+        echo '<title>' . $this->sectionFields->title . '</title>' . "\r\n";
     }
     
-    public function getBodyTitle()
+    public function drawHeadCode()
     {
-        return '<h1>' . $this->fields->title . '</h1>' . "\r\n";
+        
     }
     
-    public function getBodyContent()
+    public function drawBodyTitle()
     {
-        ob_start();
+        echo '<h1>' . $this->sectionFields->title . '</h1>' . "\r\n";
+    }
+    
+    public function drawBodyContent()
+    {
 ?>
 <table border="1" style="width: 100%;">
 <tr>
@@ -54,14 +58,5 @@ if (!is_null($parent)) {
 </tr>
 </table>
 <?php
-        return ob_get_clean();
-    }
-    
-    public function getDebug()
-    {
-        if (is_null($this->debug)) {
-            return;
-        }
-        return '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->';
     }
 }

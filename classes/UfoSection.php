@@ -72,8 +72,6 @@ class UfoSection
     /**
      * Конструктор, формирует объект по идентификатору или пути.
      *
-     * @todo использовать константу/переменнут вместо строки в throw
-     *
      * @param mixed        $section       идентификатор, путь или данные раздела сайта
      * @param UfoContainer &$container    ссылка на объект-контейнер ссылок на объекты
      * 
@@ -82,47 +80,72 @@ class UfoSection
     public function __construct($section, UfoContainer &$container)
     {
         $this->container =& $container;
-        $this->config =& $container->getConfig();
-        $this->db =& $container->getDb();
-        $this->debug =& $container->getDebug();
+        $this->unpackContainer();
         
+        $this->setFields($section);
+        
+        $this->moduleName = $this->getModuleName();
+    }
+
+    /**
+     * Присванивание ссылок объектов контейнера локальным переменным.
+     */
+    protected function unpackContainer()
+    {
+        $this->config =& $this->container->getConfig();
+        $this->db =& $this->container->getDb();
+        $this->debug =& $this->container->getDebug();
+    }
+    
+    /**
+     * Получение данных раздела в виде объекта-структуры UfoSectionStruct
+     * @param mixed $section    идентификатор, путь или данные раздела сайта
+     * @throws Exception
+     * @todo использовать константу/переменнут вместо строки в throw
+     */
+    protected function setFields($section)
+    {
         $this->loadClass('UfoSectionStruct');
         
-        //получаем поля таблицы из полей класса-структуры
-        $arr = get_class_vars('UfoSectionStruct');
-        $sql = '';
-        foreach ($arr as $fld => $val) {
-            $sql .= ',`' . $fld . '`';
-        }
-        $this->fieldsSql = substr($sql, 1);
-        
-        $sql = 'SELECT ' . $this->fieldsSql . 
-               ' FROM ' . $this->db->getTablePrefix() . 'sections' . 
-               ' WHERE ';
-        if (is_int($section)) {
-            $sql .= 'id=' . $section;
-        } else if (is_string($section) && '/' == $section) {
-            $sql .= 'id=-1';
-        } else if (is_string($section) && $this->isPath($section)) {
-            $sql .= "path='" . $section . "'";
-        } else if (is_array($section)) {
+        if (is_scalar($section)) {
+            //получаем поля таблицы из полей класса-структуры
+            $arr = get_class_vars('UfoSectionStruct');
             $sql = '';
-            $this->fields = new UfoSectionStruct($section);
-        } else if (is_object($section) && is_a($section, 'UfoSectionStruct')) {
-            $sql = '';
-            $this->fields = $section;
-        } else {
-            throw new Exception('Incorrect $section: ' . var_export($section, true));
-        }
-        
-        if ('' != $sql) {
+            foreach ($arr as $fld => $val) {
+                $sql .= ',`' . $fld . '`';
+            }
+            $this->fieldsSql = substr($sql, 1);
+            
+            $sql = 'SELECT ' . $this->fieldsSql .
+                   ' FROM ' . $this->db->getTablePrefix() . 'sections' .
+                   ' WHERE ';
+            if (is_int($section)) {
+                $sql .= 'id=' . $section;
+            } else if (is_string($section) && '/' == $section) {
+                $sql .= 'id=-1';
+            } else if (is_string($section) && $this->isPath($section)) {
+                $sql .= "path='" . $section . "'";
+            } else {
+                throw new Exception('Incorrect $section: ' . var_export($section, true));
+            }
+            
             if ($fields = $this->db->getRowByQuery($sql)) {
                 $this->fields = new UfoSectionStruct($fields);
             } else {
                 throw new Exception('Fields not set');
             }
+            
+        } else if (is_array($section)) {
+            $sql = '';
+            $this->fields = new UfoSectionStruct($section);
+            
+        } else if (is_object($section) && is_a($section, 'UfoSectionStruct')) {
+            $sql = '';
+            $this->fields = $section;
+            
+        } else {
+            throw new Exception('Incorrect $section: ' . var_export($section, true));
         }
-        $this->moduleName = $this->getModuleName();
     }
     
     /**

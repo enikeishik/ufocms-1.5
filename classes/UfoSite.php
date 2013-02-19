@@ -9,7 +9,7 @@ require_once 'exceptions/UfoExceptionPathUnclosed.php';
 class UfoSite
 {
     use UfoTools;
-
+    
     /**
      * Ссылка на объект конфигурации.
      * @var UfoConfig

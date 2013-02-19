@@ -11,21 +11,12 @@ class UfoModNews extends UfoModule
     
     public function getItem()
     {
-        
+        return array('');
     }
     
     public function getItems()
     {
-        
-    }
-    
-    public function getPage()
-    {
-        if (0 != $this->id = $this->getItemId()) {
-            return $this->getItem();
-        } else {
-            return $this->getItems();
-        }
+        return array(array(''), array(''));
     }
     
     protected function getItemId()

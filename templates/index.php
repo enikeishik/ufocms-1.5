@@ -2,8 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head profile="http://gmpg.org/xfn/11">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-<?php echo $tpl->getHeadTitle(); ?>
-<?php echo $tpl->getMetaTags(); ?>
+<?php $tpl->drawHeadTitle(); ?>
+<?php $tpl->drawMetaTags(); ?>
+<?php $tpl->drawHeadCode(); ?>
 <link rel="stylesheet" href="/styles.css" type="text/css" />
 <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 <link rel="home" href="/" title="Front page" />
@@ -12,8 +13,8 @@
 <script type="text/javascript" src="/favorites.js"></script>
 </head>
 <body>
-<?php echo $tpl->getBodyTitle(); ?>
-<?php echo $tpl->getBodyContent(); ?>
+<?php $tpl->drawBodyTitle(); ?>
+<?php $tpl->drawBodyContent(); ?>
 </body>
 </html>
-<?php echo $tpl->getDebug(); ?>
+<?php $tpl->drawDebug(); ?>
