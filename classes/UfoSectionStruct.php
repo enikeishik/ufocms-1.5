@@ -3,6 +3,9 @@ require_once 'classes/abstract/UfoStruct.php';
 
 /**
  * Класс-структура для хранения данных раздела.
+ * 
+ * @author enikeishik
+ *
  */
 class UfoSectionStruct extends UfoStruct
 {

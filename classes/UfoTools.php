@@ -1,6 +1,9 @@
 <?php
 /**
  * Трейт вспомогательных функционалов.
+ * 
+ * @author enikeishik
+ *
  */
 trait UfoTools
 {
@@ -42,6 +45,29 @@ trait UfoTools
         $this->loadClass($module, 
                          $path . DIRECTORY_SEPARATOR . $module,  
                          $extention);
+    }
+
+    /**
+     * Динамическая загрузка вставок модулей (класса вставки модуля).
+     * Модули располагаются в собственных подпапках,
+     * совпадающих по названию с основным классом модуля:
+     * modules/MyModuleName/MyModuleNameIns.php
+     *
+     * @todo заменить значения по-умолчанию константами (глобальными?)
+     *
+     * @param string $module               имя загружаемого модуля (основного класса модуля)
+     * @param string $path                 путь к пакте с файлами модулей
+     * @param string $extention = 'php'    расширение файлов с классами вставок модулей
+     * @param string $suffix = 'Ins'       суффикс
+     */
+    public function loadInsertionModule($module,
+                                        $path = 'modules',
+                                        $extention = 'php', 
+                                        $suffix = 'Ins')
+    {
+        $this->loadClass($module . $suffix,
+                $path . DIRECTORY_SEPARATOR . $module,
+                $extention);
     }
     
     

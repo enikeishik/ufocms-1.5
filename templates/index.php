@@ -13,8 +13,13 @@
 <script type="text/javascript" src="/favorites.js"></script>
 </head>
 <body>
+<div id="colleft">
+<?php $tpl->drawInsertion(array('placeId' => 1)); ?>
+</div>
+<div id="colmiddle">
 <?php $tpl->drawBodyTitle(); ?>
 <?php $tpl->drawBodyContent(); ?>
+</div>
 </body>
 </html>
 <?php $tpl->drawDebug(); ?>

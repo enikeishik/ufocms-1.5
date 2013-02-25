@@ -6,6 +6,13 @@ require_once 'exceptions/UfoExceptionPathFilenotexists.php';
 require_once 'exceptions/UfoExceptionPathNotexists.php';
 require_once 'exceptions/UfoExceptionPathUnclosed.php';
 
+/**
+ * Класс сайта.
+ * Предоставляет методы для доступа к параметрам сайта, пути и параметрам пути.
+ * 
+ * @author enikeishik
+ *
+ */
 class UfoSite
 {
     use UfoTools;
@@ -174,7 +181,7 @@ class UfoSite
                 throw new UfoExceptionPathComplex('Path is too complex');
                 return;
             }
-        
+            
             //собираем массив вложенных путей
             $paths = array('/');
             for ($i = 0; $i < $pathPartsCount; $i++) {
@@ -183,7 +190,7 @@ class UfoSite
             //убираем корневой путь, поскольку корневая (главная) страница всегда присутствует
             array_shift($paths);
             /* DEBUG echo '<pre>'; var_dump($arr_paths); echo "</pre>\n"; */
-        
+            
             $sql = 'SELECT path FROM ' . $this->db->getTablePrefix() . 'sections' .
                    " WHERE path IN('" . implode("','", $paths) . "')" .
                    ' ORDER BY path DESC' .

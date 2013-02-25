@@ -2,6 +2,9 @@
 require_once 'abstract/UfoCacheSettings.php';
 /**
  * Класс установок кэширования данных с хранилищем в виде набора текстовых файлов.
+ * 
+ * @author enikeishik
+ *
  */
 class UfoCacheFsSettings extends UfoCacheSettings
 {

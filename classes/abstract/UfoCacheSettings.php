@@ -1,6 +1,9 @@
 <?php
 /**
  * Абрстрактный класс установок кэширования данных.
+ * 
+ * @author enikeishik
+ *
  */
 abstract class UfoCacheSettings
 {

@@ -5,6 +5,9 @@ require_once 'UfoTemplateInterface.php';
  * дочерние классы должны реализовывать 
  * интерфейс UfoTemplateInterface или быть абстрактными.
  * Все классы шаблонов модулей должны наследовать этот класс.
+ * 
+ * @author enikeishik
+ *
  */
 abstract class UfoTemplate implements UfoTemplateInterface
 {
@@ -13,6 +16,12 @@ abstract class UfoTemplate implements UfoTemplateInterface
      * @var UfoContainer
      */
     protected $container = null;
+    
+    /**
+     * Ссылка на объект ядра системы.
+     * @var UfoCore
+     */
+    protected $core = null;
     
     /**
      * Ссылка на объект текущего раздела.
@@ -57,56 +66,9 @@ abstract class UfoTemplate implements UfoTemplateInterface
      */
     protected function unpackContainer()
     {
+        $this->core =& $this->container->getCore();
         $this->module =& $this->container->getModule();
         $this->section =& $this->container->getSection();
         $this->debug =& $this->container->getDebug();
-    }
-    
-    /*
-     * Следующие методы могут быть переопределены в дочерних классах 
-     * для реализации специфического вывода.
-     */
-    
-    /**
-     * Вывод заголовка, отображаемого в заголовке документа.
-     */
-    public function drawHeadTitle()
-    {
-        echo '<title>' . $this->sectionFields->title . '</title>' . "\r\n";
-    }
-    
-    /**
-     * Вывод мета тэгов.
-     */
-    public function drawMetaTags()
-    {
-        
-    }
-    
-    /**
-     * Вывод дополнительного кода (JS, CSS, ...) в заголовке документа.
-     */
-    public function drawHeadCode()
-    {
-        
-    }
-    
-    /**
-     * Вывод заголовка, отображаемого на странице.
-     */
-    public function drawBodyTitle()
-    {
-        return '<h1>' . $this->sectionFields->title . '</h1>' . "\r\n";
-    }
-    
-    /**
-     * Вывод информации отладки (в конце страницы, в виде комментария HTML).
-     */
-    public function drawDebug()
-    {
-        if (is_null($this->debug)) {
-            return;
-        }
-        echo '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->' . "\r\n";
     }
 }

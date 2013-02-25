@@ -7,6 +7,9 @@ require_once 'classes/exceptions/UfoExceptionPathNotexists.php';
  * дочерние классы должны реализовывать 
  * интерфейс UfoModuleInterface или быть абстрактными.
  * ¬се классы модулей должны наследовать этот класс.
+ * 
+ * @author enikeishik
+ *
  */
 abstract class UfoModule implements UfoModuleInterface
 {
@@ -99,6 +102,8 @@ abstract class UfoModule implements UfoModuleInterface
     {
         ob_start();
         $this->loadLayout($this->template);
+        //$this->loadLayout($this->template, 'print');
+        //$this->loadLayout($this->template, 'mobil');
         return ob_get_clean();
     }
     

@@ -1,4 +1,5 @@
 <?php
+require_once 'UfoTools.php';
 /**
  * Основной класс приложения.
  * 
@@ -127,7 +128,7 @@ final class UfoCore
         //set_error_handler('err_Php');
         
         $this->loadClass('UfoDebug');
-        $this->debug = new UfoDebug($this->config->debug);
+        $this->debug = new UfoDebug($this->config->debugLevel);
         //время выполнения скрипта
         $this->debug->setPageStartTime();
         $this->debug->log('Execution started');
@@ -170,6 +171,7 @@ final class UfoCore
      * В случае ошибки соединения с базой данных, производится попытка получить данные из кэша.
      * @todo errorHamdlerModule
      * @throws Exception
+     * @todo убрать запрос установки кодировки отсюда, сделать его конфигурационной опцией и чатью класса БД.
      */
     public function initDb()
     {
@@ -177,6 +179,7 @@ final class UfoCore
         $this->loadClass('UfoDb');
         try {
             $this->db = new UfoDb($this->config->dbSettings);
+            $this->db->query('SET NAMES CP1251');
             $this->debug->log('Connected to database successfully');
             return true;
         } catch (Exception $e) {
@@ -204,6 +207,7 @@ final class UfoCore
         $container->setConfig($this->config);
         $container->setDb($this->db);
         $container->setDebug($this->debug);
+        $container->setCore($this);
         
         $this->debug->log('Trying get site object');
         $this->loadClass('UfoSite');
@@ -340,6 +344,10 @@ final class UfoCore
         return null;
     }
     
+    /**
+     * Получение ссылки на объект-хранилище ссылок на объекты и его создание при необходимости.
+     * @return UfoContainer
+     */
     private function &getContainer()
     {
         if (is_null($this->container)) {
@@ -347,5 +355,52 @@ final class UfoCore
             $this->container = new UfoContainer();
         }
         return $this->container;
+    }
+    
+    /*
+     * 
+     */
+    
+    /**
+     * Вставка информации из разделов.
+     * @param array $params = null    параметры вставки, дополнительные данные
+     */
+    public function insertion(array $params = null)
+    {
+        //...
+        $mod = 'UfoModNews';
+        $ins = $mod . 'Ins';
+        //загружаем класс вставки модуля
+        $this->loadInsertionModule($mod);
+        //передаем управление классу вставки модуля
+        $insertion = new $ins();
+        //класс вставки модуля должен подгрузить шаблон, 
+        //унасленованный от UfoInsertionTemplate
+        //сам же шаблон UfoInsertionTemplate содержит общие блоки оформления
+        //начало/конец блока вставок и т.п.
+        //дочерние классы могут переопределить это оформление
+        $this->loadClass('UfoInsertionStruct');
+        $insertionStruct = new UfoInsertionStruct();
+        $insertionStruct->placeId = 0;
+        $offset = 0;
+        $limit = 0;
+        if (is_array($params)) {
+            if (array_key_exists('PlaceId', $params)) {
+                $insertionStruct->placeId = (int) $params['PlaceId'];
+            }
+            if (array_key_exists('Offset', $params)) {
+                $offset = (int) $params['Offset'];
+                if ($offset < 1) {
+                    $offset = 0;
+                }
+            }
+            if (array_key_exists('Limit', $params)) {
+                $limit = (int) $params['Limit'];
+                if ($limit < 1) {
+                    $limit = 0;
+                }
+            }
+        }
+        return $insertion->generate($insertionStruct, $offset, $limit, $params);
     }
 }

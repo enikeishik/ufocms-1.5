@@ -1,6 +1,9 @@
 <?php
 /**
  * Абстрактный класс-структура, предназначен для хранения данных.
+ * 
+ * @author enikeishik
+ *
  */
 abstract class UfoStruct
 {

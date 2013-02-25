@@ -13,51 +13,64 @@
  * ссылки на эти объекты и ссылку на самого себ€, чтобы модуль мог
  * использовать методы и данные раздела в своих цел€х, либо передать
  * ссылку на объект раздела дальше - объекту шаблона раздела.
+ * 
+ * @author enikeishik
+ *
  */
 class UfoContainer
 {
     /**
-     * 
+     * —сылка на объект конфигурации системы.
      * @var UfoConfig
      */
     protected $config = null;
     
     /**
-     * 
+     * —сылка на объект работы с базой данных.
      * @var UfoDb
      */
     protected $db = null;
     
     /**
-     * 
+     * —сылка на объект отладки.
      * @var UfoDebug
      */
     protected $debug = null;
+
+    /**
+     * —сылка на объект €дра системы.
+     * @var UfoCore
+     */
+    protected $core = null;
     
     /**
-     * 
+     * —сылка на объект сайта.
      * @var UfoSite
      */
     protected $site = null;
     
     /**
-     * 
+     * —сылка на объект раздела.
      * @var UfoSection
      */
     protected $section = null;
 
     /**
-     *
+     * —сылка на объект-структуру хранени€ данных раздела.
      * @var UfoSectionStruct
      */
     protected $sectionStruct = null;
     
     /**
-     * 
+     * —сылка на объект модул€.
      * @var UfoModule
      */
     protected $module = null;
     
+    /**
+     *  онструктор.
+     * @param array $vars = null    массив данных раздела
+     */
     public function __construct(array $vars = null)
     {
         if (is_null($vars)) {
@@ -113,10 +126,22 @@ class UfoContainer
     public function setDebug(UfoDebug &$debug) { $this->debug =& $debug; }
     
     /**
-     * 
+     *
      * @return UfoDebug
      */
     public function &getDebug() { return $this->debug; }
+
+    /**
+     *
+     * @param UfoCore $core
+     */
+    public function setCore(UfoCore &$core) { $this->core =& $core; }
+    
+    /**
+     *
+     * @return UfoCore
+     */
+    public function &getCore() { return $this->core; }
     
     /**
      * 

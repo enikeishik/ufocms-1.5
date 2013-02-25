@@ -1,7 +1,7 @@
 <?php
-require_once 'classes/abstract/UfoTemplate.php';
+require_once 'UfoTemplateGlobal.php';
 
-class UfoTplDocuments extends UfoTemplate
+class UfoTplDocuments extends UfoTemplateGlobal
 {
     /*
      * Определять конструктор здесь, а не в родительском абрстрактном классе, 

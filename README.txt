@@ -1,6 +1,6 @@
     UFO CMS
-    Version 0.6.3 beta (last update 2012-08-27)
-    Copyright (C) 2005-2012 enikeishik <enikeishik@gmail.com>
+    Version 2.0.30 beta (last update 2013-02-19)
+    Copyright (C) 2005-2013 enikeishik <enikeishik@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

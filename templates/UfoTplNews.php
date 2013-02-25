@@ -1,7 +1,7 @@
 <?php
-require_once 'classes/abstract/UfoTemplate.php';
+require_once 'UfoTemplateGlobal.php';
 
-class UfoTplNews extends UfoTemplate
+class UfoTplNews extends UfoTemplateGlobal
 {
     /**
      * —сылка на объект модул€ текущего раздела.
