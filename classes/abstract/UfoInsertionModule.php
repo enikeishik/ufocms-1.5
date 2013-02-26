@@ -15,7 +15,7 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
     
     /**
      * Ссылка на объект шаблона модуля.
-     * @var UfoTemplateInsertion
+     * @var UfoInsertionTemplate
      */
     protected $template = null;
     
@@ -36,6 +36,7 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
      * @param UfoInsertionStruct $insertion    параметры вставки
      * @param int $offset = 0                  выводить элементы начиная с $offset
      * @param int $limit = 0                   выводить всего $limit элементов (если $limit > 0)
+     * @param array $options = null            дополнительные данные, передаваемые сквозь цепочку вызовов
      * @return string
      */
     public function generate(UfoInsertionStruct $insertion, $offset = 0, $limit = 0, array $options = null)
@@ -50,5 +51,20 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
          * 2.-3. Если элементов нет, отображаем заданную информацию. (нет аналога)
          * 4. Отображаем конец блока (ShowInsertions_End).
          */
+        ob_start();
+        $this->template->drawBegin($options);
+        echo $this->generateItem(0, $options);
+        echo $this->generateItem(1, $options);
+        echo $this->generateItem(2, $options);
+        $this->template->drawEnd($options);
+        return ob_get_clean();
     }
+    
+    /**
+     * Генерация содержимого элемента блока вставки.
+     * @param mixed $item              идентификатор или данные элемента
+     * @param array $options = null    дополнительные данные, передаваемые сквозь цепочку вызовов
+     * @return string
+     */
+    abstract public function generateItem($item, array $options = null);
 }

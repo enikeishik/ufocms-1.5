@@ -33,4 +33,10 @@ interface UfoTemplateInterface
      * Вывод основного содержимого страницы.
      */
     public function drawBodyContent();
+    
+    /**
+     * Вывод вставки информации из разделов.
+     * @param array $params = null    параметры вставки, дополнительные данные, передаваемые сквозь цепочку вызовов
+     */
+    public function drawInsertion(array $params = null);
 }
