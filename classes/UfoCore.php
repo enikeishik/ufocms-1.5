@@ -36,6 +36,12 @@ final class UfoCore
      * @var UfoDb
      */
     private $db = null;
+
+    /**
+     * Объект для работы моделью данных.
+     * @var UfoDbModel
+     */
+    private $dbModel = null;
     
     /**
      * Объект для работы с кэшем.
@@ -181,6 +187,9 @@ final class UfoCore
             $this->db = new UfoDb($this->config->dbSettings);
             $this->db->query('SET NAMES CP1251');
             $this->debug->log('Connected to database successfully');
+            $this->loadClass('UfoDbModel');
+            $this->dbModel = new UfoDbModel($this->db);
+            $this->debug->log('Data model object created successfully');
             return true;
         } catch (Exception $e) {
             $this->debug->log('Connection to database failed, trying cache');
@@ -206,6 +215,7 @@ final class UfoCore
         $container =& $this->getContainer();
         $container->setConfig($this->config);
         $container->setDb($this->db);
+        $container->setDbModel($this->dbModel);
         $container->setDebug($this->debug);
         $container->setCore($this);
         
@@ -357,6 +367,41 @@ final class UfoCore
         return $this->container;
     }
     
+    /**
+     * Установка ссылки на объект-хранилище ссылок на объекты.
+     * @param UfoContainer &$container
+     */
+    public function setContainer(UfoContainer &$container)
+    {
+        $this->container =& $container;
+        $this->unpackContainer();
+    }
+    
+    /**
+     * Присванивание ссылок объектов контейнера локальным переменным.
+     */
+    private function unpackContainer()
+    {
+        if (!is_null($config =& $this->container->getConfig())) {
+            $this->config =& $config;
+        }
+        if (!is_null($db =& $this->container->getDb())) {
+            $this->db =& $db;
+        }
+        if (!is_null($dbModel =& $this->container->getDbModel())) {
+            $this->dbModel =& $dbModel;
+        }
+        if (!is_null($debug =& $this->container->getDebug())) {
+            $this->debug =& $debug;
+        }
+        if (!is_null($site =& $this->container->getSite())) {
+            $this->site =& $site;
+        }
+        if (!is_null($section =& $this->container->getSection())) {
+            $this->section =& $section;
+        }
+    }
+    
     /*
      * 
      */
@@ -373,7 +418,7 @@ final class UfoCore
         //загружаем класс вставки модуля
         $this->loadInsertionModule($mod);
         //передаем управление классу вставки модуля
-        $insertion = new $ins();
+        $insertion = new $ins($this->getContainer());
         //класс вставки модуля должен подгрузить шаблон, 
         //унасленованный от UfoInsertionTemplate
         //сам же шаблон UfoInsertionTemplate содержит общие блоки оформления
@@ -381,6 +426,7 @@ final class UfoCore
         //дочерние классы могут переопределить это оформление
         $this->loadClass('UfoInsertionStruct');
         $insertionStruct = new UfoInsertionStruct();
+        $insertionStruct->targetId = $this->section->getFields()->id;
         $insertionStruct->placeId = 0;
         $offset = 0;
         $limit = 0;

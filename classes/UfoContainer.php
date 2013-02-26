@@ -32,6 +32,12 @@ class UfoContainer
     protected $db = null;
     
     /**
+     * —сылка на объект модели данных.
+     * @var UfoDbModel
+     */
+    protected $dbModel = null;
+    
+    /**
      * —сылка на объект отладки.
      * @var UfoDebug
      */
@@ -118,6 +124,18 @@ class UfoContainer
      * @return UfoDb
      */
     public function &getDb() { return $this->db; }
+
+    /**
+     *
+     * @param UfoDbModel $dbModel
+     */
+    public function setDbModel(UfoDbModel &$dbModel) { $this->dbModel =& $dbModel; }
+    
+    /**
+     *
+     * @return UfoDbModel
+     */
+    public function &getDbModel() { return $this->dbModel; }
     
     /**
      * 

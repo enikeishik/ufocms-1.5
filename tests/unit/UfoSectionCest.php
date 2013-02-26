@@ -19,12 +19,16 @@ class UfoSectionCest
         require_once $root . self::DS . 'classes' . self::DS . 'UfoCore.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSection.php';
+        require_once $root . self::DS . 'classes' . self::DS . 'UfoSectionStruct.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         $this->container = new UfoContainer();
         $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $root . self::DS . '_cache')));
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
-        $this->container->setCore(new UfoCore($this->container->getConfig()));
         $this->container->setSite(new UfoSite('/', $this->container));
+        $this->container->setSection(new UfoSection(new UfoSectionStruct(array('id' => -1, 'moduleid' => -1)), $this->container));
+        $core = new UfoCore($this->container->getConfig());
+        $core->setContainer($this->container);
+        $this->container->setCore($core);
     }
     
     public function createObject(\CodeGuy $I) {

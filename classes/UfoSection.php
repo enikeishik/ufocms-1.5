@@ -89,7 +89,7 @@ class UfoSection
         
         $this->moduleName = $this->getModuleName();
     }
-
+    
     /**
      * Присванивание ссылок объектов контейнера локальным переменным.
      */

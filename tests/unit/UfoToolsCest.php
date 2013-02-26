@@ -25,6 +25,7 @@ class UfoToolsCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSectionStruct.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCore.php';
         require_once __DIR__ . self::DS . 'UfoToolsDummy.php';
         $this->obj = new UfoToolsDummy();
@@ -76,11 +77,13 @@ class UfoToolsCest
             $container = new UfoContainer();
             $container->setConfig(new UfoConfig());
             $container->setDb(new UfoDb($container->getConfig()->dbSettings));
-            $container->setCore(new UfoCore($container->getConfig()));
             $container->setSite(new UfoSite('/', $container));
             $section = new UfoSection('/', $container);
             $section->initModule();
             $container->setSection($section);
+            $core = new UfoCore($container->getConfig());
+            $core->setContainer($container);
+            $container->setCore($core);
             $tpl = new $template($container);
             $this->obj->loadLayout($tpl);
             return true;

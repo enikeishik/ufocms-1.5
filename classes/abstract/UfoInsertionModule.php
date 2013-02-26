@@ -12,6 +12,30 @@ require_once 'UfoInsertionModuleInterface.php';
 abstract class UfoInsertionModule implements UfoInsertionModuleInterface
 {
     use UfoTools;
+
+    /**
+     * Ссылка на объект-контейнер ссылок на объекты.
+     * @var UfoContainer
+     */
+    protected $container = null;
+    
+    /**
+     * Ссылка на объект конфигурации.
+     * @var UfoConfig
+     */
+    protected $config = null;
+    
+    /**
+     * Ссылка на объект для работы с базой данных.
+     * @var UfoDb
+     */
+    protected $db = null;
+    
+    /**
+     * Ссылка на объект отладки.
+     * @var UfoDebug
+     */
+    protected $debug = null;
     
     /**
      * Ссылка на объект шаблона модуля.
@@ -21,12 +45,26 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
     
     /**
      * Конструктор.
+     * @param UfoContainer &$container    ссылка на объект-контейнер ссылок на объекты
      */
-    public function __construct()
+    public function __construct(UfoContainer &$container)
     {
+        $this->container =& $container;
+        $this->unpackContainer();
+        
         $templateName = str_replace('UfoMod', 'UfoTpl', get_class($this));
         $this->loadTemplate($templateName);
         $this->template = new $templateName();
+    }
+
+    /**
+     * Присванивание ссылок объектов контейнера локальным переменным.
+     */
+    protected function unpackContainer()
+    {
+        $this->config =& $this->container->getConfig();
+        $this->db =& $this->container->getDb();
+        $this->debug =& $this->container->getDebug();
     }
     
     /**
@@ -51,6 +89,18 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
          * 2.-3. Если элементов нет, отображаем заданную информацию. (нет аналога)
          * 4. Отображаем конец блока (ShowInsertions_End).
          */
+        $sql = 'SELECT Id,TargetId,PlaceId,OrderId,SourceId,SourcesIds,Title,' .
+               'ItemsIds,ItemsStart,ItemsCount,ItemsLength,ItemsStartMark,ItemsStopMark,ItemsOptions' .
+               ' FROM ' . $this->db->getTablePrefix() . 'insertions' .
+               ' WHERE (TargetId=' . $insertion->targetId . ' OR TargetId=0)' .
+               ' AND PlaceId=' . $insertion->placeId .
+               ' ORDER BY OrderId';
+        if (0 !=$offset && 0 != $limit) {
+            $sql .= ' LIMIT ' . $offset . ', ' . $limit;
+        } else if (0 != $limit) {
+            $sql .= ' LIMIT ' . $limit;
+        }
+        
         ob_start();
         $this->template->drawBegin($options);
         echo $this->generateItem(0, $options);
