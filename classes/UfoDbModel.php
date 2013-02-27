@@ -48,4 +48,47 @@ class UfoDbModel
         }
         return $this->db->getRowByQuery($sql);
     }
+    
+    /**
+     * ѕолучение данных вставки.
+     * @param int $targetId      идентификатор раздела в котором выводитс€ вставка
+     * @param int $placeId       идентификатор места в котором выводитс€ вставка
+     * @param int $offset = 0    выбирать элементы начина€ с $offset
+     * @param int $limit = 0     выбрать всего $limit элементов (если $limit > 0)
+     * @return array(string $mfileins, string $path, UfoInsertionItemStruct)|false
+     */
+    public function getInsertionItems($targetId, $placeId, $offset = 0, $limit = 0)
+    {
+        $prefix = $this->db->getTablePrefix();
+        $sql = '';
+        $arr = get_class_vars('UfoInsertionItemStruct');
+        foreach ($arr as $fld => $val) {
+            $sql .= '`i.' . $fld . '`,';
+        }
+        unset($arr);
+        $sql = 'SELECT ' . $sql . 's.path,m.mfileins' . 
+               ' FROM ' . $prefix . 'insertions AS i' . 
+               ' INNER JOIN ' . $prefix . 'sections AS s ON s.id=i.SourceId' . 
+               ' INNER JOIN ' . $prefix . 'modules AS m ON m.muid=s.moduleid' . 
+               ' WHERE (i.TargetId=' . $targetId . ' OR i.TargetId=0)' . 
+               ' AND i.PlaceId=' . $placeId . 
+               ' AND s.isenabled!=0 AND m.isenabled!=0' . 
+               ' ORDER BY i.OrderId';
+        if (0 !=$offset && 0 != $limit) {
+            $sql .= ' LIMIT ' . $offset . ', ' . $limit;
+        } else if (0 != $limit) {
+            $sql .= ' LIMIT ' . $limit;
+        }
+        
+        $result = $this->db->query($sql);
+        if (!$result) {
+            return false;
+        }
+        $arr = array();
+        while ($row = $result->fetch_assoc()) {
+            $arr[] = array(array_pop($row), array_pop($row), new UfoInsertionItemStruct($row, false));
+        }
+        $result->free();
+        return $arr;
+    }
 }

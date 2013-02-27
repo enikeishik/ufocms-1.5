@@ -22,6 +22,7 @@ class UfoToolsCest
         require_once $this->root . self::DS . 'config.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
@@ -77,6 +78,7 @@ class UfoToolsCest
             $container = new UfoContainer();
             $container->setConfig(new UfoConfig());
             $container->setDb(new UfoDb($container->getConfig()->dbSettings));
+            $container->setDbModel(new UfoDbModel($container->getDb()));
             $container->setSite(new UfoSite('/', $container));
             $section = new UfoSection('/', $container);
             $section->initModule();

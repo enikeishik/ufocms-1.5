@@ -7,7 +7,7 @@ require_once 'classes/abstract/UfoInsertionTemplate.php';
  * @author enikeishik
  *
  */
-abstract class UfoInsertionTemplateGlobal extends UfoInsertionTemplate
+class UfoInsertionTemplateGlobal extends UfoInsertionTemplate
 {
     /**
      * Вывод начала вставки.

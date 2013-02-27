@@ -10,12 +10,15 @@ class UfoModNewsIns extends UfoInsertionModule
 {
     /**
      * Генерация содержимого элемента блока вставки.
-     * @param mixed $item              идентификатор или параметры элемента блока вставки
-     * @param array $options = null    дополнительные данные, передаваемые сквозь цепочку вызовов
+     * @param UfoInsertionItemStruct $insertion    данные элемента вставки
+     * @param string $path                         путь раздела-источника вставки
+     * @param array $options = null                дополнительные данные, передаваемые сквозь цепочку вызовов
      * @return string
      */
-    public function generateItem($item, array $options = null)
+    public function generateItem(UfoInsertionItemStruct $insertion, $path, array $options = null)
     {
+        //for backward compatibility
+        $item = array_merge((array) $insertion, array('Path' => $path));
         ob_start();
         $this->template->drawItemBegin($item, $options);
         for ($i = 0; $i < 3; $i++) {

@@ -1,18 +1,14 @@
 <?php
-require_once 'UfoInsertionModuleInterface.php';
 /**
- * Абрстрактный класс вставки модуля, 
- * дочерние классы должны реализовывать 
- * интерфейс UfoInsertionModuleInterface или быть абстрактными.
- * Все классы вставок модулей должны наследовать этот класс.
+ * Класс вставок.
  * 
  * @author enikeishik
  *
  */
-abstract class UfoInsertionModule implements UfoInsertionModuleInterface
+class UfoInsertion
 {
     use UfoTools;
-
+    
     /**
      * Ссылка на объект-контейнер ссылок на объекты.
      * @var UfoContainer
@@ -30,6 +26,12 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
      * @var UfoDb
      */
     protected $db = null;
+    
+    /**
+     * Объект для работы моделью данных.
+     * @var UfoDbModel
+     */
+    private $dbModel = null;
     
     /**
      * Ссылка на объект отладки.
@@ -52,9 +54,8 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
         $this->container =& $container;
         $this->unpackContainer();
         
-        $templateName = str_replace('UfoMod', 'UfoTpl', get_class($this));
-        $this->loadTemplate($templateName);
-        $this->template = new $templateName();
+        $this->loadTemplate('UfoInsertionTemplateGlobal');
+        $this->template = new UfoInsertionTemplateGlobal();
     }
 
     /**
@@ -64,6 +65,7 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
     {
         $this->config =& $this->container->getConfig();
         $this->db =& $this->container->getDb();
+        $this->dbModel =& $this->container->getDbModel();
         $this->debug =& $this->container->getDebug();
     }
     
@@ -71,13 +73,14 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
      * Генерация содержимого блока вставки.
      * Блок может содержать множество конкретных вставок, 
      * определенных для данной страницы (targetId) и данного места (placeId).
-     * @param UfoInsertionStruct $insertion    параметры вставки
-     * @param int $offset = 0                  выводить элементы начиная с $offset
-     * @param int $limit = 0                   выводить всего $limit элементов (если $limit > 0)
-     * @param array $options = null            дополнительные данные, передаваемые сквозь цепочку вызовов
+     * @param int $targetId            идентификатор раздела в котором выводится вставка
+     * @param int $placeId             идентификатор места в котором выводится вставка
+     * @param int $offset = 0          выводить элементы начиная с $offset
+     * @param int $limit = 0           выводить всего $limit элементов (если $limit > 0)
+     * @param array $options = null    дополнительные данные, передаваемые сквозь цепочку вызовов
      * @return string
      */
-    public function generate(UfoInsertionStruct $insertion, $offset = 0, $limit = 0, array $options = null)
+    public function generate($targetId, $placeId, $offset = 0, $limit = 0, array $options = null)
     {
         /*
          * 1. Отображаем начало блока (ShowInsertions_Begin).
@@ -89,32 +92,36 @@ abstract class UfoInsertionModule implements UfoInsertionModuleInterface
          * 2.-3. Если элементов нет, отображаем заданную информацию. (нет аналога)
          * 4. Отображаем конец блока (ShowInsertions_End).
          */
-        $sql = 'SELECT Id,TargetId,PlaceId,OrderId,SourceId,SourcesIds,Title,' .
-               'ItemsIds,ItemsStart,ItemsCount,ItemsLength,ItemsStartMark,ItemsStopMark,ItemsOptions' .
-               ' FROM ' . $this->db->getTablePrefix() . 'insertions' .
-               ' WHERE (TargetId=' . $insertion->targetId . ' OR TargetId=0)' .
-               ' AND PlaceId=' . $insertion->placeId .
-               ' ORDER BY OrderId';
-        if (0 !=$offset && 0 != $limit) {
-            $sql .= ' LIMIT ' . $offset . ', ' . $limit;
-        } else if (0 != $limit) {
-            $sql .= ' LIMIT ' . $limit;
-        }
-        
+        $this->loadClass('UfoInsertionItemStruct');
+        $items = $this->dbModel->getInsertionItems($targetId, $placeId, $offset, $limit);
         ob_start();
-        $this->template->drawBegin($options);
-        echo $this->generateItem(0, $options);
-        echo $this->generateItem(1, $options);
-        echo $this->generateItem(2, $options);
-        $this->template->drawEnd($options);
+        if (is_array($items) && 0 < count($items)) {
+            $this->template->drawBegin($options);
+            foreach ($items as $item) {
+                echo $this->generateItem($item[0], $item[1], $item[2], $options);
+            }
+            $this->template->drawEnd($options);
+        } else {
+            $this->template->drawEmpty($options);
+        }
         return ob_get_clean();
     }
     
     /**
      * Генерация содержимого элемента блока вставки.
-     * @param mixed $item              идентификатор или данные элемента
-     * @param array $options = null    дополнительные данные, передаваемые сквозь цепочку вызовов
+     * @param string $mfileins                     класс модуля вставки
+     * @param string $path                         путь раздела-источника вставки
+     * @param UfoInsertionItemStruct $insertion    параметры элемента вставки
+     * @param array $options = null                дополнительные данные, передаваемые сквозь цепочку вызовов
      * @return string
      */
-    abstract public function generateItem($item, array $options = null);
+    public function generateItem($mfileins, $path, UfoInsertionItemStruct $insertion, array $options = null)
+    {
+        $mod = 'UfoModNews';
+        //загружаем класс вставки модуля
+        $this->loadInsertionModule($mod);
+        $ins = $mod . 'Ins';
+        $insertion = new $ins($this->container);
+        return $insertion->generateItem($insertion, $path, $options);
+    }
 }

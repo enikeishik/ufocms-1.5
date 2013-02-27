@@ -24,6 +24,7 @@ class UfoModDocumentsCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoToolsExt.php';
         require_once $this->root . self::DS . 'modules' . self::DS . 'UfoModDocuments' . self::DS . 'UfoModDocuments.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCore.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
@@ -32,6 +33,7 @@ class UfoModDocumentsCest
         $this->container = new UfoContainer();
         $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache')));
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
+        $this->container->setDbModel(new UfoDbModel($this->container->getDb()));
         $this->container->setSite(new UfoSite('/', $this->container));
         $this->container->setSection(new UfoSection(new UfoSectionStruct(array('id' => -1, 'moduleid' => -1)), $this->container));
         $core = new UfoCore($this->container->getConfig());

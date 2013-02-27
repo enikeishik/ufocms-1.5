@@ -36,7 +36,7 @@ final class UfoCore
      * @var UfoDb
      */
     private $db = null;
-
+    
     /**
      * Объект для работы моделью данных.
      * @var UfoDbModel
@@ -409,30 +409,17 @@ final class UfoCore
     /**
      * Вставка информации из разделов.
      * @param array $params = null    параметры вставки, дополнительные данные
+     * @return string
      */
     public function insertion(array $params = null)
     {
-        //...
-        $mod = 'UfoModNews';
-        $ins = $mod . 'Ins';
-        //загружаем класс вставки модуля
-        $this->loadInsertionModule($mod);
-        //передаем управление классу вставки модуля
-        $insertion = new $ins($this->getContainer());
-        //класс вставки модуля должен подгрузить шаблон, 
-        //унасленованный от UfoInsertionTemplate
-        //сам же шаблон UfoInsertionTemplate содержит общие блоки оформления
-        //начало/конец блока вставок и т.п.
-        //дочерние классы могут переопределить это оформление
-        $this->loadClass('UfoInsertionStruct');
-        $insertionStruct = new UfoInsertionStruct();
-        $insertionStruct->targetId = $this->section->getFields()->id;
-        $insertionStruct->placeId = 0;
+        $targetId = $this->section->getFields()->id;
+        $placeId = 0;
         $offset = 0;
         $limit = 0;
         if (is_array($params)) {
             if (array_key_exists('PlaceId', $params)) {
-                $insertionStruct->placeId = (int) $params['PlaceId'];
+                $placeId = (int) $params['PlaceId'];
             }
             if (array_key_exists('Offset', $params)) {
                 $offset = (int) $params['Offset'];
@@ -447,6 +434,8 @@ final class UfoCore
                 }
             }
         }
-        return $insertion->generate($insertionStruct, $offset, $limit, $params);
+        $this->loadClass('UfoInsertion');
+        $insertion = new UfoInsertion($this->getContainer());
+        return $insertion->generate($targetId, $placeId, $offset, $limit, $params);
     }
 }
