@@ -86,7 +86,6 @@ class UfoSection
         
         $this->setFields($section);
         
-        /*
         if (0 == $this->fields->moduleid) {
             throw new Exception('Incorrect moduleid');
         }
@@ -96,8 +95,6 @@ class UfoSection
         //преобразуем от старого формата 'mod_news.php' к новому 'UfoModNews';
         $mod = substr($mod, strpos($mod, '_') + 1);
         $this->moduleName = 'UfoMod' . ucfirst(substr($mod, 0, strpos($mod, '.')));
-        */
-        $this->moduleName = 'UfoModDocuments';
     }
     
     /**
@@ -127,15 +124,10 @@ class UfoSection
             } else {
                 throw new Exception('Fields not set');
             }
-            
         } else if (is_array($section)) {
-            $sql = '';
             $this->fields = new UfoSectionStruct($section);
-            
         } else if (is_object($section) && is_a($section, 'UfoSectionStruct')) {
-            $sql = '';
             $this->fields = $section;
-            
         } else {
             throw new Exception('Incorrect $section: ' . var_export($section, true));
         }

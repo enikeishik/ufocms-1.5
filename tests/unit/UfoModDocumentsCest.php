@@ -57,16 +57,6 @@ class UfoModDocumentsCest
         $I->seeResultEquals(true);
     }
     
-    public function getTitle(\CodeGuy $I) {
-        $this->showTest(__FUNCTION__);
-    	$I->wantTo('execute method `' . __FUNCTION__ . '`');
-        $I->execute(function() {
-            $obj = new UfoModDocuments($this->container);
-        	return is_string($obj->getTitle());
-        });
-        $I->seeResultEquals(true);
-    }
-    
     public function getContent(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');

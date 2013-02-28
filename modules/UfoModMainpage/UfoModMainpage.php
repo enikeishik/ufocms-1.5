@@ -1,22 +1,21 @@
 <?php
 require_once 'classes/abstract/UfoModule.php';
 
-class UfoModDocuments extends UfoModule
+class UfoModMainpage extends UfoModule
 {
     /**
      * Переопределена здесь чтобы получить тип текущего класса, 
      * а не абстрактного родительского класса (для IDE).
-     * @var UfoModDocumentsParams
+     * @var UfoModMainpageParams
      */
     protected $params = null;
     
     public function getContent()
     {
-        $sql = 'SELECT Body' .
-               ' FROM ' . $this->db->getTablePrefix() . 'documents' .
-               ' WHERE SectionId=' . $this->sectionFields->id;
+        $sql = 'SELECT body' .
+               ' FROM ' . $this->db->getTablePrefix() . 'mainpage';
         if ($row = $this->db->getRowByQuery($sql)) {
-            return $row['Body'];
+            return $row['body'];
         }
         return '';
     }

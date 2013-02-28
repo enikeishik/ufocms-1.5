@@ -78,11 +78,11 @@ class UfoDbModel
      */
     public function getModuleName($moduleId)
     {
-        $sql = 'SELECT mname' . 
+        $sql = 'SELECT mfile' . 
                ' FROM ' . $this->db->getTablePrefix() . 'modules' . 
                ' WHERE muid=' . $moduleId;
         if ($row = $this->db->getRowByQuery($sql)) {
-            return $row['mname'];
+            return $row['mfile'];
         }
         return false;
     }
@@ -128,5 +128,47 @@ class UfoDbModel
         }
         $result->free();
         return $arr;
+    }
+    
+    /**
+     * ѕроверка существовани€ заданного пути в Ѕƒ.
+     * @param string $path    провер€емый путь (данные не провер€ютс€ на корректность!)
+     * @return boolean
+     */
+    public function isPathExists($path)
+    {
+        $sql = 'SELECT COUNT(*) AS Cnt' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'sections' .
+               " WHERE path='" . $path . "'";
+        $row = $this->db->getRowByQuery($sql);
+        return 0 < $row['Cnt'];
+    }
+    
+    /**
+     * ѕолучение максимально полного пути из переданного набора путей.
+     * @param array $paths    провер€емый набор путей (данные не провер€ютс€ на корректность!)
+     * @return string|false
+     */
+    public function getMaxExistingPath(array $paths)
+    {
+        $sql = 'SELECT path FROM ' . $this->db->getTablePrefix() . 'sections' . 
+               " WHERE path IN('" . implode("','", $paths) . "')" . 
+               ' ORDER BY path DESC' . 
+               ' LIMIT 1';
+        if ($row = $this->db->getRowByQuery($sql)) {
+            $this->path = $row['path'];
+        }
+        return false;
+    }
+    
+    /**
+     * ѕолучение набора параметров сайта.
+     * return array|string
+     */
+    public function getSiteParams()
+    {
+        $sql = 'SELECT PType,PName,PValue,PDefault' .
+               ' FROM ' . $this->db->getTablePrefix() . 'siteparams';
+        return $this->db->getRowsByQuery($sql);
     }
 }

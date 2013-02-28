@@ -30,6 +30,12 @@ class UfoSite
     protected $db = null;
     
     /**
+     * Ссылка на объект для работы с базой данных.
+     * @var UfoDbModel
+     */
+    protected $dbModel = null;
+    
+    /**
      * Ссылка на объект отладки.
      * @var UfoDebug
      */
@@ -51,14 +57,13 @@ class UfoSite
     {
         $this->config = $container->getConfig();
         $this->db = $container->getDb();
+        $this->dbModel = $container->getDbModel();
         
-        $sql = 'SELECT PType,PName,PValue,PDefault' . 
-               ' FROM ' . $this->db->getTablePrefix() . 'siteparams';
-        if ($rows = $this->db->getRowsByQuery($sql)) {
-            foreach ($rows as $row) {
-                switch($row['PType']) {
+        if ($arr = $this->dbModel->getSiteParams()) {
+            foreach ($arr as $param) {
+                switch($param['PType']) {
                     default:
-                        $this->siteParams[$row['PName']] = $row['PValue'];
+                        $this->siteParams[$param['PName']] = $param['PValue'];
                 }
             }
         }
@@ -74,6 +79,10 @@ class UfoSite
     }
     
     /**
+     * Получение значения параметра сайта по имени.
+     * @param string $name           имя параметра
+     * @param mixed $default = ''    значение по-умолчанию
+     * @return mixed
      * @deprecated
      */
     public function getSiteParam($name, $default = '')
@@ -160,20 +169,14 @@ class UfoSite
         }
         
         //определяем присутствует ли путь в БД
-        $sql = 'SELECT COUNT(*) AS Cnt FROM ' . $this->db->getTablePrefix() . 'sections' .
-               " WHERE path='" . $path . "'";
-        $row = $this->db->getRowByQuery($sql);
-        
         //если нет, разбиваем путь по слэшам, чтобы вычленить параметры в пути
-        if (0 == $row['Cnt']) {
-            /* DEBUG echo 'path: ' . $path . "<br />\n"; */
+        if (!$this->dbModel->isPathExists($path)) {
             //массив частей пути
             $pathParts = explode('/', $path);
             //убираем крайние слэши, чтобы не было лишних элементов в массиве
             array_shift($pathParts);
             array_pop($pathParts);
             $pathPartsCount = count($pathParts);
-            /* DEBUG echo '<pre>'; var_dump($arr_path); echo "</pre>\n"; */
         
             //если вложенность больше допустимой, выходим
             if ($this->config->sitePathNestingLimit < $pathPartsCount) {
@@ -189,17 +192,10 @@ class UfoSite
             }
             //убираем корневой путь, поскольку корневая (главная) страница всегда присутствует
             array_shift($paths);
-            /* DEBUG echo '<pre>'; var_dump($arr_paths); echo "</pre>\n"; */
             
-            $sql = 'SELECT path FROM ' . $this->db->getTablePrefix() . 'sections' .
-                   " WHERE path IN('" . implode("','", $paths) . "')" .
-                   ' ORDER BY path DESC' .
-                   ' LIMIT 1';
-            /* DEBUG echo '<code>' . $sql . "</code><br />\n"; */
-            if ($row = $this->db->getRowByQuery($sql)) {
-                $this->path = $row['path'];
-            } else {
+            if (!$this->path = $this->dbModel->getMaxExistingPath($paths)) {
                 throw new UfoExceptionPathNotexists('Path not exists');
+                return;
             }
         }
     }

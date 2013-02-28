@@ -66,7 +66,7 @@ class UfoSectionCest
                                   $this->container);
         	$obj->initModule();
     		$mod =& $obj->getModule();
-        	return is_a($mod, 'UfoModDocuments');
+        	return is_a($mod, 'UfoModMainpage');
         });
         $I->seeResultEquals(true);
     }
