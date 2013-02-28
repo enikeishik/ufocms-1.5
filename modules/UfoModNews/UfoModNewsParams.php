@@ -1,18 +1,12 @@
 <?php
-require_once 'classes/abstract/UfoStruct.php';
+require_once 'classes/abstract/UfoModuleParams.php';
 
 /**
  * Класс-структура для хранения данных модуля.
  * @author enikeishik
  */
-class UfoModNewsParams extends UfoStruct
+class UfoModNewsParams extends UfoModuleParams
 {
-    /**
-     * Идентификатор конкретного элемента.
-     * @var int
-     */
-    public $id = 0;
-    
     /**
      * Номер страницы при постраничном выводе.
      * @var int

@@ -10,12 +10,54 @@ class UfoModNews extends UfoModule
     protected $id = 0;
     
     /**
-     * ‘ормирование массива данных одного элемента.
+     * ќбъект-структура хран€щий значени€ параметров, передаваемых в URL.
+     * ѕереопределена здесь чтобы получить тип текущего класса, 
+     * а не абстрактного родительского класса (дл€ IDE).
+     * @var UfoModNewsParams
+     */
+    protected $params = null;
+    
+    /**
+     * ћассив установленных параметров модул€ дл€ данного раздела.
+     * @var array
+     */
+    protected $moduleSettings = null;
+    
+    /**
+     * ѕереопределенный конструктор.
+     * ¬ызывает конструктор родительского класса, 
+     * затем получает установленные параметры модул€ данного раздела. 
+     * @param UfoContainer &$container
+     */
+    public function __construct(UfoContainer &$container)
+    {
+        parent::__construct($container);
+        $this->moduleSettings = $this->getSettings();
+    }
+    
+    /**
+     * ѕолучение установленных параметров модул€ дл€ данного раздела.
      * @return array
+     */
+    protected function getSettings()
+    {
+        $sql = 'SELECT Id,BodyHead,BodyFoot,IconAttributes,PageLength,AnnounceLength,TimerOffset,IsArchive' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'news' . 
+               ' WHERE SectionId=' . $this->section->getField('id');
+        return $this->db->getRowByQuery($sql);
+    }
+    
+    /**
+     * ‘ормирование массива данных одного элемента.
+     * @return array|false
      */
     public function getItem()
     {
-        return array('');
+        $sql = 'SELECT Id,DateCreate,Title,Author,Icon,Announce,Body,ViewedCnt' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'news' . 
+               ' WHERE Id=' . $this->id . 
+               ' AND IsHidden=0';
+        return $this->db->getRowByQuery($sql);
     }
     
     /**
@@ -24,15 +66,24 @@ class UfoModNews extends UfoModule
      */
     public function getItems()
     {
-        return array(array(''), array(''));
+        $sql = 'SELECT COUNT(*) AS Cnt';
+        $sql = 'SELECT Id,DateCreate,Title,Author,Icon,Announce,Body,ViewedCnt' . 
+               ' WHERE SectionId=' . $this->section->getField('id') . 
+               ' AND IsHidden=0 AND DateCreate<=NOW()' . 
+               ' AND (IsTimered=0 OR DateCreate<=DATE_ADD(NOW(), INTERVAL - ' .
+               $this->moduleSettings['TimerOffset'] . 
+               ' MINUTE))' . 
+               ' ORDER BY DateCreate DESC, Id DESC' . 
+               ' LIMIT , ';
+        return $this->db->getRowsByQuery($sql);
     }
     
     /**
      * ѕолучение идентификатора текущего элемента, возвращает 0 если запрошен не элемент, а список.
      * @return int
      */
-    protected function getItemId()
+    public function getItemId()
     {
-        return 0;
+        return $this->params->id;
     }
 }

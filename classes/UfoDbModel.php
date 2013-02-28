@@ -18,6 +18,13 @@ class UfoDbModel
     private $db = null;
     
     /**
+     * Часть SQL запроса, содержащая список полей раздела в таблице базы данных.
+     * Списки полей могут получаться динамически из классов-структур, поэтому это поле хранит полученные списки для повторного использования.
+     * @var string
+     */
+    protected $fieldsSql = array();
+    
+    /**
      * Конструктор.
      * @param UfoDb $db    ссылка на объект для работы с БД
      */
@@ -32,13 +39,24 @@ class UfoDbModel
      * @throws Exception
      * @return array|false
      */
-    public function getSection($section)
+    public function getSection($section, $isParentId = false)
     {
-        $sql = 'SELECT ' . $this->fieldsSql .
-               ' FROM ' . $this->db->getTablePrefix() . 'sections' .
+        if (!array_key_exists(__METHOD__, $this->fieldsSql) 
+        || '' == $this->fieldsSql[__METHOD__]) {
+            //получаем поля таблицы из полей класса-структуры
+            $this->loadClass('UfoSectionStruct');
+            $arr = get_class_vars('UfoSectionStruct');
+            $sql = '';
+            foreach ($arr as $fld => $val) {
+                $sql .= ',`' . $fld . '`';
+            }
+            $this->fieldsSql[__METHOD__] = substr($sql, 1);
+        }
+        $sql = 'SELECT ' . $this->fieldsSql[__METHOD__] . 
+               ' FROM ' . $this->db->getTablePrefix() . 'sections' . 
                ' WHERE ';
         if (is_int($section)) {
-            $sql .= 'id=' . $section;
+            $sql .= ($isParentId ? 'parentid' : 'id') . '=' . $section;
         } else if (is_string($section) && '/' == $section) {
             $sql .= 'id=-1';
         } else if (is_string($section) && $this->isPath($section)) {
@@ -46,7 +64,27 @@ class UfoDbModel
         } else {
             throw new Exception('Incorrect $section: ' . var_export($section, true));
         }
-        return $this->db->getRowByQuery($sql);
+        if (!$isParentId) {
+            return $this->db->getRowByQuery($sql);
+        } else {
+            return $this->db->getRowsByQuery($sql);
+        }
+    }
+    
+    /**
+     * Получение имени модуля по его идентификатору.
+     * @param int $moduleId    идентификатор модуля
+     * @return string|false;
+     */
+    public function getModuleName($moduleId)
+    {
+        $sql = 'SELECT mname' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'modules' . 
+               ' WHERE muid=' . $moduleId;
+        if ($row = $this->db->getRowByQuery($sql)) {
+            return $row['mname'];
+        }
+        return false;
     }
     
     /**

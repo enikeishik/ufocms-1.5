@@ -11,24 +11,34 @@ class UfoTplNews extends UfoTemplateGlobal
      */
     protected $module = null;
     
-    public function drawItem(&$item)
+    protected function drawItem(&$item)
     {
-        echo '<p>One item from news feed</p>' . "\r\n";
+        echo '<h2>' . $item['Title'] . '</h2>' . "\r\n";
+        echo '<div>' . $item['DateCreate'] . '</div>' . "\r\n";
+        echo '<div>' . $item['Body'] . '</div>' . "\r\n";
+        if ('' != $item['Author']) {
+            echo '<div>' . $item['Author'] . '</div>' . "\r\n";
+        }
     }
     
-    public function drawItems(&$items)
+    protected function drawItems(&$items)
     {
         foreach ($items as $item) {
-            echo '<p>News feed item</p>' . "\r\n";
+            echo '<div class="newstapetitle"><a href="' . $this->section->getField('path') . $item['Id'] . '/">' . 
+                 $item['Title'] . '</a></div>' . "\r\n";
+            echo '<div class="newstapetext">' . $item['Announce'] . '</div>' . "\r\n";
+            echo '<div class="newstapedate">' . $item['DateCreate'] . '</div>' . "\r\n";
+            echo '<div class="newstapedivider"></div>' . "\r\n";
         }
     }
     
     public function drawBodyContent()
     {
-        if (0 != $this->id = $this->getItemId()) {
+        if (0 != $this->module->getItemId()) {
             $this->drawItem($this->module->getItem());
         } else {
             $this->drawItems($this->module->getItems());
         }
+        echo '<hr />' . "\r\n";
     }
 }

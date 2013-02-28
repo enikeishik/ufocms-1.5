@@ -71,7 +71,6 @@ abstract class UfoModule implements UfoModuleInterface
     
     /**
      * Конструктор.
-     * @param UfoSection   &$section      ссылка на объект текущего раздела
      * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      * @throws UfoExceptionPathNotexists
      */

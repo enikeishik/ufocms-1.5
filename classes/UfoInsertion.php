@@ -114,13 +114,15 @@ class UfoInsertion
      * @param UfoInsertionItemStruct $insertion    параметры элемента вставки
      * @param array $options = null                дополнительные данные, передаваемые сквозь цепочку вызовов
      * @return string
+     * @todo при обновлении архитектуры Ѕƒ также перемсмотреть список параметров этого метода.
      */
     public function generateItem($mfileins, $path, UfoInsertionItemStruct $insertion, array $options = null)
     {
-        $mod = 'UfoModNews';
-        //загружаем класс вставки модул€
-        $this->loadInsertionModule($mod);
+        //преобразуем от старого формата 'ins_news.php' к новому 'UfoModNews';
+        $mod = substr($mfileins, strpos($mfileins, '_') + 1);
+        $mod = 'UfoMod' . ucfirst(substr($mod, 0, strpos($mod, '.')));
         $ins = $mod . 'Ins';
+        $this->loadInsertionModule($mod, $ins);
         $insertion = new $ins($this->container);
         return $insertion->generateItem($insertion, $path, $options);
     }

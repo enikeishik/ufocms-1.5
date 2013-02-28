@@ -56,18 +56,18 @@ trait UfoTools
      * @todo заменить значени€ по-умолчанию константами (глобальными?)
      *
      * @param string $module               им€ загружаемого модул€ (основного класса модул€)
+     * @param string $insertion            им€ загружаемого класса вставки модул€
      * @param string $path                 путь к пакте с файлами модулей
      * @param string $extention = 'php'    расширение файлов с классами вставок модулей
-     * @param string $suffix = 'Ins'       суффикс
      */
-    public function loadInsertionModule($module,
+    public function loadInsertionModule($module, 
+                                        $insertion, 
                                         $path = 'modules',
-                                        $extention = 'php', 
-                                        $suffix = 'Ins')
+                                        $extention = 'php')
     {
-        $this->loadClass($module . $suffix,
-                $path . DIRECTORY_SEPARATOR . $module,
-                $extention);
+        $this->loadClass($insertion,
+                         $path . DIRECTORY_SEPARATOR . $module,
+                         $extention);
     }
     
     

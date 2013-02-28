@@ -45,7 +45,7 @@ abstract class UfoInsertionItemModule implements UfoInsertionItemModuleInterface
     
     /**
      * —сылка на объект шаблона модул€.
-     * @var UfoInsertionTemplate
+     * @var UfoInsertionItemTemplate
      */
     protected $template = null;
     

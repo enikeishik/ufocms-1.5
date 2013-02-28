@@ -2,14 +2,13 @@
 /**
  * Класс описывающий раздел сайта.
  *
- * Предоставляет доступ к свойствам раздела сайта 
- * через метод, возвращающий копию поля $fields
- * - агрегированный объект-структуру UfoSectionStruct.
+ * Предоставляет доступ к свойствам раздела сайта через метод, 
+ * возвращающий копию поля $fields - агрегированный объект-структуру UfoSectionStruct.
+ * 
  * Производит инициализацию модуля (UfoModule), 
- * обслуживающего раздел и генерирует посредством модуля 
- * основной контент страницы.
- * Также предоставляет ряд методов для получения данных родительских, 
- * смежных, дочерних разделов.
+ * обслуживающего раздел и генерирует посредством модуля основной контент страницы.
+ * 
+ * Также предоставляет ряд методов для получения данных родительских, смежных, дочерних разделов.
  * 
  * @author enikeishik
  * 
@@ -37,16 +36,16 @@ class UfoSection
     protected $db = null;
     
     /**
+     * Ссылка на объект для работы с базой данных.
+     * @var UfoDbModel
+     */
+    protected $dbModel = null;
+    
+    /**
      * Ссылка на объект отладки.
      * @var UfoDebug
      */
     protected $debug = null;
-    
-    /**
-     * Часть SQL запроса, содержащая список полей раздела в таблице базы данных.
-     * @var string
-     */
-    protected $fieldsSql = '';
     
     /**
      * Объект-структура для хранения данных раздела сайта.
@@ -87,7 +86,18 @@ class UfoSection
         
         $this->setFields($section);
         
-        $this->moduleName = $this->getModuleName();
+        /*
+        if (0 == $this->fields->moduleid) {
+            throw new Exception('Incorrect moduleid');
+        }
+        if (!$mod = $this->dbModel->getModuleName($this->fields->moduleid)) {
+            throw new Exception('Module not found (module uid: ' . $this->fields->moduleid . ')');
+        }
+        //преобразуем от старого формата 'mod_news.php' к новому 'UfoModNews';
+        $mod = substr($mod, strpos($mod, '_') + 1);
+        $this->moduleName = 'UfoMod' . ucfirst(substr($mod, 0, strpos($mod, '.')));
+        */
+        $this->moduleName = 'UfoModDocuments';
     }
     
     /**
@@ -97,6 +107,7 @@ class UfoSection
     {
         $this->config =& $this->container->getConfig();
         $this->db =& $this->container->getDb();
+        $this->dbModel =& $this->container->getDbModel();
         $this->debug =& $this->container->getDebug();
     }
     
@@ -111,28 +122,7 @@ class UfoSection
         $this->loadClass('UfoSectionStruct');
         
         if (is_scalar($section)) {
-            //получаем поля таблицы из полей класса-структуры
-            $arr = get_class_vars('UfoSectionStruct');
-            $sql = '';
-            foreach ($arr as $fld => $val) {
-                $sql .= ',`' . $fld . '`';
-            }
-            $this->fieldsSql = substr($sql, 1);
-            
-            $sql = 'SELECT ' . $this->fieldsSql .
-                   ' FROM ' . $this->db->getTablePrefix() . 'sections' .
-                   ' WHERE ';
-            if (is_int($section)) {
-                $sql .= 'id=' . $section;
-            } else if (is_string($section) && '/' == $section) {
-                $sql .= 'id=-1';
-            } else if (is_string($section) && $this->isPath($section)) {
-                $sql .= "path='" . $section . "'";
-            } else {
-                throw new Exception('Incorrect $section: ' . var_export($section, true));
-            }
-            
-            if ($fields = $this->db->getRowByQuery($sql)) {
+            if ($fields = $this->dbModel->getSection($section)) {
                 $this->fields = new UfoSectionStruct($fields);
             } else {
                 throw new Exception('Fields not set');
@@ -226,7 +216,8 @@ class UfoSection
     }
     
     /**
-     * Получение данных родительского раздела в виде ассоциативного массива.
+     * Получение данных родительского раздела.
+     * Данные раздела в виде ассоциативного массива.
      * @return array|null
      */
     public function getParentArray()
@@ -237,7 +228,7 @@ class UfoSection
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($parent = $this->getSectionById($this->fields->parentid)) {
+        if ($parent = $this->dbModel->getSection($this->fields->parentid)) {
             $this->cache[__METHOD__] = $parent[0];
             return $parent[0];
         }
@@ -245,7 +236,8 @@ class UfoSection
     }
     
     /**
-     * Получение данных родительского раздела в виде объекта-структуры.
+     * Получение данных родительского раздела.
+     * Данные раздела в виде объекта-структуры UfoSectionStruct.
      * @return UfoSectionStruct|null
      */
     public function getParent()
@@ -258,9 +250,8 @@ class UfoSection
     }
 
     /**
-     * Получение данных раздела верхнего уровня 
-     * в иерархии родительских разделов 
-     * в виде ассоциативного массива.
+     * Получение данных раздела верхнего уровня (самого старшего родителя для текущего).
+     * Данные раздела в виде ассоциативного массива.
      * @return array|null
      */
     public function getTopArray()
@@ -274,7 +265,7 @@ class UfoSection
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($top = $this->getSectionById($this->fields->topid)) {
+        if ($top = $this->dbModel->getSection($this->fields->topid)) {
             $this->cache[__METHOD__] = $top[0];
             return $top[0];
         }
@@ -282,9 +273,8 @@ class UfoSection
     }
     
     /**
-     * Получение данных раздела верхнего уровня 
-     * в иерархии родительских разделов 
-     * в виде объекта-структуры.
+     * Получение данных раздела верхнего уровня (самого старшего родителя для текущего).
+     * Данные раздела в виде объекта-структуры UfoSectionStruct.
      * @return UfoSectionStruct|null
      */
     public function getTop()
@@ -297,7 +287,9 @@ class UfoSection
     }
     
     /**
-     * @return array|null
+     * Получение дочерних разделов для текущего.
+     * Данные разделов в виде ассоциативных массивов.
+     * @return array[<array>]|null
      */
     public function getChildrenArray()
     {
@@ -307,7 +299,7 @@ class UfoSection
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($children = $this->getSectionById($this->fields->id, true)) {
+        if ($children = $this->dbModel->getSection($this->fields->id, true)) {
             $this->cache[__METHOD__] = $children;
             return $children;
         }
@@ -315,7 +307,9 @@ class UfoSection
     }
     
     /**
-     * @return array|null
+     * Получение дочерних разделов для текущего.
+     * Данные разделов в виде объектов-структур UfoSectionStruct.
+     * @return array[<UfoSectionStruct>]|null
      */
     public function getChildren()
     {
@@ -331,7 +325,9 @@ class UfoSection
     }
 
     /**
-     * @return array|null
+     * Получение смежных разделов для текущего.
+     * Данные разделов в виде ассоциативных массивов.
+     * @return array[<array>]|null
      */
     public function getNeighborsArray()
     {
@@ -341,7 +337,7 @@ class UfoSection
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($neighbors = $this->getSectionById($this->fields->parentid, true)) {
+        if ($neighbors = $this->dbModel->getSection($this->fields->parentid, true)) {
             $this->cache[__METHOD__] = $neighbors;
             return $neighbors;
         }
@@ -349,7 +345,9 @@ class UfoSection
     }
     
     /**
-     * @return array|null
+     * Получение смежных разделов для текущего.
+     * Данные разделов в виде объектов-структур UfoSectionStruct.
+     * @return array[<UfoSectionStruct>]|null
      */
     public function getNeighbors()
     {
@@ -365,7 +363,10 @@ class UfoSection
     }
     
     /**
-     * @return array|null
+     * Получить родительские разделы текущего.
+     * Данные разделов в виде ассоциативных массивов.
+     * @param boolean $reversed = true    получить элементы в обратном порядке
+     * @return array[<array>]|null
      */
     public function getParentsArray($reversed = true)
     {
@@ -377,10 +378,10 @@ class UfoSection
             return $this->cache[$key];
         }
         $arr = array();
-        $parent = $this->getSectionById($this->fields->parentid);
+        $parent = $this->dbModel->getSection($this->fields->parentid);
         while ($parent) {
             $arr[] = $parent;
-            $parent = $this->getSectionById($parent->fields->parentid);
+            $parent = $this->dbModel->getSection($parent->fields->parentid);
         }
         if ($reversed) {
             $this->cache[$key] = array_reverse($arr);
@@ -392,7 +393,10 @@ class UfoSection
     }
     
     /**
-     * @return array|null
+     * Получить родительские разделы текущего.
+     * Данные разделов в виде объектов-структур UfoSectionStruct.
+     * @param boolean $reversed = true    получить элементы в обратном порядке
+     * @return array[<UfoSectionStruct>]|null
      */
     public function getParents($reversed = true)
     {
@@ -404,38 +408,5 @@ class UfoSection
             return $arr;
         }
         return null;
-    }
-    
-    /**
-     * @return array|false
-     */
-    protected function getSectionById($id, $isParentId = false)
-    {
-        $sql = 'SELECT ' . $this->fieldsSql . 
-               ' FROM ' . $this->config->dbTablePrefix . 'sections' . 
-               ' WHERE ' . ($isParentId ? 'parentid' : 'id') . '=' . $id;
-        return $this->db->getRowsByQuery($sql);
-    }
-    
-    /**
-     * Получение имени модуля, обслуживающего раздел по идентификатору модуля.
-     * @throws Exception
-     * @todo может использовать "модуль по-умолчанию" вместо исключения?
-     */
-    protected function getModuleName()
-    {
-        if (0 == $this->fields->moduleid) {
-            throw new Exception('Incorrect moduleid');
-        }
-        /*
-        $sql = 'SELECT ...name' . 
-               ' FROM ' . $this->config->dbTablePrefix . 'modules' . 
-               ' WHERE ...id=' . $this->fields->moduleid;
-        if ($row = $this->db->getRowByQuery($sql)) {
-            return $row['...name'];
-        }
-        throw new Exception('Module not found ($moduleid=' . $moduleid . ')');
-        */
-        return 'UfoModDocuments';
     }
 }
