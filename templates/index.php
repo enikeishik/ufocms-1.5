@@ -14,7 +14,7 @@
 </head>
 <body>
 <div id="colleft">
-<?php $tpl->drawInsertion(array('placeId' => 1)); ?>
+<?php $tpl->drawInsertion(array('PlaceId' => 1)); ?>
 </div>
 <div id="colmiddle">
 <?php $tpl->drawBodyTitle(); ?>

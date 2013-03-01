@@ -1,12 +1,12 @@
 <?php
 require_once 'classes/abstract/UfoInsertionItemModule.php';
 /**
- * Класс вставки модуля новости.
+ * Класс вставки модуля документы.
  * 
  * @author enikeishik
  *
  */
-class UfoModNewsIns extends UfoInsertionItemModule
+class UfoModDocumentsIns extends UfoInsertionItemModule
 {
     /**
      * Генерация содержимого элемента блока вставки.
@@ -22,10 +22,8 @@ class UfoModNewsIns extends UfoInsertionItemModule
         ob_start();
         if (1) {
             $this->template->drawItemBegin($item, $options);
-            for ($i = 0; $i < 3; $i++) {
-                $data = array('i' => $i);
-                $this->template->drawItemContent($item, $data, $options);
-            }
+            $data = array();
+            $this->template->drawItemContent($item, $data, $options);
             $this->template->drawItemEnd($item, $options);
         } else {
             $this->template->drawItemEmpty($item, $options);

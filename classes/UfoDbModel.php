@@ -101,7 +101,7 @@ class UfoDbModel
         $sql = '';
         $arr = get_class_vars('UfoInsertionItemStruct');
         foreach ($arr as $fld => $val) {
-            $sql .= '`i.' . $fld . '`,';
+            $sql .= 'i.`' . $fld . '`,';
         }
         unset($arr);
         $sql = 'SELECT ' . $sql . 's.path,m.mfileins' . 

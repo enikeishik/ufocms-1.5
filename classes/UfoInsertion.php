@@ -123,7 +123,7 @@ class UfoInsertion
         $mod = 'UfoMod' . ucfirst(substr($mod, 0, strpos($mod, '.')));
         $ins = $mod . 'Ins';
         $this->loadInsertionModule($mod, $ins);
-        $insertion = new $ins($this->container);
-        return $insertion->generateItem($insertion, $path, $options);
+        $insObj = new $ins($this->container);
+        return $insObj->generateItem($insertion, $path, $options);
     }
 }

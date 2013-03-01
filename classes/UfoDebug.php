@@ -20,6 +20,12 @@ class UfoDebug
     protected $pageStartTime = 0;
     
     /**
+     * Время начала выполнения последней команды.
+     * @var float
+     */
+    protected $lastStartTime = 0;
+    
+    /**
      * Конструктор.
      * @param int $debugLevel = 0    уровень протоколирования отладочной информации
      */
@@ -28,6 +34,16 @@ class UfoDebug
         if (0 < $debugLevel && 9 >= $debugLevel) {
             $this->debugLevel = $debugLevel;
         }
+    }
+    
+    /**
+     * Возвращает количество секунд, прошедших с момента начала выполнения (скрипта).
+     * @return float
+     * @see UfoDebug::getExecutionTime
+     */
+    public function getPageExecutionTime()
+    {
+        return $this->getExecutionTime();
     }
     
     /**
@@ -45,6 +61,20 @@ class UfoDebug
     }
     
     /**
+     * Установка времени начала выполнения последней команды.
+     * @param float $time = null    время начала
+     */
+    public function setLastStartTime($time = null)
+    {
+        if (is_null($time)) {
+            list($msec, $sec) = explode(chr(32), microtime());
+            $this->lastStartTime = $sec + $msec;
+        } else {
+            $this->lastStartTime = $time;
+        }
+    }
+    
+    /**
      * Возвращает время начала выполнения скрипта.
      * @return float
      */
@@ -54,14 +84,18 @@ class UfoDebug
     }
     
     /**
-     * Возвращает количество секунд, прошедших с момента начала выполнения скрипта.
+     * Возвращает количество секунд, прошедших с момента начала выполнения (скрипта).
+     * @param float $startTime = -1    время начала выполнения (-1 - начало выполнения скрипта)
      * @return float
      */
-    public function getPageExecutionTime()
+    public function getExecutionTime($startTime = -1)
     {
+        if (-1 == $startTime) {
+            $startTime = $this->pageStartTime;
+        }
         list($msec, $sec) = explode(chr(32), microtime());
         $now = $sec + $msec;
-        return $now - $this->pageStartTime;
+        return $now - $startTime;
     }
     
     /**
@@ -84,9 +118,12 @@ class UfoDebug
             case 7:
             case 8:
             case 9:
-                echo $this->getPageExecutionTime() . "\t" . 
-                     'M: ' . memory_get_usage() . '; MT: ' . memory_get_usage(true) . "\t" . 
+                echo 'PT: ' . round($this->getExecutionTime(), 4) . "s.\t" . 
+                     'PBT: ' . round($this->getExecutionTime($this->lastStartTime) * 100, 4) . "ms.\t" . 
+                     'M: ' . memory_get_usage() . 
+                     'b; MT: ' . memory_get_usage(true) . "b\t" . 
                      $message . "<br />\r\n";
+                $this->setLastStartTime();
                 ob_flush();
                 break;
         }
