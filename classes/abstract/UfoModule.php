@@ -178,7 +178,7 @@ abstract class UfoModule implements UfoModuleInterface
         //проверяем состоит ли параметр только из цифр
         //случай, когда идентификатор записи указывается в URL без префикса id
         } else if (10 > strlen($paramRaw) && $this->isInt($paramRaw)) {
-            $ret = (int) substr($paramRaw, strlen($paramName));
+            $ret = (int) $paramRaw;
             return ($ret < $min ? $min : $ret);
         
         //проверяем на дату вида nnnn-nn-nn, 

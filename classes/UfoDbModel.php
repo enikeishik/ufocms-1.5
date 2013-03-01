@@ -156,7 +156,7 @@ class UfoDbModel
                ' ORDER BY path DESC' . 
                ' LIMIT 1';
         if ($row = $this->db->getRowByQuery($sql)) {
-            $this->path = $row['path'];
+            return $row['path'];
         }
         return false;
     }

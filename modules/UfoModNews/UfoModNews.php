@@ -42,7 +42,7 @@ class UfoModNews extends UfoModule
     protected function getSettings()
     {
         $sql = 'SELECT Id,BodyHead,BodyFoot,IconAttributes,PageLength,AnnounceLength,TimerOffset,IsArchive' . 
-               ' FROM ' . $this->db->getTablePrefix() . 'news' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'news_sections' . 
                ' WHERE SectionId=' . $this->section->getField('id');
         return $this->db->getRowByQuery($sql);
     }
@@ -55,27 +55,45 @@ class UfoModNews extends UfoModule
     {
         $sql = 'SELECT Id,DateCreate,Title,Author,Icon,Announce,Body,ViewedCnt' . 
                ' FROM ' . $this->db->getTablePrefix() . 'news' . 
-               ' WHERE Id=' . $this->id . 
+               ' WHERE Id=' . $this->params->id . 
                ' AND IsHidden=0';
         return $this->db->getRowByQuery($sql);
     }
     
     /**
      * Формирование массива массивов данных элементов.
-     * @return array:array
+     * @return array|false
      */
     public function getItems()
     {
-        $sql = 'SELECT COUNT(*) AS Cnt';
+        $prefix = $this->db->getTablePrefix();
+        $sql_where = ' WHERE SectionId=' . $this->section->getField('id') . 
+                     ' AND IsHidden=0 AND DateCreate<=NOW()' . 
+                     ' AND (IsTimered=0 OR DateCreate<=DATE_ADD(NOW(), INTERVAL - ' .
+                     $this->moduleSettings['TimerOffset'] . 
+                     ' MINUTE))';
+        $sql = 'SELECT COUNT(*) AS Cnt' . 
+               ' FROM ' . $prefix . 'news' . 
+               $sql_where;
+        if (!$row = $this->db->getRowByQuery($sql)) {
+            return false;
+        }
+        if (0 == $rowsCount = $row['Cnt']) {
+            return false;
+        }
+        
         $sql = 'SELECT Id,DateCreate,Title,Author,Icon,Announce,Body,ViewedCnt' . 
-               ' WHERE SectionId=' . $this->section->getField('id') . 
-               ' AND IsHidden=0 AND DateCreate<=NOW()' . 
-               ' AND (IsTimered=0 OR DateCreate<=DATE_ADD(NOW(), INTERVAL - ' .
-               $this->moduleSettings['TimerOffset'] . 
-               ' MINUTE))' . 
+               ' FROM ' . $prefix . 'news' . 
+               $sql_where . 
                ' ORDER BY DateCreate DESC, Id DESC' . 
-               ' LIMIT , ';
-        return $this->db->getRowsByQuery($sql);
+               ' LIMIT ' . ($this->params->page - 1) * $this->moduleSettings['PageLength'] . 
+               ', ' . $this->moduleSettings['PageLength'];
+        if(!$rows = $this->db->getRowsByQuery($sql)) {
+            return false;
+        }
+        //for backward compatibility
+        $this->moduleSettings['TotalRecords'] = $rowsCount;
+        return $rows;
     }
     
     /**

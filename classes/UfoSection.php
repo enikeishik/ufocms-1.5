@@ -221,8 +221,8 @@ class UfoSection
             return $this->cache[__METHOD__];
         }
         if ($parent = $this->dbModel->getSection($this->fields->parentid)) {
-            $this->cache[__METHOD__] = $parent[0];
-            return $parent[0];
+            $this->cache[__METHOD__] = $parent;
+            return $parent;
         }
         return null;
     }
@@ -258,8 +258,8 @@ class UfoSection
             return $this->cache[__METHOD__];
         }
         if ($top = $this->dbModel->getSection($this->fields->topid)) {
-            $this->cache[__METHOD__] = $top[0];
-            return $top[0];
+            $this->cache[__METHOD__] = $top;
+            return $top;
         }
         return null;
     }

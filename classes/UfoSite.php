@@ -169,8 +169,10 @@ class UfoSite
         }
         
         //определяем присутствует ли путь в БД
+        if ($this->dbModel->isPathExists($path)) {
+            $this->path = $path;
         //если нет, разбиваем путь по слэшам, чтобы вычленить параметры в пути
-        if (!$this->dbModel->isPathExists($path)) {
+        } else {
             //массив частей пути
             $pathParts = explode('/', $path);
             //убираем крайние слэши, чтобы не было лишних элементов в массиве
