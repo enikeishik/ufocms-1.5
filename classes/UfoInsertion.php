@@ -82,16 +82,6 @@ class UfoInsertion
      */
     public function generate($targetId, $placeId, $offset = 0, $limit = 0, array $options = null)
     {
-        /*
-         * 1. Отображаем начало блока (ShowInsertions_Begin).
-         * 2. Делаем выборку элементов, которые должны выводиться
-         * на этой странице в этом месте 
-         * (TargetId=... OR TargetId=0) AND PlaceId=...
-         * получаем набор элементов блока вставки.
-         * 3. Для кадого элемента запускаем $this->generateItem(...) (ShowInsertions_Item)
-         * 2.-3. Если элементов нет, отображаем заданную информацию. (нет аналога)
-         * 4. Отображаем конец блока (ShowInsertions_End).
-         */
         $this->loadClass('UfoInsertionItemStruct');
         $items = $this->dbModel->getInsertionItems($targetId, $placeId, $offset, $limit);
         ob_start();

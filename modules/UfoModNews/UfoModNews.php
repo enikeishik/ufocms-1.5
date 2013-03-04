@@ -37,7 +37,7 @@ class UfoModNews extends UfoModule
     
     /**
      * Получение установленных параметров модуля для данного раздела.
-     * @return array
+     * @return array|false
      */
     protected function getSettings()
     {

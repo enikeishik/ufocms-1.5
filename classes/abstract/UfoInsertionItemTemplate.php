@@ -1,5 +1,6 @@
 <?php
 require_once 'UfoInsertionItemTemplateInterface.php';
+require_once 'classes/UfoToolsExt.php';
 /**
  * Абрстрактный класс шаблона вставки модуля, 
  * дочерние классы должны реализовывать 
@@ -11,5 +12,5 @@ require_once 'UfoInsertionItemTemplateInterface.php';
  */
 abstract class UfoInsertionItemTemplate implements UfoInsertionItemTemplateInterface
 {
-    
+    use UfoToolsExt;
 }

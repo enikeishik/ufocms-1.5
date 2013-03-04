@@ -19,22 +19,32 @@ abstract class UfoStruct
      */
     public function __construct(array $vars = null, $cast = true)
     {
-        if (is_null($vars)) {
+        $this->setValues($vars, $cast);
+    }
+    
+    /**
+     * Присваивание полям структуры данных из передаваемого ассоциативного массива (ключи соответствуют именам полей).
+     * @param array $vars = null      ассоциативный массив с данными
+     * @param boolean $cast = true    приводить тип переменных в соответствие с типом полей
+     */
+    public function setValues(array $vars = null, $cast = true)
+    {
+        if (is_null($vars) || !$vars) {
             return;
         }
         if ($cast) {
             foreach ($vars as $key => $val) {
                 if (property_exists($this, $key)) {
                     if (is_int($this->$key)) {
-                    	$this->$key = (int) $val;
+                        $this->$key = (int) $val;
                     } else if (is_string($this->$key)) {
-                    	$this->$key = (string) $val;
+                        $this->$key = (string) $val;
                     } else if (is_bool($this->$key)) {
-                    	$this->$key = (bool) $val;
+                        $this->$key = (bool) $val;
                     } else if (is_float($this->$key)) {
-                    	$this->$key = (float) $val;
+                        $this->$key = (float) $val;
                     } else {
-                		$this->$key = $val;
+                        $this->$key = $val;
                     }
                 }
             }

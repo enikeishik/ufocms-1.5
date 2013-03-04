@@ -121,6 +121,7 @@ abstract class UfoModule implements UfoModuleInterface
     /**
      * Разбор параметров в URL, которые преобразованы в массив.
      * @throws UfoExceptionPathNotexists
+     * @todo заменить 'Params' на константу
      */
     protected function parseParams()
     {

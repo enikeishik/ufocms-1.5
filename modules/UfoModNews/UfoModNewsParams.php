@@ -1,6 +1,5 @@
 <?php
 require_once 'classes/abstract/UfoModuleParams.php';
-
 /**
  * Класс-структура для хранения данных модуля.
  * @author enikeishik

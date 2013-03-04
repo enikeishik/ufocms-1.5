@@ -1,5 +1,6 @@
 <?php
 require_once 'UfoTemplateInterface.php';
+require_once 'classes/UfoToolsExt.php';
 /**
  * Абрстрактный класс шаблона модуля, обслуживающего раздел, 
  * дочерние классы должны реализовывать 
@@ -11,6 +12,8 @@ require_once 'UfoTemplateInterface.php';
  */
 abstract class UfoTemplate implements UfoTemplateInterface
 {
+    use UfoToolsExt;
+    
     /**
      * Ссылка на объект-контейнер ссылок на объекты.
      * @var UfoContainer
