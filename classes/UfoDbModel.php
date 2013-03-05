@@ -124,7 +124,8 @@ class UfoDbModel
         }
         $arr = array();
         while ($row = $result->fetch_assoc()) {
-            $arr[] = array(array_pop($row), array_pop($row), new UfoInsertionItemStruct($row, false));
+            $arr[] = array(new UfoInsertionItemSettings(array('mfileins' => array_pop($row), 'path' => array_pop($row), false)), 
+                           new UfoInsertionItemStruct($row, false));
         }
         $result->free();
         return $arr;

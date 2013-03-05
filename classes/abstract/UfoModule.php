@@ -121,14 +121,13 @@ abstract class UfoModule implements UfoModuleInterface
     /**
      * Разбор параметров в URL, которые преобразованы в массив.
      * @throws UfoExceptionPathNotexists
-     * @todo заменить 'Params' на константу
      */
     protected function parseParams()
     {
         $pathParams = $this->site->getPathParams();
         
         $class = get_class($this);
-        $struct = $class . 'Params';
+        $struct = $class . $this->config->structParamsSuffix;
         $this->loadClass($struct, $this->config->modulesDir . 
                                   $this->config->directorySeparator . 
                                   $class);

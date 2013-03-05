@@ -94,7 +94,8 @@ class UfoSection
         }
         //преобразуем от старого формата 'mod_news.php' к новому 'UfoModNews';
         $mod = substr($mod, strpos($mod, '_') + 1);
-        $this->moduleName = 'UfoMod' . ucfirst(substr($mod, 0, strpos($mod, '.')));
+        $this->moduleName = $this->config->modulesPrefix . 
+                            ucfirst(substr($mod, 0, strpos($mod, '.')));
     }
     
     /**

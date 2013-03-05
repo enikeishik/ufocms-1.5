@@ -15,17 +15,22 @@ interface UfoInsertionItemTemplateInterface
      * @param UfoInsertionItemSettings $settings    дополнительные данные вставки (путь раздела-источника, установки модуля и т.п.)
      * @param array $options = null                 дополнительные данные, передаваемые сквозь цепочку вызовов
      */
-    public function drawItemBegin(UfoInsertionItemStruct $insertion, UfoInsertionItemSettings $settings, array $options = null);
+    public function drawItemBegin(UfoInsertionItemStruct $insertion, 
+                                  UfoInsertionItemSettings $settings, 
+                                  array $options = null);
     
     /**
      * Вывод содержимого элемента вставки.
      * Этот метод может вызываться множество раз в цикле для вывода данных элементов списков (например, новости ленты новостей).
      * @param UfoInsertionItemStruct $insertion     параметры элемента вставки
      * @param UfoInsertionItemSettings $settings    дополнительные данные вставки (путь раздела-источника, установки модуля и т.п.)
-     * @param array $data                           данные (элемента) элемента блока вставки (строка выборки из БД)
+     * @param array $item                           данные (элемента) элемента блока вставки (строка выборки из БД)
      * @param array $options = null                 дополнительные данные, передаваемые сквозь цепочку вызовов
      */
-    public function drawItemContent(UfoInsertionItemStruct $insertion, UfoInsertionItemSettings $settings, array $data, array $options = null);
+    public function drawItemContent(UfoInsertionItemStruct $insertion, 
+                                    UfoInsertionItemSettings $settings, 
+                                    array $item, 
+                                    array $options = null);
     
     /**
      * Вывод окончания элемента вставки.
@@ -33,7 +38,9 @@ interface UfoInsertionItemTemplateInterface
      * @param UfoInsertionItemSettings $settings    дополнительные данные вставки (путь раздела-источника, установки модуля и т.п.)
      * @param array $options = null                 дополнительные данные, передаваемые сквозь цепочку вызовов
      */
-    public function drawItemEnd(UfoInsertionItemStruct $insertion, UfoInsertionItemSettings $settings, array $options = null);
+    public function drawItemEnd(UfoInsertionItemStruct $insertion, 
+                                UfoInsertionItemSettings $settings, 
+                                array $options = null);
     
     /**
      * Вывод заглушки, если элемент вставки не содержит инфрмации.
@@ -41,5 +48,7 @@ interface UfoInsertionItemTemplateInterface
      * @param UfoInsertionItemSettings $settings    дополнительные данные вставки (путь раздела-источника, установки модуля и т.п.)
      * @param array $options = null                 дополнительные данные, передаваемые сквозь цепочку вызовов
      */
-    public function drawItemEmpty(UfoInsertionItemStruct $insertion, UfoInsertionItemSettings $settings, array $options = null);
+    public function drawItemEmpty(UfoInsertionItemStruct $insertion, 
+                                  UfoInsertionItemSettings $settings, 
+                                  array $options = null);
 }

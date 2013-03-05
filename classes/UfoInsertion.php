@@ -83,12 +83,13 @@ class UfoInsertion
     public function generate($targetId, $placeId, $offset = 0, $limit = 0, array $options = null)
     {
         $this->loadClass('UfoInsertionItemStruct');
+        $this->loadClass('UfoInsertionItemSettings');
         $items = $this->dbModel->getInsertionItems($targetId, $placeId, $offset, $limit);
         ob_start();
         if (is_array($items) && 0 < count($items)) {
             $this->template->drawBegin($options);
             foreach ($items as $item) {
-                echo $this->generateItem($item[0], $item[1], $item[2], $options);
+                echo $this->generateItem($item[1], $item[0], $options);
             }
             $this->template->drawEnd($options);
         } else {
@@ -99,21 +100,27 @@ class UfoInsertion
     
     /**
      * Генерация содержимого элемента блока вставки.
-     * @param string $mfileins                     класс модуля вставки
-     * @param string $path                         путь раздела-источника вставки
-     * @param UfoInsertionItemStruct $insertion    параметры элемента вставки
-     * @param array $options = null                дополнительные данные, передаваемые сквозь цепочку вызовов
+     * @param UfoInsertionItemStruct $insertion     параметры элемента вставки
+     * @param UfoInsertionItemSettings $settings    дополнительные данные элемента вставки (путь раздела-источника, установки модуля и т.п.)
+     * @param array $options = null                 дополнительные данные, передаваемые сквозь цепочку вызовов
      * @return string
-     * @todo при обновлении архитектуры БД также перемсмотреть список параметров этого метода.
      */
-    public function generateItem($mfileins, $path, UfoInsertionItemStruct $insertion, array $options = null)
+    public function generateItem(UfoInsertionItemStruct $insertion, 
+                                 UfoInsertionItemSettings $settings, 
+                                 array $options = null)
     {
         //преобразуем от старого формата 'ins_news.php' к новому 'UfoModNews';
-        $mod = substr($mfileins, strpos($mfileins, '_') + 1);
-        $mod = 'UfoMod' . ucfirst(substr($mod, 0, strpos($mod, '.')));
-        $ins = $mod . 'Ins';
+        $mod = $settings->mfileins;
+        $mod = substr($mod, strpos($mod, '_') + 1);
+        $mod = $this->config->modulesPrefix . 
+               ucfirst(substr($mod, 0, strpos($mod, '.')));
+        $ins = $mod . $this->config->modulesInsetionsSuffix;
+        $insSet = $ins . $this->config->structSettingsSuffix;
+        
         $this->loadInsertionModule($mod, $ins);
+        $this->loadInsertionModule($mod, $insSet);
         $insObj = new $ins($this->container);
-        return $insObj->generateItem($insertion, $path, $options);
+        $insObjSet = new $insSet($settings);
+        return $insObj->generateItem($insertion, $insObjSet, $options);
     }
 }

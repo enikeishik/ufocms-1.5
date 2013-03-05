@@ -14,24 +14,39 @@ abstract class UfoStruct
      * ѕри присваивании пол€м значени€ предварительно привод€тс€ 
      * к типу пол€, которое определ€етс€ значением пол€ по-умолчанию.
      *
-     * @param array $vars = null      ассоциативный массив с данными
-     * @param boolean $cast = true    приводить тип переменных в соответствие с типом полей
+     * @param array|object $vars = null    ассоциативный массив или объект-структура с данными
+     * @param boolean $cast = true         приводить тип переменных в соответствие с типом полей
      */
-    public function __construct(array $vars = null, $cast = true)
+    public function __construct($vars = null, $cast = true)
     {
-        $this->setValues($vars, $cast);
+        if (is_array($vars)) {
+            $this->setValues($vars, $cast);
+        } else if (is_object($vars) && is_a($vars, __CLASS__)) {
+            $this->setFields($vars);
+        }
+    }
+    
+    /**
+     * ѕрисваивание пол€м структуры данных из передаваемого объекта-структуры.
+     * @param UfoStruct $struct    объект-структура, данные которого нужно импортировать
+     */
+    public function setFields(UfoStruct $struct)
+    {
+        $vars = get_object_vars($struct);
+        foreach ($vars as $key => $val) {
+            if (property_exists($this, $key)) {
+                $this->$key = $val;
+            }
+        }
     }
     
     /**
      * ѕрисваивание пол€м структуры данных из передаваемого ассоциативного массива (ключи соответствуют именам полей).
-     * @param array $vars = null      ассоциативный массив с данными
+     * @param array $vars             ассоциативный массив с данными
      * @param boolean $cast = true    приводить тип переменных в соответствие с типом полей
      */
-    public function setValues(array $vars = null, $cast = true)
+    public function setValues(array $vars, $cast = true)
     {
-        if (is_null($vars) || !$vars) {
-            return;
-        }
         if ($cast) {
             foreach ($vars as $key => $val) {
                 if (property_exists($this, $key)) {
