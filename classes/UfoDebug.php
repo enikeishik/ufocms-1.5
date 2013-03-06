@@ -137,7 +137,7 @@ class UfoDebug
                          'b; MemoryTotal: ' . memory_get_usage(true) . "b\t" . 
                          'Class: ' . $class . "\t" . 
                          'Method: ' . $method . "\t" . 
-                         $message . "<br />\r\n";
+                         $message . "<br />\r\n<br />\r\n";
                 }
                 ob_flush();
                 break;

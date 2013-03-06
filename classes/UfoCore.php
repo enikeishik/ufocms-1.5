@@ -129,14 +129,14 @@ final class UfoCore
     {
         //включаем вывод ошибок в .htaccess или здесь,
         //если на веб-сервере не установлена поддержка php директив для .htaccess
-        ini_set('display_errors', '1');
-        ini_set('error_reporting', E_ALL);
+        ini_set('display_errors', $this->config->phpDisplayErrors);
+        ini_set('error_reporting', $this->config->phpErrorReportingLevel);
         
         //устанавливаем часовой пояс, to avoid warning in date function
-        date_default_timezone_set('Europe/Moscow');
+        date_default_timezone_set($this->config->phpTimezone);
         
         //устанавливаем локаль, for strcomp, str_replace etc
-        setlocale(LC_ALL, 'ru_RU.CP1251', 'rus_RUS.CP1251', 'Russian_Russia.1251');
+        setlocale(LC_ALL, $this->config->phpLocales);
         
         //устанавливаем собственный перехватчик ошибок, для их протоколирования
         //require_once('__errors.php');
