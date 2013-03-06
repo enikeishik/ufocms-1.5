@@ -49,8 +49,14 @@ class UfoCoreCest
         $I->executeMethod($this->obj, __FUNCTION__);
         $I->seeMethodReturns($this->obj, __FUNCTION__, false);
     }
-
+    
     public function initDb(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->executeMethod($this->obj, __FUNCTION__);
+    }
+    
+    public function initDbModel(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->executeMethod($this->obj, __FUNCTION__);

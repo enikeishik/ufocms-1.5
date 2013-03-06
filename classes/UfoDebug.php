@@ -100,10 +100,13 @@ class UfoDebug
     
     /**
      * Протоколирование отладочной информации.
-     * @param string $message
+     * @param string $message            текст сообщения
+     * @param string $class = ''         класс вызова
+     * @param string $method = ''        метод вызова
+     * @param boolean $isTail = false    точка вызова, false - в начале метода, true - в конце метода
      * @todo вместо echo использовать объект протоколирования.
      */
-    public function log($message)
+    public function log($message, $class = '', $method = '', $isTail = false)
     {
         if (0 == $this->debugLevel) {
             return;
@@ -118,12 +121,24 @@ class UfoDebug
             case 7:
             case 8:
             case 9:
-                echo 'PT: ' . round($this->getExecutionTime(), 4) . "s.\t" . 
-                     'PBT: ' . round($this->getExecutionTime($this->lastStartTime) * 100, 4) . "ms.\t" . 
-                     'M: ' . memory_get_usage() . 
-                     'b; MT: ' . memory_get_usage(true) . "b\t" . 
-                     $message . "<br />\r\n";
-                $this->setLastStartTime();
+                if (!$isTail) {
+                    echo 'ScriptTime: ' . round($this->getExecutionTime(), 4) . "s.\t" . 
+                         "\t" . 
+                         'Memory: ' . memory_get_usage() . 
+                         'b; MemoryTotal: ' . memory_get_usage(true) . "b\t" . 
+                         'Class: ' . $class . "\t" . 
+                         'Method: ' . $method . "\t" . 
+                         $message . "<br />\r\n";
+                    $this->setLastStartTime();
+                } else {
+                    echo 'ScriptTime: ' . round($this->getExecutionTime(), 4) . "s.\t" . 
+                         'BlockTime: ' . round($this->getExecutionTime($this->lastStartTime) * 100, 4) . "ms.\t" . 
+                         'Memory: ' . memory_get_usage() . 
+                         'b; MemoryTotal: ' . memory_get_usage(true) . "b\t" . 
+                         'Class: ' . $class . "\t" . 
+                         'Method: ' . $method . "\t" . 
+                         $message . "<br />\r\n";
+                }
                 ob_flush();
                 break;
         }

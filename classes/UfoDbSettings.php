@@ -5,14 +5,16 @@ class UfoDbSettings
     protected $user = '';
     protected $password = '';
     protected $name = '';
+    protected $charset = '';
     protected $prefix = '';
     
-    public function __construct($host, $user, $password, $name, $prefix = '')
+    public function __construct($host, $user, $password, $name, $charset = '', $prefix = '')
     {
         $this->host = $host;
         $this->user = $user;
         $this->password = $password;
         $this->name = $name;
+        $this->charset = $charset;
         $this->prefix = $prefix;
     }
     
@@ -20,5 +22,6 @@ class UfoDbSettings
     public function getUser() { return $this->user; }
     public function getPassword() { return $this->password; }
     public function getName() { return $this->name; }
+    public function getCharset() { return $this->charset; }
     public function getPrefix() { return $this->prefix; }
 }

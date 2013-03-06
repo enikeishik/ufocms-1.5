@@ -19,9 +19,18 @@ class UfoDb extends mysqli
                                 $settings->getUser(), 
                                 $settings->getPassword(), 
                                 $settings->getName());
+            if ('' != $cs = $settings->getCharset()) {
+                $this->query('SET NAMES ' . $cs);
+            }
             $this->tablePrefix = $settings->getPrefix();
             $this->connected = true;
         }
+    }
+    
+    public function close()
+    {
+        parent::close();
+        $this->connected = false;
     }
     
     /**

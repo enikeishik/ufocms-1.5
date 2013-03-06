@@ -92,10 +92,19 @@ final class UfoCore
             echo $core->page;
             return;
         }
-        if (!$core->initDb() && !is_null($core->page)) {
-            echo $core->page;
+        //В случае ошибки соединения с базой данных, производится попытка получить данные из кэша.
+        if (!$core->initDb()) {
+            $this->page = $this->loadCache($this->cache);
+            if (!is_null($core->page)) {
+                $this->debug->log('Using cache');
+                echo $core->page;
+            } else {
+                $this->debug->log('Cache not exists, generating error');
+                //error 500
+            }
             return;
         }
+        $core->initDbModel();
         $core->initSite();
         $core->initSection();
         $core->generatePage();
@@ -174,36 +183,33 @@ final class UfoCore
     
     /**
      * Установка соединения с базой данных.
-     * В случае ошибки соединения с базой данных, производится попытка получить данные из кэша.
-     * @todo errorHamdlerModule
-     * @throws Exception
-     * @todo убрать запрос установки кодировки отсюда, сделать его конфигурационной опцией и чатью класса БД.
+     * @return boolean
      */
     public function initDb()
     {
-        $this->debug->log('Trying connect to database');
+        $this->debug->log('Init database connection', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoDb');
-        try {
-            $this->db = new UfoDb($this->config->dbSettings);
-            $this->db->query('SET NAMES CP1251');
-            $this->debug->log('Connected to database successfully');
-            $this->loadClass('UfoDbModel');
-            $this->dbModel = new UfoDbModel($this->db);
-            $this->debug->log('Data model object created successfully');
+        $this->db = new UfoDb($this->config->dbSettings);
+        if (0 == $this->db->connect_errno) {
+            $this->debug->log('Init database connection complete', __CLASS__, __METHOD__, true);
             return true;
-        } catch (Exception $e) {
-            $this->debug->log('Connection to database failed, trying cache');
-            //пытаемся получить данные из кэша
-            $this->page = $this->loadCache($this->cache);
-            if (!is_null($this->page)) {
-                $this->debug->log('Using cache');
-                return false;
-            } else {
-                $this->debug->log('Cache not exists, generating error');
-                //$this->module =& errorHamdlerModule(500)
-                throw new Exception($e->getMessage());
-            }
+        } else {
+            $this->debug->log('Init database connection error: ' . 
+                              $this->db->connect_error . ', trying cache', __CLASS__, __METHOD__, true);
+            return false;
         }
+        
+    }
+    
+    /**
+     * Инициализация объекта модели базы данных.
+     */
+    public function initDbModel()
+    {
+        $this->debug->log('Creating database model', __CLASS__, __METHOD__, false);
+        $this->loadClass('UfoDbModel');
+        $this->dbModel = new UfoDbModel($this->db);
+        $this->debug->log('Creating database model complete', __CLASS__, __METHOD__, true);
     }
     
     /**
@@ -211,15 +217,16 @@ final class UfoCore
      */
     public function initSite()
     {
-        $this->debug->log('Preparing container');
+        $this->debug->log('Loading container', __CLASS__, __METHOD__, false);
         $container =& $this->getContainer();
         $container->setConfig($this->config);
         $container->setDb($this->db);
         $container->setDbModel($this->dbModel);
         $container->setDebug($this->debug);
         $container->setCore($this);
+        $this->debug->log('Loading container complete', __CLASS__, __METHOD__, true);
         
-        $this->debug->log('Trying get site object');
+        $this->debug->log('Trying get site object', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoSite');
         $error = true;
         try {
@@ -272,19 +279,20 @@ final class UfoCore
      */
     public function initSection()
     {
-        $this->debug->log('Preparing container');
+        $this->debug->log('Loading container', __CLASS__, __METHOD__, false);
         $container =& $this->getContainer();
         $container->setSite($this->site);
+        $this->debug->log('Loading container complete', __CLASS__, __METHOD__, true);
         
-        $this->debug->log('Trying get section object');
+        $this->debug->log('Trying get section object', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoSection');
         try {
             $this->section = 
                 new UfoSection($this->path, 
                                $container);
-            $this->debug->log('Section object created');
+            $this->debug->log('Section object created', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
-            $this->debug->log('Exception: ' . $e->getMessage());
+            $this->debug->log('Exception: ' . $e->getMessage(), __CLASS__, __METHOD__, true);
             //$this->module =& errorHamdlerModule(404)
             throw new Exception($e->getMessage());
             return;
@@ -297,15 +305,17 @@ final class UfoCore
      */
     public function generatePage()
     {
-        $this->debug->log('Initialize module');
+        $this->debug->log('Initialize module', __CLASS__, __METHOD__, false);
         try {
             $this->section->initModule();
+            $this->debug->log('Initialize module complete', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
-            $this->debug->log('Exception: ' . $e->getMessage());
+            $this->debug->log('Exception: ' . $e->getMessage(), __CLASS__, __METHOD__, true);
             throw new Exception($e->getMessage());
         }
-        $this->debug->log('Generating page');
+        $this->debug->log('Generating page', __CLASS__, __METHOD__, false);
         $this->page = $this->section->getPage();
+        $this->debug->log('Generating page complete', __CLASS__, __METHOD__, true);
     }
     
     /**
@@ -313,11 +323,12 @@ final class UfoCore
      */
     public function finalize()
     {
-        $this->debug->log('Finalization');
+        $this->debug->log('Finalization', __CLASS__, __METHOD__, false);
         if (!is_null($this->db)) {
             $this->db->close();
             unset($this->db);
         }
+        $this->debug->log('Finalization complete', __CLASS__, __METHOD__, true);
     }
     
     /**
@@ -325,7 +336,7 @@ final class UfoCore
      */
     public function shutdown()
     {
-        $this->debug->log('Shutdown');
+        $this->debug->log('Shutdown', __CLASS__, __METHOD__, false);
         if ($this->config->cacheFsSavetime > 0) {
             //восстанавливаем перехватчик ошибок по-умолчанию
             restore_error_handler();
@@ -336,6 +347,7 @@ final class UfoCore
             register_shutdown_function('UfoCacheFs::deleteOld', 
                                        $this->config->cacheFsSettings);
         }
+        $this->debug->log('Shutdown complete', __CLASS__, __METHOD__, true);
     }
     
     /**
