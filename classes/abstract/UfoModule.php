@@ -73,6 +73,7 @@ abstract class UfoModule implements UfoModuleInterface
      * Конструктор.
      * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      * @throws UfoExceptionPathNotexists
+     * @todo Заменить строки 'UfoMod', 'UfoTpl' на поля объекта конфигурации.
      */
     public function __construct(UfoContainer &$container)
     {

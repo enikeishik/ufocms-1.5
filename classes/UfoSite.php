@@ -100,20 +100,21 @@ class UfoSite
     }
     
     /**
-     * ¬озвращает собственно путь (раздела) без параметров.
+     * ¬озвращает путь с параметрами.
      * @return string
      */
-    public function getPath()
+    public function getPathRaw()
     {
-        return $this->path;
+        return $this->pathRaw;
     }
     
     /**
-     * @see UfoSite::getPath()
+     * ¬озвращает часть пути, соответствующую пути раздела, без параметров.
+     * @return string
      */
-    public function getParsedPath()
+    public function getPathParsed()
     {
-        return $this->getPath();
+        return $this->path;
     }
     
     /**
@@ -181,7 +182,7 @@ class UfoSite
             $pathPartsCount = count($pathParts);
         
             //если вложенность больше допустимой, выходим
-            if ($this->config->sitePathNestingLimit < $pathPartsCount) {
+            if ($this->config->pathNestingLimit < $pathPartsCount) {
                 //вызываем ошибку 404
                 throw new UfoExceptionPathComplex('Path is too complex');
                 return;

@@ -105,8 +105,16 @@ final class UfoCore
             return;
         }
         $core->initDbModel();
-        $core->initSite();
-        $core->initSection();
+        try {
+            $core->initSite();
+        } catch (Exception $e) {
+            exit();
+        }
+        try {
+            $core->initSection();
+        } catch (Exception $e) {
+            exit();
+        }
         $core->generatePage();
         $core->finalize();
         $core->shutdown();
@@ -214,6 +222,7 @@ final class UfoCore
     
     /**
      * ѕолучение данных сайта и обработка пути раздела.
+     * @throws Exception
      */
     public function initSite()
     {
@@ -226,15 +235,13 @@ final class UfoCore
         $container->setCore($this);
         $this->debug->log('Loading container complete', __CLASS__, __METHOD__, true);
         
-        $this->debug->log('Trying get site object', __CLASS__, __METHOD__, false);
+        $this->debug->log('Creating site object', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoSite');
-        $error = true;
         try {
             $this->site = 
                 new UfoSite($this->pathRaw, 
                             $container);
-            $error = false;
-            $this->debug->log('Site object created');
+            $this->debug->log('Creating site object complete', __CLASS__, __METHOD__, true);
         } catch (UfoExceptionPathEmpty $e) {
             $this->debug->log('UfoExceptionPathEmpty');
             if (isset($_SERVER['HTTP_HOST'])) {
@@ -242,9 +249,11 @@ final class UfoCore
             } else {
                 //err http 404
             }
+            throw new Exception($e->getMessage());
         } catch (UfoExceptionPathBad $e) {
             $this->debug->log('UfoExceptionPathBad');
             //err http 404
+            throw new Exception($e->getMessage());
         } catch (UfoExceptionPathUnclosed $e) {
             $this->debug->log('UfoExceptionPathUnclosed');
             if (isset($_SERVER['HTTP_HOST'])) {
@@ -252,23 +261,25 @@ final class UfoCore
             } else {
                 //err http 404
             }
+            throw new Exception($e->getMessage());
         } catch (UfoExceptionPathFilenotexists $e) {
             $this->debug->log('UfoExceptionPathFilenotexists');
             //err http 404
+            throw new Exception($e->getMessage());
         } catch (UfoExceptionPathComplex $e) {
             $this->debug->log('UfoExceptionPathComplex');
             //err http 404
+            throw new Exception($e->getMessage());
         } catch (UfoExceptionPathNotexists $e) {
             $this->debug->log('UfoExceptionPathNotexists');
             //err http 404
+            throw new Exception($e->getMessage());
         } catch (Exception $e) {
             $this->debug->log('Exception: ' . $e->getMessage());
             throw new Exception($e->getMessage());
         }
-        if ($error) {
-            exit();
-        }
-        $this->path = $this->site->getParsedPath();
+        $this->pathRaw = $this->site->getPathRaw();
+        $this->path = $this->site->getPathParsed();
         $this->debug->log('Path: ' . $this->path);
     }
     
@@ -293,9 +304,8 @@ final class UfoCore
             $this->debug->log('Section object created', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
             $this->debug->log('Exception: ' . $e->getMessage(), __CLASS__, __METHOD__, true);
-            //$this->module =& errorHamdlerModule(404)
+            //$this->module =& errorHamdlerModule(500)
             throw new Exception($e->getMessage());
-            return;
         }
     }
     
