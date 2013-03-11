@@ -16,6 +16,11 @@ class UfoTplNews extends UfoTemplateGlobal
         echo '<div>Данные по запросу отсутствуют.</div>';
     }
     
+    /**
+     * Вывод данных отдельного элемента.
+     * @param array|false $item
+     * @todo вместо drawEmpty() генерировать ошибку 404.
+     */
     protected function drawItem($item)
     {
         if (!is_array($item)) {

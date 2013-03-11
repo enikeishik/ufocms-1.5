@@ -74,6 +74,12 @@ class UfoContainer
     protected $module = null;
     
     /**
+     * Ссылка на объект ошибки.
+     * @var UfoError
+     */
+    protected $error = null;
+    
+    /**
      * Конструктор.
      * @param array $vars = null    массив данных раздела
      */
@@ -208,4 +214,16 @@ class UfoContainer
      * @return UfoModule
      */
     public function &getModule() { return $this->module; }
+    
+    /**
+     * 
+     * @param UfoError $error
+     */
+    public function setError(UfoError &$error) { $this->error =& $error; }
+    
+    /**
+     * 
+     * @return UfoError
+     */
+    public function &getError() { return $this->error; }
 }

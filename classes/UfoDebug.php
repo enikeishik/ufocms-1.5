@@ -1,4 +1,5 @@
 <?php
+require_once 'UfoDebugStruct.php';
 /**
  * Класс отладки.
  * 
@@ -24,6 +25,12 @@ class UfoDebug
      * @var float
      */
     protected $lastStartTime = 0;
+    
+    /**
+     * Буфер отладочной информации.
+     * @var array
+     */
+    protected $buffer = array();
     
     /**
      * Конструктор.
@@ -98,13 +105,18 @@ class UfoDebug
         return $now - $startTime;
     }
     
+    public function getBuffer()
+    {
+        return $this->buffer;
+    }
+    
     /**
      * Протоколирование отладочной информации.
      * @param string $message            текст сообщения
      * @param string $class = ''         класс вызова
      * @param string $method = ''        метод вызова
      * @param boolean $isTail = false    точка вызова, false - в начале метода, true - в конце метода
-     * @todo вместо echo использовать объект протоколирования.
+     * @todo доделать.
      */
     public function log($message, $class = '', $method = '', $isTail = false)
     {
@@ -121,25 +133,20 @@ class UfoDebug
             case 7:
             case 8:
             case 9:
+                $ds = new UfoDebugStruct();
+                $ds->message = $message;
+                $ds->scriptTime = $this->getExecutionTime();
+                $ds->memoryUsed = memory_get_usage();
+                $ds->memoryUsedTotal = memory_get_usage(true);
+                $ds->className = $class;
+                $ds->methodName = $method;
                 if (!$isTail) {
-                    echo 'ScriptTime: ' . round($this->getExecutionTime(), 4) . "s.\t" . 
-                         "\t" . 
-                         'Memory: ' . memory_get_usage() . 
-                         'b; MemoryTotal: ' . memory_get_usage(true) . "b\t" . 
-                         'Class: ' . $class . "\t" . 
-                         'Method: ' . $method . "\t" . 
-                         $message . "<br />\r\n";
+                    $this->buffer[] = $ds;
                     $this->setLastStartTime();
                 } else {
-                    echo 'ScriptTime: ' . round($this->getExecutionTime(), 4) . "s.\t" . 
-                         'BlockTime: ' . round($this->getExecutionTime($this->lastStartTime) * 100, 4) . "ms.\t" . 
-                         'Memory: ' . memory_get_usage() . 
-                         'b; MemoryTotal: ' . memory_get_usage(true) . "b\t" . 
-                         'Class: ' . $class . "\t" . 
-                         'Method: ' . $method . "\t" . 
-                         $message . "<br />\r\n<br />\r\n";
+                    $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
+                    $this->buffer[] = $ds;
                 }
-                ob_flush();
                 break;
         }
     }

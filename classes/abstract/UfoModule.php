@@ -65,7 +65,7 @@ abstract class UfoModule implements UfoModuleInterface
     
     /**
      * Объект-структура хранящий значения параметров, передаваемых в URL.
-     * @var UfoStruct
+     * @var UfoModuleParams
      */
     protected $params = null;
     
@@ -73,7 +73,6 @@ abstract class UfoModule implements UfoModuleInterface
      * Конструктор.
      * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      * @throws UfoExceptionPathNotexists
-     * @todo Заменить строки 'UfoMod', 'UfoTpl' на поля объекта конфигурации.
      */
     public function __construct(UfoContainer &$container)
     {
@@ -88,7 +87,9 @@ abstract class UfoModule implements UfoModuleInterface
         
         $this->container->setModule($this);
         
-        $templateName = str_replace('UfoMod', 'UfoTpl', get_class($this));
+        $templateName = str_replace($this->config->modulesPrefix, 
+                                    $this->config->templatesPrefix, 
+                                    get_class($this));
         $this->loadTemplate($templateName);
         $this->template = new $templateName($this->container);
     }
@@ -105,6 +106,19 @@ abstract class UfoModule implements UfoModuleInterface
         //$this->loadLayout($this->template, 'print');
         //$this->loadLayout($this->template, 'mobil');
         return ob_get_clean();
+    }
+    
+    /**
+     * Возвращение значения параметра передаваемого в URL.
+     * @param string $name    имя параметра
+     * @return mixed|null     возвращает значение параметра или NULL если параметра не существует
+     */
+    public function getParam($name)
+    {
+        if (property_exists($this->params, $name)) {
+            return $this->params->$name;
+        }
+        return null;
     }
     
     /**

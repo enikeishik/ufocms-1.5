@@ -115,13 +115,18 @@ trait UfoTools
      * /(AUX|PRN|NUL|COM\d|CON|LPT\d)+\s/i
      *
      * @param string $str    проверяемое значение
-     *
+     * @param boolean $closingSlashRequired = false    обязательно наличие закрывающего слэша
      * @return boolean
      */
-    public function isPath($str)
+    public function isPath($str, $closingSlashRequired = true)
     {
-        return (1 == preg_match('/\/[A-Za-z0-9~_\/\-\.]+\//i', $str)
-                && 0 == preg_match('/(\/{2})|(\.{2})/i', $str));
+        if ($closingSlashRequired) {
+            return (1 == preg_match('/\/[A-Za-z0-9~_\/\-\.]+\//i', $str)
+                    && 0 == preg_match('/(\/{2})|(\.{2})/i', $str));
+        } else {
+            return (1 == preg_match('/\/[A-Za-z0-9~_\/\-\.]+/i', $str)
+                    && 0 == preg_match('/(\/{2})|(\.{2})/i', $str));
+        }
     }
     
     /**

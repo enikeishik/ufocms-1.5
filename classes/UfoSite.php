@@ -140,11 +140,11 @@ class UfoSite
             return;
         }
         if ('' == $path) {
-            throw new UfoExceptionPathEmpty('Main page redirect required');
+            throw new UfoExceptionPathEmpty('Path empty, main page redirect required');
         }
         
         //если в пути есть недопустимые символы, вызываем ошибку 404
-        if (!$this->isPath($path)) {
+        if (!$this->isPath($path, false)) {
             throw new UfoExceptionPathBad('Bad path');
         }
         

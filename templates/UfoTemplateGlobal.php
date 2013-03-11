@@ -10,6 +10,18 @@ require_once 'classes/abstract/UfoTemplate.php';
  */
 abstract class UfoTemplateGlobal extends UfoTemplate
 {
+    public function drawHttpHeaders()
+    {
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', time() + $this->config->httpLastModified) . ' GMT');
+        header('Cache-Control: max-age=' . $this->config->httpMaxAge);
+        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $this->config->httpExpires) . ' GMT');
+        if ($this->module->getParam('rss')) {
+            header('Content-type: text/xml; charset=' . $this->config->httpCharset);
+        } else {
+            header('Content-type: text/html; charset=' . $this->config->httpCharset);
+        }
+    }
+    
     /**
      * ¬ывод заголовка, отображаемого в заголовке документа.
      */
@@ -44,11 +56,11 @@ abstract class UfoTemplateGlobal extends UfoTemplate
     
     /**
      * ¬ывод вставки информации из разделов.
-     * @param array $params = null    параметры вставки, дополнительные данные, передаваемые сквозь цепочку вызовов
+     * @param array $options = null    параметры вставки, дополнительные данные, передаваемые сквозь цепочку вызовов
      */
-    public function drawInsertion(array $params = null)
+    public function drawInsertion(array $options = null)
     {
-        echo $this->core->insertion($params);
+        echo $this->core->insertion($options);
     }
     
     /**

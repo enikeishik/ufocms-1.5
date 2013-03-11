@@ -46,8 +46,15 @@ class UfoError
      */
     protected $debug = null;
     
-    public function __construct(UfoContainer &$container)
+    /**
+     * Объект-структура с данными ошибки.
+     * @var UfoErrorStruct
+     */
+    protected $errorData = null;
+    
+    public function __construct(UfoErrorStruct $errorData, UfoContainer &$container)
     {
+        $this->errorData = $errorData;
         $this->container =& $container;
         $this->unpackContainer();
     }
@@ -64,8 +71,18 @@ class UfoError
         $this->debug =& $this->container->getDebug();
     }
     
+    /**
+     * Возвращает объект-структуру с данными ошибки.
+     * @return UfoErrorStruct
+     */
+    public function getError()
+    {
+        return $this->errorData;
+    }
+    
     public function getPage()
     {
+        $this->container->setError($this);
         ob_start();
         $this->loadTemplate('UfoTemplateError');
         $template = new UfoTemplateError($this->container);

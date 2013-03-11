@@ -21,6 +21,12 @@ abstract class UfoTemplate implements UfoTemplateInterface
     protected $container = null;
     
     /**
+     * Ссылка на объект конфигурации.
+     * @var UfoConfig
+     */
+    protected $config = null;
+    
+    /**
      * Ссылка на объект ядра системы.
      * @var UfoCore
      */
@@ -51,6 +57,18 @@ abstract class UfoTemplate implements UfoTemplateInterface
     protected $sectionFields = null;
     
     /**
+     * Объект ошибки.
+     * @var UfoError
+     */
+    protected $error = null;
+    
+    /**
+     * Объект-структура с данными ошибки.
+     * @var UfoErrorStruct
+     */
+    protected $errorData = null;
+    
+    /**
      * Конструктор.
      * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      */
@@ -62,6 +80,9 @@ abstract class UfoTemplate implements UfoTemplateInterface
         if (!is_null($this->section)) {
             $this->sectionFields = $this->section->getFields();
         }
+        if (!is_null($this->error)) {
+            $this->errorData = $this->error->getError();
+        }
     }
     
     /**
@@ -69,9 +90,11 @@ abstract class UfoTemplate implements UfoTemplateInterface
      */
     protected function unpackContainer()
     {
+        $this->config =& $this->container->getConfig();
         $this->core =& $this->container->getCore();
         $this->module =& $this->container->getModule();
         $this->section =& $this->container->getSection();
         $this->debug =& $this->container->getDebug();
+        $this->error =& $this->container->getError();
     }
 }

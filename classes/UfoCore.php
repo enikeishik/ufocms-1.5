@@ -101,6 +101,12 @@ final class UfoCore
             } else {
                 $this->debug->log('Cache not exists, generating error');
                 //error 500
+                $this->loadClass('UfoError');
+                $this->loadClass('UfoErrorStruct');
+                $e = new UfoError(new UfoErrorStruct(500, 'Database connection error'), 
+                                  $this->getContainer());
+                $core->page = $e->getPage();
+                echo $core->page;
             }
             return;
         }
@@ -108,11 +114,13 @@ final class UfoCore
         try {
             $core->initSite();
         } catch (Exception $e) {
+            echo $core->page;
             exit();
         }
         try {
             $core->initSection();
         } catch (Exception $e) {
+            echo $core->page;
             exit();
         }
         $core->generatePage();
@@ -128,6 +136,16 @@ final class UfoCore
     public function __construct(UfoConfig &$config)
     {
         $this->config =& $config;
+        $this->loadClass('UfoDebug');
+        $this->debug = new UfoDebug($this->config->debugLevel);
+        $container =& $this->getContainer();
+        $container->setConfig($this->config);
+        $container->setDebug($this->debug);
+        $container->setCore($this);
+        
+        //время выполнения скрипта
+        $this->debug->setPageStartTime();
+        $this->debug->log('Execution started', __CLASS__, __METHOD__, false);
     }
     
     /**
@@ -135,6 +153,8 @@ final class UfoCore
      */
     public function initPhp()
     {
+        $this->debug->log('Init PHP', __CLASS__, __METHOD__, false);
+        
         //включаем вывод ошибок в .htaccess или здесь,
         //если на веб-сервере не установлена поддержка php директив для .htaccess
         ini_set('display_errors', $this->config->phpDisplayErrors);
@@ -147,14 +167,9 @@ final class UfoCore
         setlocale(LC_ALL, $this->config->phpLocales);
         
         //устанавливаем собственный перехватчик ошибок, для их протоколирования
-        //require_once('__errors.php');
-        //set_error_handler('err_Php');
+        set_error_handler(array(&$this, 'errorHandler'));
         
-        $this->loadClass('UfoDebug');
-        $this->debug = new UfoDebug($this->config->debugLevel);
-        //время выполнения скрипта
-        $this->debug->setPageStartTime();
-        $this->debug->log('Execution started');
+        $this->debug->log('Init PHP complete', __CLASS__, __METHOD__, true);
     }
     
     /**
@@ -180,12 +195,12 @@ final class UfoCore
      */
     public function tryCache()
     {
-        $this->debug->log('Trying use cache');
+        $this->debug->log('Trying use cache', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoCacheFs');
         $this->cache = new UfoCacheFs($this->pathRaw, 
                                       $this->config->cacheFsSettings);
         $this->page = $this->loadCache($this->cache);
-        $this->debug->log(is_null($this->page) ? 'Cache not used' : 'Using cache');
+        $this->debug->log(is_null($this->page) ? 'Cache not used' : 'Using cache', __CLASS__, __METHOD__, true);
         return !is_null($this->page);
     }
     
@@ -228,11 +243,8 @@ final class UfoCore
     {
         $this->debug->log('Loading container', __CLASS__, __METHOD__, false);
         $container =& $this->getContainer();
-        $container->setConfig($this->config);
         $container->setDb($this->db);
         $container->setDbModel($this->dbModel);
-        $container->setDebug($this->debug);
-        $container->setCore($this);
         $this->debug->log('Loading container complete', __CLASS__, __METHOD__, true);
         
         $this->debug->log('Creating site object', __CLASS__, __METHOD__, false);
@@ -243,39 +255,62 @@ final class UfoCore
                             $container);
             $this->debug->log('Creating site object complete', __CLASS__, __METHOD__, true);
         } catch (UfoExceptionPathEmpty $e) {
-            $this->debug->log('UfoExceptionPathEmpty');
-            if (isset($_SERVER['HTTP_HOST'])) {
-                $this->redirect('http://' . $_SERVER['HTTP_HOST'] . '/');
-            } else {
-                //err http 404
-            }
+            $this->debug->log($e->getMessage());
+            //$this->redirect('http://' . $_SERVER['HTTP_HOST'] . '/');
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(301, $e->getMessage(), '/'), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathBad $e) {
-            $this->debug->log('UfoExceptionPathBad');
-            //err http 404
+            $this->debug->log($e->getMessage());
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathUnclosed $e) {
-            $this->debug->log('UfoExceptionPathUnclosed');
-            if (isset($_SERVER['HTTP_HOST'])) {
-                $this->redirect('http://' . $_SERVER['HTTP_HOST'] . $this->pathRaw . '/');
-            } else {
-                //err http 404
-            }
+            $this->debug->log($e->getMessage());
+            //$this->redirect('http://' . $_SERVER['HTTP_HOST'] . $this->pathRaw . '/');
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(301, $e->getMessage(), $this->pathRaw . '/'), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathFilenotexists $e) {
-            $this->debug->log('UfoExceptionPathFilenotexists');
-            //err http 404
+            $this->debug->log($e->getMessage());
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathComplex $e) {
-            $this->debug->log('UfoExceptionPathComplex');
-            //err http 404
+            $this->debug->log($e->getMessage());
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathNotexists $e) {
-            $this->debug->log('UfoExceptionPathNotexists');
-            //err http 404
+            $this->debug->log($e->getMessage());
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         } catch (Exception $e) {
-            $this->debug->log('Exception: ' . $e->getMessage());
+            $this->debug->log($e->getMessage());
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(500, $e->getMessage()), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         }
         $this->pathRaw = $this->site->getPathRaw();
@@ -285,7 +320,6 @@ final class UfoCore
     
     /**
      * Инициализация объекта текущего раздела.
-     * @todo errorHamdlerModule
      * @throws Exception
      */
     public function initSection()
@@ -304,7 +338,11 @@ final class UfoCore
             $this->debug->log('Section object created', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
             $this->debug->log('Exception: ' . $e->getMessage(), __CLASS__, __METHOD__, true);
-            //$this->module =& errorHamdlerModule(500)
+            $this->loadClass('UfoError');
+            $this->loadClass('UfoErrorStruct');
+            $ufoErr = new UfoError(new UfoErrorStruct(500, $e->getMessage()), 
+                                   $this->getContainer());
+            $this->page = $ufoErr->getPage();
             throw new Exception($e->getMessage());
         }
     }
@@ -424,33 +462,69 @@ final class UfoCore
         }
     }
     
+    /**
+     * Обработчик ошибок PHP.
+     * @param int $errno           уровень ошибки в виде целого числа
+     * @param string $errstr       сообщение об ошибке
+     * @param string $errfile      имя файла, в котором произошла ошибка
+     * @param string $errline      номер строки, в которой произошла ошибка
+     * @param array $errcontext    массив всех переменных, существующих в области видимости, где произошла ошибка
+     */
+    private function errorHandler($errno, $errstr, 
+                                  $errfile = null, $errline = null, 
+                                  array $errcontext = null)
+    {
+        $data = '';
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $data = $_SERVER['REMOTE_ADDR'];
+        }
+        $data .= "\t" . $errno . "\t" . $errfile . "\t" . $errline . "\t" . $errstr;
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $data .= "\t" . $_SERVER['REQUEST_URI'];
+        } else {
+            $data .= "\t";
+        }
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $data .= "\t" . $_SERVER['HTTP_REFERER'];
+        } else {
+            $data .= "\t";
+        }
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
+            $data .= "\t" . $_SERVER['HTTP_USER_AGENT'];
+        } else {
+            $data .= "\t";
+        }
+        echo $data;
+        return false; //call default error handler
+    }
+    
     /*
      * 
      */
     
     /**
      * Вставка информации из разделов.
-     * @param array $params = null    параметры вставки, дополнительные данные
+     * @param array $options = null    параметры вставки, дополнительные данные
      * @return string
      */
-    public function insertion(array $params = null)
+    public function insertion(array $options = null)
     {
         $targetId = $this->section->getFields()->id;
         $placeId = 0;
         $offset = 0;
         $limit = 0;
-        if (is_array($params)) {
-            if (array_key_exists('PlaceId', $params)) {
-                $placeId = (int) $params['PlaceId'];
+        if (is_array($options)) {
+            if (array_key_exists('PlaceId', $options)) {
+                $placeId = (int) $options['PlaceId'];
             }
-            if (array_key_exists('Offset', $params)) {
-                $offset = (int) $params['Offset'];
+            if (array_key_exists('Offset', $options)) {
+                $offset = (int) $options['Offset'];
                 if ($offset < 1) {
                     $offset = 0;
                 }
             }
-            if (array_key_exists('Limit', $params)) {
-                $limit = (int) $params['Limit'];
+            if (array_key_exists('Limit', $options)) {
+                $limit = (int) $options['Limit'];
                 if ($limit < 1) {
                     $limit = 0;
                 }
@@ -458,6 +532,6 @@ final class UfoCore
         }
         $this->loadClass('UfoInsertion');
         $insertion = new UfoInsertion($this->getContainer());
-        return $insertion->generate($targetId, $placeId, $offset, $limit, $params);
+        return $insertion->generate($targetId, $placeId, $offset, $limit, $options);
     }
 }
