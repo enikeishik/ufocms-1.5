@@ -82,6 +82,9 @@ abstract class UfoTemplateGlobal extends UfoTemplate
                 echo "\r\n";
             }
             echo '</pre>' . "\r\n";
+            echo '<p>SQL queries counter: ' . $this->debug->getDbQueriesCounter() . 
+                 '; memory max usage: ' . $this->debug->getMemoryUsedMax() . 
+                 ' (' . $this->debug->getMemoryUsedTotalMax() . ')</p>' . "\r\n";
         }
         echo '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->' . "\r\n";
     }

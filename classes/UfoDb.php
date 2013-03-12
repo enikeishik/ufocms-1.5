@@ -51,10 +51,14 @@ class UfoDb extends mysqli
     
     public function query($query, $resultmode = MYSQLI_STORE_RESULT)
     {
-        $this->ufoDebug->logSql($query, $this->error, false);
-        $ret = parent::query($query, $resultmode);
-        $this->ufoDebug->logSql($query, $this->error, true);
-        return $ret;
+        if (!is_null($this->ufoDebug)) {
+            $this->ufoDebug->logSql($query, $this->error, false);
+            $ret = parent::query($query, $resultmode);
+            $this->ufoDebug->logSql($query, $this->error, true);
+            return $ret;
+        } else {
+            return parent::query($query, $resultmode);
+        }
     }
     
     /**

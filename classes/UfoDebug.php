@@ -33,6 +33,24 @@ class UfoDebug
     protected $buffer = array();
     
     /**
+     * Счетчик количества SQL запросов к БД.
+     * @var int
+     */
+    protected $dbQueriesCounter = 0;
+    
+    /**
+     * Максимальное количество используемой памяти.
+     * @var int
+     */
+    protected $memoryUsedMax = 0;
+    
+    /**
+     * Максимальное количество реально используемой памяти.
+     * @var int
+     */
+    protected $memoryUsedTotalMax = 0;
+    
+    /**
      * Конструктор.
      * @param int $debugLevel = 0    уровень протоколирования отладочной информации
      */
@@ -105,9 +123,39 @@ class UfoDebug
         return $now - $startTime;
     }
     
+    /**
+     * @return array: UfoDebugStruct
+     */
     public function getBuffer()
     {
         return $this->buffer;
+    }
+    
+    /**
+     * Возвращает количество SQL запросов к БД.
+     * @return int
+     */
+    public function getDbQueriesCounter()
+    {
+        return $this->dbQueriesCounter;
+    }
+    
+    /**
+     * Возвращает максимальное количество используемой памяти.
+     * @return int
+     */
+    public function getMemoryUsedMax()
+    {
+        return $this->memoryUsedMax;
+    }
+    
+    /**
+     * Возвращает максимальное количество реально используемой памяти.
+     * @return int
+     */
+    public function getMemoryUsedTotalMax()
+    {
+        return $this->memoryUsedTotalMax;
     }
     
     /**
@@ -146,6 +194,12 @@ class UfoDebug
                     $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
                 }
                 $this->buffer[] = $ds;
+                if ($this->memoryUsedMax < $ds->memoryUsed) {
+                    $this->memoryUsedMax = $ds->memoryUsed;
+                }
+                if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
+                    $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
+                }
                 break;
         }
     }
@@ -173,5 +227,12 @@ class UfoDebug
         $ds->dbQuery = $query;
         $ds->dbError = $error;
         $this->buffer[] = $ds;
+        $this->dbQueriesCounter++;
+        if ($this->memoryUsedMax < $ds->memoryUsed) {
+            $this->memoryUsedMax = $ds->memoryUsed;
+        }
+        if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
+            $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
+        }
     }
 }
