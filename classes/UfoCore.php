@@ -212,7 +212,7 @@ final class UfoCore
     {
         $this->debug->log('Init database connection', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoDb');
-        $this->db = new UfoDb($this->config->dbSettings);
+        $this->db = new UfoDb($this->config->dbSettings, $this->debug);
         if (0 == $this->db->connect_errno) {
             $this->debug->log('Init database connection complete', __CLASS__, __METHOD__, true);
             return true;
@@ -470,9 +470,9 @@ final class UfoCore
      * @param string $errline      номер строки, в которой произошла ошибка
      * @param array $errcontext    массив всех переменных, существующих в области видимости, где произошла ошибка
      */
-    private function errorHandler($errno, $errstr, 
-                                  $errfile = null, $errline = null, 
-                                  array $errcontext = null)
+    public function errorHandler($errno, $errstr, 
+                                 $errfile = null, $errline = null, 
+                                 array $errcontext = null)
     {
         $data = '';
         if (isset($_SERVER['REMOTE_ADDR'])) {

@@ -9,11 +9,27 @@
  */
 class UfoDb extends mysqli
 {
+    /**
+     * 
+     * @var boolean
+     */
     protected $connected = false;
+    
+    /**
+     * 
+     * @var string
+     */
     protected $tablePrefix = '';
     
-    public function __construct(UfoDbSettings $settings)
+    /**
+     * —сылка на объект отладки.
+     * @var UfoDebug
+     */
+    protected $ufoDebug = null;
+    
+    public function __construct(UfoDbSettings $settings, UfoDebug &$debug = null)
     {
+        $this->ufoDebug =& $debug;
         if (!$this->connected) {
             parent::__construct($settings->getHost(), 
                                 $settings->getUser(), 
@@ -31,6 +47,14 @@ class UfoDb extends mysqli
     {
         parent::close();
         $this->connected = false;
+    }
+    
+    public function query($query, $resultmode = MYSQLI_STORE_RESULT)
+    {
+        $this->ufoDebug->logSql($query, $this->error, false);
+        $ret = parent::query($query, $resultmode);
+        $this->ufoDebug->logSql($query, $this->error, true);
+        return $ret;
     }
     
     /**

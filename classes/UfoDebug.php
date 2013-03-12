@@ -141,13 +141,37 @@ class UfoDebug
                 $ds->className = $class;
                 $ds->methodName = $method;
                 if (!$isTail) {
-                    $this->buffer[] = $ds;
                     $this->setLastStartTime();
                 } else {
                     $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
-                    $this->buffer[] = $ds;
                 }
+                $this->buffer[] = $ds;
                 break;
         }
+    }
+    
+    /**
+     * Протоколирование SQL запросов к БД.
+     * @param string $query              SQL запрос
+     * @param string $error              ошибка БД
+     * @param boolean $isTail = false    точка вызова, false - в начале метода, true - в конце метода
+     */
+    public function logSql($query, $error, $isTail = false)
+    {
+        if (0 == $this->debugLevel) {
+            return;
+        }
+        $ds = new UfoDebugStruct();
+        $ds->scriptTime = $this->getExecutionTime();
+        $ds->memoryUsed = memory_get_usage();
+        $ds->memoryUsedTotal = memory_get_usage(true);
+        if (!$isTail) {
+            $this->setLastStartTime();
+        } else {
+            $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
+        }
+        $ds->dbQuery = $query;
+        $ds->dbError = $error;
+        $this->buffer[] = $ds;
     }
 }

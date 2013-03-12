@@ -15,5 +15,7 @@ class UfoDebugStruct extends UfoStruct
     public $className = '';
     public $methodName = '';
     public $lineNumber = 0;
+    public $dbQuery = '';
+    public $dbError = '';
     public $message = '';
 }

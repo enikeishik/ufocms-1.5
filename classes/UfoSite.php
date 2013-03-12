@@ -55,9 +55,9 @@ class UfoSite
      */
     public function __construct($pathRaw, UfoContainer &$container)
     {
-        $this->config = $container->getConfig();
-        $this->db = $container->getDb();
-        $this->dbModel = $container->getDbModel();
+        $this->config =& $container->getConfig();
+        $this->db =& $container->getDb();
+        $this->dbModel =& $container->getDbModel();
         
         if ($arr = $this->dbModel->getSiteParams()) {
             foreach ($arr as $param) {

@@ -71,6 +71,18 @@ abstract class UfoTemplateGlobal extends UfoTemplate
         if (is_null($this->debug)) {
             return;
         }
+        if ($this->config->debugDisplay) {
+            echo '<pre>' . "\r\n";
+            $debug = $this->debug->getBuffer();
+            foreach ($debug as $debugData) {
+                $data = (array) $debugData;
+                foreach ($data as $key => $val) {
+                    echo $key . ': ' . $val . "\r\n"; 
+                }
+                echo "\r\n";
+            }
+            echo '</pre>' . "\r\n";
+        }
         echo '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->' . "\r\n";
     }
 }
