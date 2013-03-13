@@ -8,6 +8,14 @@ require_once 'UfoDebugStruct.php';
  */
 class UfoDebug
 {
+    use UfoTools;
+    
+    /**
+     * Ссылка на объект конфигурации.
+     * @var UfoConfig
+     */
+    private $config = null;
+    
     /**
      * Уровень протоколирования отладочной информации.
      * @var int
@@ -52,12 +60,17 @@ class UfoDebug
     
     /**
      * Конструктор.
-     * @param int $debugLevel = 0    уровень протоколирования отладочной информации
+     * @param UfoConfig &$config    ссылка на объект конфигурации
      */
-    public function __construct($debugLevel = 0)
+    public function __construct(UfoConfig &$config)
     {
-        if (0 < $debugLevel && 9 >= $debugLevel) {
-            $this->debugLevel = $debugLevel;
+        $this->config =& $config;
+        $this->debugLevel = $config->debugLevel;
+        if (0 > $this->debugLevel 
+        || ('' == $this->config->logDebug && false == $this->config->debugDisplay)) {
+            $this->debugLevel = 0;
+        } else if (9 < $this->debugLevel) {
+            $this->debugLevel = 9;
         }
     }
     
@@ -159,14 +172,14 @@ class UfoDebug
     }
     
     /**
-     * Протоколирование отладочной информации.
+     * Сбор отладочной информации.
      * @param string $message            текст сообщения
      * @param string $class = ''         класс вызова
      * @param string $method = ''        метод вызова
      * @param boolean $isTail = false    точка вызова, false - в начале метода, true - в конце метода
      * @todo доделать.
      */
-    public function log($message, $class = '', $method = '', $isTail = false)
+    public function trace($message, $class = '', $method = '', $isTail = false)
     {
         if (0 == $this->debugLevel) {
             return;
@@ -200,17 +213,18 @@ class UfoDebug
                 if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
                     $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
                 }
+                $this->log($ds);
                 break;
         }
     }
     
     /**
-     * Протоколирование SQL запросов к БД.
+     * Сбор SQL запросов к БД.
      * @param string $query              SQL запрос
      * @param string $error              ошибка БД
      * @param boolean $isTail = false    точка вызова, false - в начале метода, true - в конце метода
      */
-    public function logSql($query, $error, $isTail = false)
+    public function traceSql($query, $error, $isTail = false)
     {
         if (0 == $this->debugLevel) {
             return;
@@ -234,5 +248,15 @@ class UfoDebug
         if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
             $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
         }
+        $this->log($ds);
+    }
+    
+    /**
+     * Протоколирование отладочнойинформации.
+     * @param UfoDebugStruct $ds    данные отладки
+     */
+    protected function log(UfoDebugStruct $ds)
+    {
+        $this->writeLog((string) $ds, $this->config->logDebug);
     }
 }

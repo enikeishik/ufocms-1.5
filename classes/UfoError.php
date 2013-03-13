@@ -23,6 +23,18 @@ class UfoError
     protected $config = null;
     
     /**
+     * —сылка на объект €дра системы.
+     * @var UfoCore
+     */
+    protected $core = null;
+    
+    /**
+     * —сылка на объект отладки.
+     * @var UfoDebug
+     */
+    protected $debug = null;
+    
+    /**
      * ќбъект дл€ работы с базой данных.
      * @var UfoDb
      */
@@ -41,12 +53,6 @@ class UfoError
     protected $section = null;
     
     /**
-     * —сылка на объект отладки.
-     * @var UfoDebug
-     */
-    protected $debug = null;
-    
-    /**
      * ќбъект-структура с данными ошибки.
      * @var UfoErrorStruct
      */
@@ -57,6 +63,32 @@ class UfoError
         $this->errorData = $errorData;
         $this->container =& $container;
         $this->unpackContainer();
+        
+        $data = '';
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $data = $_SERVER['REMOTE_ADDR'];
+        }
+        $data .= "\t" . $this->errorData;
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $data .= "\t" . $_SERVER['REQUEST_URI'];
+        } else {
+            $data .= "\t";
+        }
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $data .= "\t" . $_SERVER['HTTP_REFERER'];
+        } else {
+            $data .= "\t";
+        }
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
+            $data .= "\t" . $_SERVER['HTTP_USER_AGENT'];
+        } else {
+            $data .= "\t";
+        }
+        if (500 == $this->errorData->code) {
+            $this->writeLog($data, $this->config->logError);
+        } else {
+            $this->writeLog($data, $this->config->logWarnings);
+        }
     }
 
     /**
@@ -65,10 +97,11 @@ class UfoError
     protected function unpackContainer()
     {
         $this->config =& $this->container->getConfig();
+        $this->core =& $this->container->getCore();
+        $this->debug =& $this->container->getDebug();
+        $this->db =& $this->container->getDb();
         $this->site =& $this->container->getSite();
         $this->section =& $this->container->getSection();
-        $this->db =& $this->container->getDb();
-        $this->debug =& $this->container->getDebug();
     }
     
     /**

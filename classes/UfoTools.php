@@ -144,4 +144,20 @@ trait UfoTools
         return (0 == preg_match('/[^A-Za-z0-9~_\/\-\.]|(\/{2})|(\.{2})/i', 
                                 $str));
     }
+    
+    /**
+     * Запись сообщения в файл протокола.
+     * @param string $message     текст сообщения
+     * @param string $logPath     путь к файлу протокола
+     * @param $logExt = '.log'    расширение файла протокола
+     * @return int|false
+     */
+    public function writeLog($message, $logPath, $logExt = '.log')
+    {
+        if($fhnd = fopen($_SERVER['DOCUMENT_ROOT'] . $logPath . date('ymd') . $logExt, 'a')) {
+            return @fwrite($fhnd, date('Y.m.d H:i:s') . "\t" .
+                    microtime() . "\t" .
+                    $message . "\r\n");
+        }
+    }
 }

@@ -26,6 +26,16 @@ abstract class UfoStruct
         }
     }
     
+    public function __toString()
+    {
+        $out = '';
+        $vars = get_object_vars($this);
+        foreach ($vars as $key => $val) {
+            $out .= "\t" . $key . ': ' . $val;
+        }
+        return get_class($this) . ' {' . substr($out, 1) . '}';
+    }
+    
     /**
      * Присваивание полям структуры данных из передаваемого объекта-структуры.
      * @param UfoStruct $struct    объект-структура, данные которого нужно импортировать

@@ -33,28 +33,10 @@ abstract class UfoTemplate implements UfoTemplateInterface
     protected $core = null;
     
     /**
-     * Ссылка на объект текущего раздела.
-     * @var UfoSection
-     */
-    protected $section = null;
-
-    /**
-     * Ссылка на объект модуля текущего раздела.
-     * @var UfoModule
-     */
-    protected $module = null;
-
-    /**
      * Ссылка на объект отладки.
      * @var UfoDebug
      */
     protected $debug = null;
-    
-    /**
-     * Копия объекта-структуры содержащего данные раздела.
-     * @var UfoSectionStruct
-     */
-    protected $sectionFields = null;
     
     /**
      * Объект ошибки.
@@ -67,6 +49,30 @@ abstract class UfoTemplate implements UfoTemplateInterface
      * @var UfoErrorStruct
      */
     protected $errorData = null;
+    
+    /**
+     * Ссылка на объект UfoSite, представляющий сайт.
+     * @var UfoSite
+     */
+    protected $site = null;
+    
+    /**
+     * Ссылка на объект текущего раздела.
+     * @var UfoSection
+     */
+    protected $section = null;
+    
+    /**
+     * Копия объекта-структуры содержащего данные раздела.
+     * @var UfoSectionStruct
+     */
+    protected $sectionFields = null;
+    
+    /**
+     * Ссылка на объект модуля текущего раздела.
+     * @var UfoModule
+     */
+    protected $module = null;
     
     /**
      * Конструктор.
@@ -92,9 +98,10 @@ abstract class UfoTemplate implements UfoTemplateInterface
     {
         $this->config =& $this->container->getConfig();
         $this->core =& $this->container->getCore();
-        $this->module =& $this->container->getModule();
-        $this->section =& $this->container->getSection();
         $this->debug =& $this->container->getDebug();
         $this->error =& $this->container->getError();
+        $this->site =& $this->container->getSite();
+        $this->section =& $this->container->getSection();
+        $this->module =& $this->container->getModule();
     }
 }

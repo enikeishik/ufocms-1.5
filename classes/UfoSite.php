@@ -5,7 +5,6 @@ require_once 'exceptions/UfoExceptionPathEmpty.php';
 require_once 'exceptions/UfoExceptionPathFilenotexists.php';
 require_once 'exceptions/UfoExceptionPathNotexists.php';
 require_once 'exceptions/UfoExceptionPathUnclosed.php';
-
 /**
  *  ласс сайта.
  * ѕредоставл€ет методы дл€ доступа к параметрам сайта, пути и параметрам пути.

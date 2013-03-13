@@ -28,6 +28,18 @@ abstract class UfoModule implements UfoModuleInterface
     protected $config = null;
     
     /**
+     * Ссылка на объект ядра системы.
+     * @var UfoCore
+     */
+    protected $core = null;
+    
+    /**
+     * Ссылка на объект отладки.
+     * @var UfoDebug
+     */
+    protected $debug = null;
+    
+    /**
      * Объект для работы с базой данных.
      * @var UfoDb
      */
@@ -46,22 +58,16 @@ abstract class UfoModule implements UfoModuleInterface
     protected $section = null;
     
     /**
-     * Ссылка на объект отладки.
-     * @var UfoDebug
+     * Копия объекта-структуры содержащего данные раздела.
+     * @var UfoSectionStruct
      */
-    protected $debug = null;
+    protected $sectionFields = null;
     
     /**
      * Ссылка на объект шаблона модуля.
      * @var UfoTemplate
      */
     protected $template = null;
-
-    /**
-     * Копия объекта-структуры содержащего данные раздела.
-     * @var UfoSectionStruct
-     */
-    protected $sectionFields = null;
     
     /**
      * Объект-структура хранящий значения параметров, передаваемых в URL.
@@ -93,7 +99,20 @@ abstract class UfoModule implements UfoModuleInterface
         $this->loadTemplate($templateName);
         $this->template = new $templateName($this->container);
     }
-
+    
+    /**
+     * Присванивание ссылок объектов контейнера локальным переменным.
+     */
+    protected function unpackContainer()
+    {
+        $this->config =& $this->container->getConfig();
+        $this->core =& $this->container->getCore();
+        $this->debug =& $this->container->getDebug();
+        $this->db =& $this->container->getDb();
+        $this->site =& $this->container->getSite();
+        $this->section =& $this->container->getSection();
+    }
+    
     /**
      * Генерация основного содержимого страницы.
      * Может быть переопределен в дочерних классах для реализации специфического вывода.
@@ -119,18 +138,6 @@ abstract class UfoModule implements UfoModuleInterface
             return $this->params->$name;
         }
         return null;
-    }
-    
-    /**
-     * Присванивание ссылок объектов контейнера локальным переменным.
-     */
-    protected function unpackContainer()
-    {
-        $this->config =& $this->container->getConfig();
-        $this->site =& $this->container->getSite();
-        $this->section =& $this->container->getSection();
-        $this->db =& $this->container->getDb();
-        $this->debug =& $this->container->getDebug();
     }
     
     /**

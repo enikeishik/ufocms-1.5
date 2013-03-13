@@ -26,7 +26,11 @@ class UfoCoreCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCore.php';
-        //$this->obj = new UfoCore(new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache')));
+        //$cfg = new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache', 
+        //                           'logDebug' => $this->root . self::DS . '_logs\dg'));
+        //$cfg = new UfoConfig();
+        //print_r($cfg);
+        //$this->obj = new UfoCore($cfg);
         $this->obj = new UfoCore(new UfoConfig());
     }
     
