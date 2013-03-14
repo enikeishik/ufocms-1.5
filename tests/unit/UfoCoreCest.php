@@ -22,6 +22,7 @@ class UfoCoreCest
         require_once $this->root . self::DS . 'config.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
@@ -101,6 +102,54 @@ class UfoCoreCest
         $I->execute(function() {
             UfoCore::main();
             return true;
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function setContainer(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            try {
+                $this->obj->setContainer(new UfoContainer());
+                return true;
+            } catch (Exeption $e) {
+                echo $e->getMessage();
+                return false;
+            }
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function errorHandler(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            try {
+                return $this->obj->errorHandler(0, '');
+            } catch (Exeption $e) {
+                echo $e->getMessage();
+                return true;
+            }
+        });
+        $I->seeResultEquals(false);
+    }
+    
+    public function insertion(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            try {
+                $container = new UfoContainer();
+                $container->setConfig(new UfoConfig());
+                $container->setDb(new UfoDb($container->getConfig()->dbSettings));
+                $container->setDbModel(new UfoDbModel($container->getDb()));
+                $this->obj->setContainer($container);
+                return '' != $this->obj->insertion();
+            } catch (Exeption $e) {
+                echo $e->getMessage();
+                return false;
+            }
         });
         $I->seeResultEquals(true);
     }
