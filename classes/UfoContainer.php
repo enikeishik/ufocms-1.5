@@ -81,7 +81,7 @@ class UfoContainer
     
     /**
      * Конструктор.
-     * @param array $vars = null    массив данных раздела
+     * @param array $vars = null    массив ссылок на объекты
      */
     public function __construct(array $vars = null)
     {
