@@ -20,7 +20,13 @@ class UfoModNewsIns extends UfoInsertionItemModule
                                  UfoInsertionItemSettings $settings, 
                                  array $options = null)
     {
-        $settings->setValues($this->getSettings($insertion->SourceId));
+        if (!$row = $this->getSettings($insertion->SourceId)) {
+            ob_start();
+            $this->template->drawItemEmpty($insertion, $settings, $options);
+            return ob_get_clean();
+        }
+        $settings->setValues($row);
+        unset($row);
         
         $sql = 'SELECT Id,DateCreate,Title,Author,Icon,Announce,Body,ViewedCnt' .
                 ' FROM ' . $this->db->getTablePrefix() . 'news' .
