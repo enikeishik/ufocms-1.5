@@ -12,13 +12,13 @@ class UfoCacheFsSettings extends UfoCacheSettings
      * Путь к папке, в которой хранятся текстовый файлы кэша.
      * @var string
      */
-    private $dir = '';
+    protected $dir = '';
     
     /**
      * Расширение файлов.
      * @var string
      */
-    private $fileExt = '';
+    protected $fileExt = '';
     
     /**
      * Время хранения файлов перед их удалением.
@@ -27,7 +27,7 @@ class UfoCacheFsSettings extends UfoCacheSettings
      * в случае проблем с базой данных.
      * @var int
      */
-    private $savetime = 0;
+    protected $savetime = 0;
     
     /**
      * Конструктор.

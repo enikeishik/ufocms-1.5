@@ -31,7 +31,23 @@ abstract class UfoStruct
         $out = '';
         $vars = get_object_vars($this);
         foreach ($vars as $key => $val) {
-            $out .= "\t" . $key . ': ' . $val;
+            try {
+                if (is_scalar($val)) {
+                    $out .= "\t" . $key . ': ' . (string) $val;
+                } else if (is_null($val)) {
+                    $out .= "\t" . $key . ': <null>';
+                } else if (is_array($val)) {
+                    $out .= "\t" . $key . ': <array>';
+                } else if (is_object($val)) {
+                    $out .= "\t" . $key . ': <object>';
+                } else if (is_resource($val)) {
+                    $out .= "\t" . $key . ': <resource>';
+                } else {
+                    $out .= "\t" . $key . ': <unknown type>';
+                }
+            } catch (Exception $e) {
+                $out .= "\t" . $key . ': <unconvertable to string>';
+            }
         }
         return get_class($this) . ' {' . substr($out, 1) . '}';
     }

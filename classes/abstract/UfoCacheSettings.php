@@ -7,7 +7,7 @@
  */
 abstract class UfoCacheSettings
 {
-    private $lifetime = 0;
+    protected $lifetime = 0;
     
     public function __construct($lifetime)
     {
