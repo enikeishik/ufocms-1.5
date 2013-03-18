@@ -97,4 +97,22 @@ abstract class UfoStruct
             }
         }
     }
+    
+    /**
+     * Возвращает ассоциативный массив полей.
+     * @return array($key => $value)
+     */
+    public function getValues()
+    {
+        return get_object_vars($this);
+    }
+    
+    /**
+     * Возвращает массив имен полей.
+     * @return array
+     */
+    public function getFields()
+    {
+        return array_keys($this->getValues());
+    }
 }

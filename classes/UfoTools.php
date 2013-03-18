@@ -160,4 +160,26 @@ trait UfoTools
                     $message . "\r\n");
         }
     }
+    
+    /**
+     * Отправка писем электронной почты.
+     * @param string $to                получатель(ли) письма
+     * @param string $subject           тема отправляемого письма
+     * @param string $message           текст отправляемого письма
+     * @param string $headers = null    дополнительные заголовки письма
+     * @todo tests
+     */
+    public function sendmail($to, $subject, $message, $headers = null)
+    {
+        switch ($this->config->mailEngine) {
+            case 0:
+                return mail($to, $subject, $message, $headers);
+                break;
+            case 1:
+                return false;
+                break;
+            default:
+                return false;
+        }
+    }
 }

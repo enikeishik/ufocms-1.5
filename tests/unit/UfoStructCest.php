@@ -98,4 +98,29 @@ class UfoStructCest
         });
         $I->seeResultEquals(true);
     }
+    
+    public function getValues(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $obj = new UfoStructDummy();
+            $ret = $obj->getValues();
+            $res = is_array($ret) && array_key_exists('fString', $ret) && 'test' == $ret['fString'];
+            return $res;
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function getFields(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $obj = new UfoStructDummy();
+            $ret = $obj->getFields();
+            $res = is_array($ret) 
+                   && 'fInt,fFloat,fString,fBoolean,fArray,fObject,fVariant' == implode(',', $ret);
+            return $res;
+        });
+        $I->seeResultEquals(true);
+    }
 }
