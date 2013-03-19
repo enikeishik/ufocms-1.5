@@ -146,6 +146,161 @@ trait UfoTools
     }
     
     /**
+     * ѕроверка строкового значени€ на соответстви€ числу.
+     *
+     * @param string $str    провер€емое значение
+     *
+     * @return boolean
+     */
+    public function isInt($str)
+    {
+        return ctype_digit((string) $str) && ($str <= PHP_INT_MAX) && ($str > (PHP_INT_MAX * -1));
+    }
+    
+    /**
+     * ѕровер€ет содержит ли массив только значени€ типа int
+     *
+     * @param array $arr    массив провер€емых значений
+     *
+     * @return boolean
+     */
+    public function isArrayOfIntegers(array $arr)
+    {
+        foreach ($arr as $val) {
+            if (!$this->isInt($val)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * ѕровер€ет содержит ли строка значени€ типа int разделенные разделителем.
+     *
+     * @param string $str    строка значений, разделенных разделителем
+     * @param string $sep    строка-разделитель значений
+     *
+     * @return boolean
+     */
+    public function isStringOfIntegers($str, $sep = ',')
+    {
+        return $this->isArrayOfIntegers(array_map(function($str) { return trim($str); },
+        explode($sep, $str)));
+    }
+    
+    /**
+     * ѕроверка на соответствие Email адресу.
+     *
+     * @param string $str    провер€емое значение
+     *
+     * @return boolean
+     */
+    public function isEmail($str)
+    {
+        if (0 == strlen($str)) {
+            return false;
+        }
+        return (bool) preg_match('/[a-z0-9_\-\.]+@[a-z0-9\-\.]{2,}\.[a-z]{2,6}/i', $str);
+    }
+    
+    /**
+     * ƒобавление нулей к числу слева или справа до заданной длинны.
+     *
+     * @param string|int $num            исходное число
+     * @param int        $digitsTotal    общее количество символов в итоговой строке (количество разр€дов в итоговом "числе")
+     * @param boolean    $left = true    добавл€ть нули слева (true) или справа (false)
+     *
+     * @return string
+     */
+    public function appendDigits($num, $digitsTotal, $left = true)
+    {
+        return str_pad((string) $num,
+                $digitsTotal,
+                '0',
+                $left ? STR_PAD_LEFT : STR_PAD_RIGHT);
+    }
+    
+    /**
+     * ѕровер€ет, может ли отформатированна€ строка представл€ть дату/врем€.
+     *
+     * @param string $str                  исходна€ строка с датой
+     * @param string $formst = 'Y-m-d|'    формат даты
+     *
+     * @return boolean
+     */
+    public function isDate($str, $format = 'Y-m-d|')
+    {
+        if (false === $dtm = DateTime::createFromFormat($format, $str)) {
+            return false;
+        }
+        if (false === $str = $dtm->format('Y-m-d')) {
+            return false;
+        }
+        $arr = explode('-', $str);
+        if (3 != count($arr)) {
+            return false;
+        }
+        return checkdate($arr[1], $arr[2], $arr[0]);
+    }
+    
+    /**
+     * ¬озвращает объект даты/времени из отформатированной строки.
+     *
+     * @param string $str                  исходна€ строка с датой
+     * @param string $formst = 'Y-m-d|'    формат даты
+     *
+     * @return DateTime
+     */
+    public function dateFromString($str, $format = 'Y-m-d|')
+    {
+        if (false !== $dtm = DateTime::createFromFormat($format, $str)) {
+            return $dtm;
+        }
+        return null;
+    }
+    
+    /**
+     * ѕреобразование SQL выражени€ в безопасное.
+     * ¬ текущей реализации просто экранируютс€ апострофы посредством
+     * PHP функции addslashes.
+     * @param string $str     преобразуема€ строка SQL выражени€
+     * @param boolean $cut    обрезать строку до размера текстового пол€ (255 символов)
+     * @return string
+     * @todo заменить 255 на константу или поле конфигурации
+     */
+    public function safeSql($str, $cut = false)
+    {
+        if (!$cut) {
+            return addslashes($str);
+        } else {
+            return addslashes(substr($str, 0, 255));
+        }
+    }
+    
+    /**
+     * ѕреобразование JS выражени€ в строку.
+     * ѕреобразование производитс€ за счет экранировани€
+     * всех спец. символов (\, ', \r, \n).
+     *
+     * @param string  $str                 преобразуема€ строка JS выражени€
+     * @param boolean $convertLt = true    преобразовывать также симполы `<'
+     *
+     * @return string
+     */
+    public function jsAsString($str, $convertLt = true)
+    {
+        if ($convertLt) {
+            return str_replace(array("\\", "'", '<', "\r", "\n"),
+                    array("\\\\", "\\'", '<!', '\r', '\n'),
+                    $str);
+        } else {
+            return str_replace(array("\\", "'", "\r", "\n"),
+                    array("\\\\", "\\'", '\r', '\n'),
+                    $str);
+        }
+    }
+    
+    /**
      * «апись сообщени€ в файл протокола.
      * @param string $message     текст сообщени€
      * @param string $logPath     путь к файлу протокола

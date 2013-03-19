@@ -150,4 +150,203 @@ class UfoToolsCest
             $I->seeResultEquals($v[1]);
         }
     }
+    
+    /**
+     * Тестируем методы трейта UfoToolsExt
+     */
+    public function isInt(\CodeGuy $I) {
+        $this->showTestCase(__CLASS__);
+        $this->showTest(__FUNCTION__);
+        $vals[] = array(0, true);
+        $vals[] = array('123456', true);
+        $vals[] = array('12asd56', false);
+        $vals[] = array('12345678901', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                var_dump($v[0]);
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
+    
+    public function isArrayOfIntegers(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array(array('12', 345, '2346236', 0), true);
+        $vals[] = array(array('12', 345, 3.14, '2346236', 0), false);
+        $vals[] = array(array('12', 345, 123456789123, '2346236', 0), false);
+        $vals[] = array(array('12', 345, '123a', '2346236', 0), false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                print_r($v[0]);
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
+    
+    public function isStringOfIntegers(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('12, 345, 123, 2346236, 0', true);
+        $vals[] = array('12, 3.45, 123, 2346236, 0', false);
+        $vals[] = array('12, 3a45, 123, 2346236, 0', false);
+        $vals[] = array('12, 123456789123, 123, 2346236, 0', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
+    
+    public function isEmail(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('abc@mysite.com', true);
+        $vals[] = array('John.Smith.agent-007@section1.itdep.my-site.com', true);
+        $vals[] = array('abc_efg@mysite.com', true);
+        $vals[] = array('abc@my_site.com', false);
+        $vals[] = array('abc@mysite.c', false);
+        $vals[] = array('abc@mysite', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
+    
+    public function safeSql(\CodeGuy $I) {
+        $vals[] = array('SELECT * FROM mytable WHERE myid=123', 
+                        'SELECT * FROM mytable WHERE myid=123');
+        $vals[] = array("SELECT * FROM mytable WHERE mystring='abc'", 
+                        "SELECT * FROM mytable WHERE mystring=\'abc\'");
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                $res = $this->obj->$f($v[0]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    public function jsAsString(\CodeGuy $I) {
+        $vals[] = array('var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
+                        'var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
+                        true);
+        $vals[] = array("var s = '';\r\nfunction retVal(v)\r\n{\r\n\treturn v;\r\n}\r\nvar newS = retVal(s);", 
+                        "var s = \'\';\\r\\nfunction retVal(v)\\r\\n{\\r\\n\treturn v;\\r\\n}\\r\\nvar newS = retVal(s);", 
+                        true);
+        $vals[] = array('var s = "<p>abc</p>";', 
+                        'var s = "<!p>abc<!/p>";', 
+                        true);
+        $vals[] = array('var s = "<p>abc</p>";', 
+                        'var s = "<p>abc</p>";', 
+                        false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                echo 'flag `' . (int) $v[2] . '`' . "\r\n";
+                $res = $this->obj->$f($v[0], $v[2]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    public function appendDigits(\CodeGuy $I) {
+        $vals[] = array(1, '01', 2, true);
+        $vals[] = array(1, '10', 2, false);
+        $vals[] = array('1', '01', 2, true);
+        $vals[] = array('1', '10', 2, false);
+        $vals[] = array('11', '11', 2, true);
+        $vals[] = array('11', '11', 2, false);
+        $vals[] = array('11', '00011', 5, true);
+        $vals[] = array('11', '11000', 5, false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                echo 'digitsTotal `' . $v[2] . '`' . "\r\n";
+                echo 'left `' . (int) $v[3] . '`' . "\r\n";
+                $res = $this->obj->$f($v[0], $v[2], $v[3]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    public function isDate(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('2015-02-01', true);
+        $vals[] = array('1960-12-5', true);
+        $vals[] = array('2000-1-13', true);
+        $vals[] = array('01-01-01', true);
+        $vals[] = array('2012-13-01', true);
+        $vals[] = array('2222-22-22', true); //2223-10-22
+        $vals[] = array('20-12-13-01', false);
+        $vals[] = array('20-01', false);
+        $vals[] = array('', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
+    
+    public function dateFromString(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('2015-02-01', true);
+        $vals[] = array('1960-12-5', true);
+        $vals[] = array('2000-1-13', true);
+        $vals[] = array('01-01-01', true);
+        $vals[] = array('2012-13-01', true);
+        $vals[] = array('2222-22-22', true); //2223-10-22
+        $vals[] = array('20-12-13-01', false);
+        $vals[] = array('20-01', false);
+        $vals[] = array('', false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                $ret = $this->obj->$f($v[0]);
+                var_dump($ret);
+                return is_a($ret, 'DateTime');
+            });
+            $I->seeResultEquals($v[1]);
+        }
+    }
 }

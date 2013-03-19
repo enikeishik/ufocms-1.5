@@ -82,7 +82,6 @@ class UfoSite
      * @param string $name           имя параметра
      * @param mixed $default = ''    значение по-умолчанию
      * @return mixed
-     * @deprecated
      */
     public function getSiteParam($name, $default = '')
     {

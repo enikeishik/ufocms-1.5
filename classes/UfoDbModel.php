@@ -164,12 +164,66 @@ class UfoDbModel
     
     /**
      * ѕолучение набора параметров сайта.
-     * return array|string
+     * @return array|false
      */
     public function getSiteParams()
     {
         $sql = 'SELECT PType,PName,PValue,PDefault' .
                ' FROM ' . $this->db->getTablePrefix() . 'siteparams';
         return $this->db->getRowsByQuery($sql);
+    }
+    
+    /**
+     * ѕолучение установок функционала зарегистрированных пользователей сайта.
+     * @param array $fields    имена полей
+     * @return array|false
+     */
+    public function getUsersSettings(array $fields)
+    {
+        $sql = 'SELECT ' . implode(',', $fields) .
+               ' FROM ' . $this->db->getTablePrefix() . 'users_params';
+        return $this->db->getRowByQuery($sql);
+    }
+    
+    /**
+     * ѕолучение данных текущего пользовател€.
+     * @param string $ticket    тикет пользовател€
+     * @return array|false
+     */
+    public function getUsersCurrent($ticket)
+    {
+        $sql = 'SELECT ' . implode(',', $this->item->getFields()) .
+        ' FROM ' . $this->db->getTablePrefix() . 'users' .
+        " WHERE IsDisabled=0' .
+                   ' AND Ticket='" . $this->safeSql($ticket, true) . "'";
+        return $this->db->getRowByQuery($sql);
+    }
+    
+    /**
+     * ѕолучение данных о принадлежности пользовател€ к группам.
+     * @param int $userId    идентификатор пользовател€
+     * @return array|false
+     */
+    public function getUserGroups($userId)
+    {
+        $sql = 'SELECT GroupId' .
+               ' FROM ' . $this->db->getTablePrefix() . 'users_groups_relations' .
+               ' WHERE UserId=' . $userId;
+        return $this->db->getRowsByQuery($sql);
+    }
+    
+    /**
+     * ѕроверка существовани€ зарегистрированного пользовател€ по логину.
+     * @param string $login    логин пользовател€
+     * @return boolean
+     */
+        public function isLoginExists($login)
+    {
+        $sql = 'SELECT COUNT(*) AS Cnt FROM ' . $this->db->getTablePrefix() . 'users' .
+               " WHERE Login='" . $this->safeSql($login, true) . "'";
+        if ($row = $this->db->getRowByQuery($sql)) {
+            return 0 < $row['Cnt'];
+        }
+        return false;
     }
 }
