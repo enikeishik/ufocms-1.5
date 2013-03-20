@@ -48,11 +48,12 @@ class UfoSite
     
     /**
      * Конструктор.
-     * @param string       $pathRaw       необработанный путь текущего раздела
-     * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
+     * @param string $pathRaw                  необработанный путь текущего раздела
+     * @param UfoContainer &$container         ссылка на объект-хранилище ссылок на объекты
+     * @param string $predefinedPath = null    предопределенный путь, для служебных разделов, которые не присуствуют в БД
      * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists, UfoExceptionPathComplex, UfoExceptionPathNotexists
      */
-    public function __construct($pathRaw, UfoContainer &$container)
+    public function __construct($pathRaw, UfoContainer &$container, $predefinedPath = null)
     {
         $this->config =& $container->getConfig();
         $this->db =& $container->getDb();
@@ -68,7 +69,11 @@ class UfoSite
         }
         
         $this->pathRaw = $pathRaw;
-        $this->parsePath();
+        if (is_null($predefinedPath)) {
+            $this->parsePath();
+        } else {
+            $this->path = $predefinedPath;
+        }
         if ($this->path != $this->pathRaw) {
             $this->pathParams = explode('/', 
                                         substr($this->pathRaw, 
