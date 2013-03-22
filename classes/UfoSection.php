@@ -1,4 +1,5 @@
 <?php
+require_once 'classes/abstract/UfoSectionInterface.php';
 /**
  * Класс описывающий раздел сайта.
  *
@@ -13,7 +14,7 @@
  * @author enikeishik
  * 
  */
-class UfoSection
+class UfoSection implements UfoSectionInterface
 {
     use UfoTools;
     
@@ -73,11 +74,10 @@ class UfoSection
     
     /**
      * Конструктор, формирует объект по идентификатору или пути.
-     *
      * @param mixed        $section       идентификатор, путь или данные раздела сайта
      * @param UfoContainer &$container    ссылка на объект-контейнер ссылок на объекты
-     * 
      * @throws Exception
+     * @todo использовать константу/переменнут вместо строки в throw, задействовать sprintf
      */
     public function __construct($section, UfoContainer &$container)
     {
@@ -110,7 +110,7 @@ class UfoSection
     }
     
     /**
-     * Получение данных раздела в виде объекта-структуры UfoSectionStruct
+     * Получение данных раздела в виде объекта-структуры UfoSectionStruct.
      * @param mixed $section    идентификатор, путь или данные раздела сайта
      * @throws Exception
      * @todo использовать константу/переменнут вместо строки в throw
@@ -133,9 +133,9 @@ class UfoSection
     }
     
     /**
-     * Инициализация объекта модуля, обслуживающего раздел
-     * @todo использовать константу/переменнут вместо строки в throw
+     * Инициализация объекта модуля, обслуживающего раздел.
      * @throws Exception
+     * @todo использовать константу/переменнут вместо строки в throw
      */
     public function initModule()
     {
@@ -157,7 +157,7 @@ class UfoSection
     }
     
     /**
-     * Возвращение сгенерированной модулем страницы
+     * Возвращение сгенерированной модулем страницы.
      * @return string
      */
     public function getPage()
@@ -166,7 +166,7 @@ class UfoSection
     }
     
     /**
-     * Получение значения поля по имени
+     * Получение значения поля по имени.
      * @param string $field    имя поля
      * @return mixed
      */
@@ -180,7 +180,7 @@ class UfoSection
     }
     
     /**
-     * Получение (копии) объекта-структуры, хранящего данные раздела
+     * Получение (копии) объекта-структуры, хранящего данные раздела.
      * @return UfoSectionStruct
      */
     public function getFields()
@@ -189,7 +189,7 @@ class UfoSection
     }
     
     /**
-     * Проверка, является ли раздел разделом верхнего уровня
+     * Проверка, является ли раздел разделом верхнего уровня.
      * @return boolean
      */
     public function isTop()
@@ -198,7 +198,7 @@ class UfoSection
     }
     
     /**
-     * Проверка, является ли раздел главной страницей
+     * Проверка, является ли раздел главной страницей.
      * @return boolean
      */
     public function isMain()

@@ -117,6 +117,7 @@ abstract class UfoModule implements UfoModuleInterface
      * √енераци€ основного содержимого страницы.
      * ћожет быть переопределен в дочерних классах дл€ реализации специфического вывода.
      * @return string
+     * @todo выбор макета
      */
     public function getPage()
     {
@@ -143,6 +144,7 @@ abstract class UfoModule implements UfoModuleInterface
     /**
      * –азбор параметров в URL, которые преобразованы в массив.
      * @throws UfoExceptionPathNotexists
+     * @todo использовать константу/переменнут вместо строки в throw
      */
     protected function parseParams()
     {

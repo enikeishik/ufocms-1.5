@@ -362,11 +362,9 @@ final class UfoCore
         $this->loadClass('UfoSectionStruct');
         try {
             if ('' == $this->pathSystem) {
-                $this->section =  new UfoSection($this->path, $container);
+                $this->section = new UfoSection($this->path, $container);
             } else {
-                $ss = new UfoSectionStruct();
-                //$ss->setFields($struct);
-                $this->section = new UfoSection($ss, $container);
+                $this->section = new UfoSystemSection($this->pathSystem, $container);
             }
             $this->debug->trace('Section object created', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
