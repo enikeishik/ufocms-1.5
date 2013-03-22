@@ -79,7 +79,7 @@ class UfoToolsCest
             $container->setConfig(new UfoConfig());
             $container->setDb(new UfoDb($container->getConfig()->dbSettings));
             $container->setDbModel(new UfoDbModel($container->getDb()));
-            $container->setSite(new UfoSite('/', $container));
+            $container->setSite(new UfoSite('/', '', $container));
             $section = new UfoSection('/', $container);
             $section->initModule();
             $container->setSection($section);

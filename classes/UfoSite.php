@@ -48,12 +48,12 @@ class UfoSite
     
     /**
      * Конструктор.
-     * @param string $pathRaw                  необработанный путь текущего раздела
-     * @param UfoContainer &$container         ссылка на объект-хранилище ссылок на объекты
-     * @param string $predefinedPath = null    предопределенный путь, для служебных разделов, которые не присуствуют в БД
+     * @param string $pathRaw             необработанный путь текущего раздела
+     * @param string $pathSystem          путь служебного раздела, служебные разделы не присуствуют в БД
+     * @param UfoContainer &$container    ссылка на объект-хранилище ссылок на объекты
      * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists, UfoExceptionPathComplex, UfoExceptionPathNotexists
      */
-    public function __construct($pathRaw, UfoContainer &$container, $predefinedPath = null)
+    public function __construct($pathRaw, $pathSystem, UfoContainer &$container)
     {
         $this->config =& $container->getConfig();
         $this->db =& $container->getDb();
@@ -69,10 +69,10 @@ class UfoSite
         }
         
         $this->pathRaw = $pathRaw;
-        if (is_null($predefinedPath)) {
+        if ('' == $pathSystem) {
             $this->parsePath();
         } else {
-            $this->path = $predefinedPath;
+            $this->parsePathSystem($pathSystem);
         }
         if ($this->path != $this->pathRaw) {
             $this->pathParams = explode('/', 
@@ -130,10 +130,10 @@ class UfoSite
     }
     
     /**
-     * Разбор необработанного пути раздела на путь раздела и параметры.
-     * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists, UfoExceptionPathComplex, UfoExceptionPathNotexists
+     * Проверка пути на допустимость.
+     * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists
      */
-    protected function parsePath()
+    protected function checkPath()
     {
         $path = $this->pathRaw;
         
@@ -171,6 +171,17 @@ class UfoSite
                 return;
             }
         }
+    }
+    
+    /**
+     * Разбор необработанного пути раздела на путь раздела и параметры.
+     * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists, UfoExceptionPathComplex, UfoExceptionPathNotexists
+     */
+    protected function parsePath()
+    {
+        $this->checkPath();
+        
+        $path = $this->pathRaw;
         
         //определяем присутствует ли путь в БД
         if ($this->dbModel->isPathExists($path)) {
@@ -204,5 +215,17 @@ class UfoSite
                 return;
             }
         }
+    }
+    
+    /**
+     * Разбор необработанного пути раздела на путь раздела и параметры.
+     * @param string $pathSystem    путь служебного раздела, без параметров
+     * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists, UfoExceptionPathComplex, UfoExceptionPathNotexists
+     */
+    protected function parsePathSystem($pathSystem)
+    {
+        $this->checkPath();
+        
+        $this->path = $pathSystem;
     }
 }

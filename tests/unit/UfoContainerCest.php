@@ -139,7 +139,7 @@ class UfoContainerCest
             $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
             
             $ret1 = $obj->getSite();
-            $obj->setSite(new UfoSite('/', $obj));
+            $obj->setSite(new UfoSite('/', '', $obj));
             $ret2 = $obj->getSite();
             return is_null($ret1) && is_a($ret2, 'UfoSite');
         });
@@ -184,7 +184,7 @@ class UfoContainerCest
             $db = new UfoDb($cfg->dbSettings);
             $dbModel = new UfoDbModel(new UfoDb($cfg->dbSettings));
             $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
-            $site = new UfoSite('/', $obj);
+            $site = new UfoSite('/', '', $obj);
             $obj->setSite($site);
             $section = new UfoSection(new UfoSectionStruct(array('id' => -1, 'moduleid' => -1)), $obj);
             $obj->setSection($section);

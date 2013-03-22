@@ -26,7 +26,7 @@ class UfoUsersCest
         $this->container->setConfig(new UfoConfig());
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
         $this->container->setDbModel(new UfoDbModel($this->container->getDb()));
-        $this->container->setSite(new UfoSite('/', $this->container));
+        $this->container->setSite(new UfoSite('/', '', $this->container));
         $core = new UfoCore($this->container->getConfig());
         $core->setContainer($this->container);
         $this->container->setCore($core);

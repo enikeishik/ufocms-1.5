@@ -34,8 +34,8 @@ class UfoSiteCest
             $obj3 = null;
             $obj4 = null;
             try {
-                $obj1 = new UfoSite('/', $this->container);
-                $obj2 = new UfoSite('/users/1/', $this->container, '/users/');
+                $obj1 = new UfoSite('/', '', $this->container);
+                $obj2 = new UfoSite('/users/1/', '/users/', $this->container);
                 try {
                     $obj3 = new UfoSite('/asd', $this->container);
                 } catch (Exception $ee) {
@@ -58,7 +58,7 @@ class UfoSiteCest
         $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
-            $obj = new UfoSite('/', $this->container);
+            $obj = new UfoSite('/', '', $this->container);
             $ret1 = $obj->getSiteParam('NotExistingSiteParameter', 'DefaultValueForRequestedParameter');
             $ret2 = $obj->getSiteParam('SiteTitle', 'DefaultValueForRequestedParameter');
             return 'DefaultValueForRequestedParameter' == $ret1 && 'DefaultValueForRequestedParameter' != $ret2;
@@ -70,7 +70,7 @@ class UfoSiteCest
         $this->showTest(__FUNCTION__);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
-            $obj = new UfoSite('/', $this->container);
+            $obj = new UfoSite('/', '', $this->container);
             $ret = $obj->getSiteParams();
             return is_array($ret);
         });
@@ -79,7 +79,7 @@ class UfoSiteCest
     
     public function getPathRaw(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
-        $obj = new UfoSite('/', $this->container);
+        $obj = new UfoSite('/', '', $this->container);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->executeMethod($obj, __FUNCTION__);
         $I->seeMethodReturns($obj, __FUNCTION__, '/');
@@ -87,7 +87,7 @@ class UfoSiteCest
     
     public function getPathParsed(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
-        $obj = new UfoSite('/', $this->container);
+        $obj = new UfoSite('/', '', $this->container);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->executeMethod($obj, __FUNCTION__);
         $I->seeMethodReturns($obj, __FUNCTION__, '/');
@@ -95,7 +95,7 @@ class UfoSiteCest
     
     public function getPathParsedWithParams(\CodeGuy $I) {
         $this->showTest('getPathParsed with params');
-        $obj = new UfoSite('/users/1/', $this->container, '/users/');
+        $obj = new UfoSite('/users/1/', '/users/', $this->container);
     	$I->wantTo('execute method `getPathParsed` with params');
         $I->executeMethod($obj, 'getPathParsed');
         $I->seeMethodReturns($obj, 'getPathParsed', '/users/');
@@ -103,7 +103,7 @@ class UfoSiteCest
     
     public function getPathParams(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
-        $obj = new UfoSite('/', $this->container);
+        $obj = new UfoSite('/', '', $this->container);
     	$I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->executeMethod($obj, __FUNCTION__);
         $I->seeMethodReturns($obj, __FUNCTION__, array());
@@ -111,7 +111,7 @@ class UfoSiteCest
     
     public function getPathParamsWithParams(\CodeGuy $I) {
         $this->showTest('getPathParams with params');
-        $obj = new UfoSite('/users/1/2/asd/', $this->container, '/users/');
+        $obj = new UfoSite('/users/1/2/asd/', '/users/', $this->container);
     	$I->wantTo('execute method `getPathParams` with params');
         $I->executeMethod($obj, 'getPathParams');
         $I->seeMethodReturns($obj, 'getPathParams', array('1', '2', 'asd'));

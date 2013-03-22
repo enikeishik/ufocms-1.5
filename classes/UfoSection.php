@@ -117,8 +117,6 @@ class UfoSection
      */
     protected function setFields($section)
     {
-        $this->loadClass('UfoSectionStruct');
-        
         if (is_scalar($section)) {
             if ($fields = $this->dbModel->getSection($section)) {
                 $this->fields = new UfoSectionStruct($fields);

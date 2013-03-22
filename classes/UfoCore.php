@@ -38,6 +38,12 @@ final class UfoCore
     private $pathRaw = '';
     
     /**
+     * Путь служебного раздела.
+     * @var string
+     */
+    private $pathSystem = '';
+    
+    /**
      * Путь текущего раздела.
      * @var string
      */
@@ -88,7 +94,8 @@ final class UfoCore
         $core = new UfoCore(new UfoConfig());
         $core->initPhp();
         $core->setPathRaw();
-        if ($core->tryCache()) {
+        //если раздел не системный, пробуем использовать кэш
+        if (!$core->isSystemPath() && $core->tryCache()) {
             echo $core->page;
             return;
         }
@@ -186,7 +193,28 @@ final class UfoCore
         } else {
             $this->pathRaw = '/';
         }
+        //также сбрасываем путь служебного раздела
+        $this->pathSystem = '';
         $this->debug->trace('PathRaw: ' . $this->pathRaw);
+    }
+    
+    /**
+     * Проверка является ли текущий раздел служебным.
+     * Данный метод должен срабатывать только один раз, затем надо проверять поле pathSystem.
+     * @return boolean
+     */
+    public function isSystemPath()
+    {
+        if ('' != $this->pathSystem) {
+            return true;
+        }
+        foreach ($this->config->systemSections as $path => $class) {
+            if (0 === strpos($this->pathRaw, $path)) {
+                $this->pathSystem = $path;
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -251,8 +279,7 @@ final class UfoCore
         $this->loadClass('UfoSite');
         try {
             $this->site = 
-                new UfoSite($this->pathRaw, 
-                            $container);
+                new UfoSite($this->pathRaw, $this->pathSystem, $container);
             $this->debug->trace('Creating site object complete', __CLASS__, __METHOD__, true);
         } catch (UfoExceptionPathEmpty $e) {
             $this->debug->trace($e->getMessage());
@@ -321,6 +348,7 @@ final class UfoCore
     /**
      * Инициализация объекта текущего раздела.
      * @throws Exception
+     * @todo инициализация структуры служебного раздела
      */
     public function initSection()
     {
@@ -331,10 +359,15 @@ final class UfoCore
         
         $this->debug->trace('Trying get section object', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoSection');
+        $this->loadClass('UfoSectionStruct');
         try {
-            $this->section = 
-                new UfoSection($this->path, 
-                               $container);
+            if ('' == $this->pathSystem) {
+                $this->section =  new UfoSection($this->path, $container);
+            } else {
+                $ss = new UfoSectionStruct();
+                //$ss->setFields($struct);
+                $this->section = new UfoSection($ss, $container);
+            }
             $this->debug->trace('Section object created', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
             $this->debug->trace('Exception: ' . $e->getMessage(), __CLASS__, __METHOD__, true);

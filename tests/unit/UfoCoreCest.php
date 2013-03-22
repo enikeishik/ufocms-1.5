@@ -48,6 +48,23 @@ class UfoCoreCest
         $I->executeMethod($this->obj, __FUNCTION__);
     }
     
+    public function isSystemPath(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $ret1 = $this->obj->isSystemPath();
+            var_dump($ret1);
+            $_GET['path'] = '/sitemap/'; //временно устанавливаем путь служебного раздела
+            $this->obj->setPathRaw();
+            $ret2 = $this->obj->isSystemPath();
+            $_GET['path'] = '/'; //возвращаем реальный путь
+            $this->obj->setPathRaw();
+            var_dump($ret2);
+            return !$ret1 && $ret2;
+        });
+        $I->seeResultEquals(true);
+    }
+    
     public function tryCache(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');

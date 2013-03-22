@@ -34,7 +34,7 @@ class UfoModDocumentsCest
         $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache')));
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
         $this->container->setDbModel(new UfoDbModel($this->container->getDb()));
-        $this->container->setSite(new UfoSite('/', $this->container));
+        $this->container->setSite(new UfoSite('/', '', $this->container));
         $this->container->setSection(new UfoSection(new UfoSectionStruct(array('id' => -1, 'moduleid' => -1)), $this->container));
         $core = new UfoCore($this->container->getConfig());
         $core->setContainer($this->container);
