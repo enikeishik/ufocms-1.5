@@ -41,6 +41,23 @@ trait UfoTools
     }
 
     /**
+     * Динамическая загрузка структур модулей (класс-структура служебного раздела).
+     * @param string $module               имя загружаемого модуля (основного класса модуля)
+     * @param string $insertion            имя загружаемого класса-структуры
+     * @param string $path                 путь к пакте с файлами модулей
+     * @param string $extention = 'php'    расширение файлов с основными классами модулей
+     */
+    public function loadModuleStruct($module,
+                                     $struct,
+                                     $path = 'modules',
+                                     $extention = 'php')
+    {
+        $this->loadClass($struct,
+                         $path . DIRECTORY_SEPARATOR . $module,
+                         $extention);
+    }
+    
+    /**
      * Динамическая загрузка вставок модулей (класса вставки модуля).
      * Модули располагаются в собственных подпапках, совпадающих по названию с основным классом модуля:
      * modules/MyModuleName/MyModuleNameIns.php

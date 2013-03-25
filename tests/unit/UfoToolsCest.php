@@ -58,6 +58,28 @@ class UfoToolsCest
         $I->seeResultEquals(true);
     }
     
+    public function loadModuleStruct(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $class = 'UfoSysSitemap';
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->executeMethod($this->obj, __FUNCTION__, $class, $class . 'Struct');
+        $I->execute(function() use ($class) {
+            return class_exists($class . 'Struct');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function loadInsertionModule(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $class = 'UfoModNews';
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->executeMethod($this->obj, __FUNCTION__, $class, $class . 'Ins');
+        $I->execute(function() use ($class) {
+            return class_exists($class . 'Ins');
+        });
+        $I->seeResultEquals(true);
+    }
+    
     public function loadTemplate(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $class = 'UfoTplDocuments';

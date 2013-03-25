@@ -207,6 +207,15 @@ class UfoSection implements UfoSectionInterface
     }
     
     /**
+     * Проверка, является ли раздел служебным.
+     * @return boolean
+     */
+    public function isSystem()
+    {
+        return 0 == $this->fields->id;
+    }
+    
+    /**
      * Получение данных родительского раздела.
      * Данные раздела в виде ассоциативного массива.
      * @return array|null
@@ -251,8 +260,9 @@ class UfoSection implements UfoSectionInterface
             return null;
         }
         if ($this->isTop()) {
-            return $this->getFields();
+            return (array) $this->getFields();
         }
+        
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
@@ -270,6 +280,14 @@ class UfoSection implements UfoSectionInterface
      */
     public function getTop()
     {
+        //этот кусок дублируется, поскольку может сразу вернуть объект
+        if ($this->isMain()) {
+            return null;
+        }
+        if ($this->isTop()) {
+            return $this->getFields();
+        }
+        //а здесь уже используем вызов метода, которые получает данные с БД 
         $section = $this->getTopArray();
         if (!is_null($section)) {
             return new UfoSectionStruct($section);
@@ -284,7 +302,7 @@ class UfoSection implements UfoSectionInterface
      */
     public function getChildrenArray()
     {
-        if ($this->isMain()) {
+        if ($this->isMain() || $this->isSystem()) {
             return null;
         }
         if (array_key_exists(__METHOD__, $this->cache)) {
