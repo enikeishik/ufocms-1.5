@@ -154,8 +154,11 @@ class UfoDebugCest
         $this->showTest('getDbQueriesCounter in real situation');
         $I->execute(function() {
             $obj = new UfoDebug(new UfoConfig());
-            $obj->traceSql('test SQL counter', 'test error');
-            return 1 == $obj->getDbQueriesCounter();
+            $obj->traceSql('test SQL counter', 'test error', true); //true - to calc sql counter
+            $ret = $obj->getDbQueriesCounter();
+            echo 'expected: '; var_dump(1); echo "\r\n";
+            echo 'actual:   '; var_dump($ret); echo "\r\n";
+            return 1 == $ret;
         });
         $I->seeResultEquals(true);
     }

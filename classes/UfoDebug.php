@@ -241,7 +241,9 @@ class UfoDebug
         $ds->dbQuery = $query;
         $ds->dbError = $error;
         $this->buffer[] = $ds;
-        $this->dbQueriesCounter++;
+        if ($isTail) {
+            $this->dbQueriesCounter++;
+        }
         if ($this->memoryUsedMax < $ds->memoryUsed) {
             $this->memoryUsedMax = $ds->memoryUsed;
         }

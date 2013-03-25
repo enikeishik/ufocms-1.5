@@ -326,7 +326,7 @@ trait UfoTools
      */
     public function writeLog($message, $logPath, $logExt = '.log')
     {
-        if($fhnd = fopen($_SERVER['DOCUMENT_ROOT'] . $logPath . date('ymd') . $logExt, 'a')) {
+        if($fhnd = fopen($logPath . date('ymd') . $logExt, 'a')) {
             return @fwrite($fhnd, date('Y.m.d H:i:s') . "\t" .
                     microtime() . "\t" .
                     $message . "\r\n");

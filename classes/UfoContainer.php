@@ -50,6 +50,12 @@ class UfoContainer
     protected $core = null;
     
     /**
+     * —сылка на объект работы с зарегистрированными пользовател€ми сайта.
+     * @var UfoUsers
+     */
+    private $users = null;
+    
+    /**
      * —сылка на объект сайта.
      * @var UfoSite
      */
@@ -130,7 +136,7 @@ class UfoContainer
      * @return UfoDb
      */
     public function &getDb() { return $this->db; }
-
+    
     /**
      *
      * @param UfoDbModel $dbModel
@@ -154,7 +160,7 @@ class UfoContainer
      * @return UfoDebug
      */
     public function &getDebug() { return $this->debug; }
-
+    
     /**
      *
      * @param UfoCore $core
@@ -166,6 +172,18 @@ class UfoContainer
      * @return UfoCore
      */
     public function &getCore() { return $this->core; }
+    
+    /**
+     *
+     * @param UfoUsers $users
+     */
+    public function setUsers(UfoUsers &$users) { $this->users =& $users; }
+    
+    /**
+     *
+     * @return UfoUsers
+     */
+    public function &getUsers() { return $this->users; }
     
     /**
      * 
@@ -190,7 +208,7 @@ class UfoContainer
      * @return UfoSection
      */
     public function &getSection() { return $this->section; }
-
+    
     /**
      *
      * @param UfoSectionStruct $sectionStruct

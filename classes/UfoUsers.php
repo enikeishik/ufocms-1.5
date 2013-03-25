@@ -223,7 +223,7 @@ class UfoUsers
             $this->settings->setValues($settings);
             unset($settings);
         } else {
-            throw new Exception('Error retieving users settings');
+            throw new Exception('Error retrieving users settings');
         }
         
         if ($this->settings->IsGlobalAE) {

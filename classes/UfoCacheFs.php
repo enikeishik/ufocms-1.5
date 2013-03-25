@@ -96,12 +96,14 @@ class UfoCacheFs extends UfoCache
      * Удаление файлов кэша, срок хранения которых истек.
      * Метод сделан статическим, поскольку вызывается после завершения работы скрипта (register_shutdown_function).
      * 
-     * @param UfoCacheFsSettings $settings    установки кэширования
+     * @param UfoConfig $config    объект конфигурации
      *
      * @todo проверить необходимость отмены кэширования информации о файле системой посредством функции clearstatcache
+     * @todo сделать метод writeLog статическим и зайдествовать его
      */
-    public static function deleteOld(UfoCacheFsSettings $settings)
+    public static function deleteOld(UfoConfig $config)
     {
+        $settings =& $config->cacheFsSettings;
         clearstatcache();
         $dir = $settings->getDir();
         if ($dh = opendir($dir)) {
@@ -111,6 +113,7 @@ class UfoCacheFs extends UfoCache
                     $fileTime = time() - filectime($filePath);
                     if ($settings->getLifetime() < $fileTime && $settings->getSavetime() < $fileTime) {
                         if (!@unlink($filePath)) {
+                            //$this->writeLog(, $config->logError);
                             //api_WriteLog(C_LOGPATH_ERRORS, 'Can not unlink file ' . $file_path);
                         }
                     }

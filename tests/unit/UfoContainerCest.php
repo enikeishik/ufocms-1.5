@@ -22,6 +22,7 @@ class UfoContainerCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDebug.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCore.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoUsers.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSectionStruct.php';
@@ -125,6 +126,25 @@ class UfoContainerCest
             $obj->setCore(new UfoCore(new UfoConfig()));
             $ret2 = $obj->getCore();
             return is_null($ret1) && is_a($ret2, 'UfoCore');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function usersSetGet(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute methods `setUsers`, `getUsers`');
+        $I->execute(function() {
+            $cfg = new UfoConfig();
+            $db = new UfoDb($cfg->dbSettings);
+            $dbModel = new UfoDbModel(new UfoDb($cfg->dbSettings));
+            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
+            $site = new UfoSite('/', '', $obj);
+            $obj->setSite($site);
+            
+            $ret1 = $obj->getUsers();
+            $obj->setUsers(new UfoUsers($obj));
+            $ret2 = $obj->getUsers();
+            return is_null($ret1) && is_a($ret2, 'UfoUsers');
         });
         $I->seeResultEquals(true);
     }

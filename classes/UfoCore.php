@@ -4,7 +4,8 @@ require_once 'UfoTools.php';
  * Основной класс приложения.
  * 
  * Содержит точку входа в виде статического метода UfoCore::main(), 
- * в котором последовательно вызываются основные методы.
+ * который создает объект ядра и вызывает его публичный метод run, 
+ * в котором последовательно вызываются основные методы ядра.
  * 
  * @author enikeishik
  *
@@ -68,6 +69,12 @@ final class UfoCore
     private $cache = null;
     
     /**
+     * Объект для работы с зарегистрированными пользователями сайта.
+     * @var UfoUsers
+     */
+    private $users = null;
+    
+    /**
      * Объект-структура для хранения данных сайта.
      * @var UfoSite
      */
@@ -87,53 +94,84 @@ final class UfoCore
     
     /**
      * Точка входа приложения.
-     * Последовательно выполняет основные методы объекта UfoCore.
      */
     public static function main()
     {
         $core = new UfoCore(new UfoConfig());
-        $core->initPhp();
-        $core->setPathRaw();
+        $core->run();
+    }
+    
+    /**
+     * Последовательное выполнение основных методов объекта UfoCore.
+     * Выделено в отдельный метод, чтобы иметь доступ к частным членам класса.
+     * Все методы кроме этого и конструктора можно объявить частными, публичные они лишь для тестирования.
+     */
+    public function run()
+    {
+        $this->initPhp();
+        
+        $this->setPathRaw();
+        
         //если раздел не системный, пробуем использовать кэш
-        if (!$core->isSystemPath() && $core->tryCache()) {
-            echo $core->page;
+        if (!$this->isSystemPath() && $this->tryCache()) {
+            echo $this->page;
             return;
         }
+        
         //В случае ошибки соединения с базой данных, производится попытка получить данные из кэша.
-        if (!$core->initDb()) {
+        if (!$this->initDb()) {
             $this->page = $this->loadCache($this->cache);
-            if (!is_null($core->page)) {
+            if (!is_null($this->page)) {
                 $this->debug->trace('Using cache');
-                echo $core->page;
+                echo $this->page;
             } else {
                 $this->debug->trace('Cache not exists, generating error');
                 //error 500
                 $this->loadClass('UfoError');
                 $this->loadClass('UfoErrorStruct');
-                $e = new UfoError(new UfoErrorStruct(500, 'Database connection error'), 
-                                  $this->getContainer());
-                $core->page = $e->getPage();
-                echo $core->page;
+                $e = new UfoError(new UfoErrorStruct(500, 'Database connection error'),
+                        $this->getContainer());
+                $this->page = $e->getPage();
+                echo $this->page;
             }
             return;
         }
-        $core->initDbModel();
+        
+        //инициализация класса абстрагирующего данные
+        $this->initDbModel();
+        
+        //инициализация объекта управления зарегистрированными пользователями сайта
+        if ($this->config->usersEnabled) {
+            
+        }
+        
+        //инициализация объекта сайта
         try {
-            $core->initSite();
+            $this->initSite();
         } catch (Exception $e) {
-            echo $core->page;
+            echo $this->page;
             exit();
         }
+        
+        //инициализация объекта текущего раздела сайта
         try {
-            $core->initSection();
+            $this->initSection();
         } catch (Exception $e) {
-            echo $core->page;
+            echo $this->page;
             exit();
         }
-        $core->generatePage();
-        $core->finalize();
-        $core->shutdown();
-        echo $core->page;
+        
+        //генерация содержимого страницы
+        $this->generatePage();
+        
+        //закрытие соединения с БД, уничтожение объектов
+        $this->finalize();
+        
+        //вывод сгенерированной страницы
+        echo $this->page;
+        
+        //выполнение служебных процедур (очистка кэша и т.п.)
+        $this->shutdown();
     }
     
     /**
@@ -364,6 +402,7 @@ final class UfoCore
             if ('' == $this->pathSystem) {
                 $this->section = new UfoSection($this->path, $container);
             } else {
+                $this->loadClass('UfoSystemSection');
                 $this->section = new UfoSystemSection($this->pathSystem, $container);
             }
             $this->debug->trace('Section object created', __CLASS__, __METHOD__, true);
@@ -424,7 +463,7 @@ final class UfoCore
             ini_set('error_reporting', 0);
             //регистрируем функцию, вызываемую по завершении выполнения скрипта
             register_shutdown_function('UfoCacheFs::deleteOld', 
-                                       $this->config->cacheFsSettings);
+                                       $this->config);
         }
         if ('' != $this->config->logPerformance) {
             $this->writeLog($this->pathRaw . "\t" . $this->debug->getPageExecutionTime(), 
@@ -499,12 +538,11 @@ final class UfoCore
     
     /**
      * Обработчик ошибок PHP.
-     * @param int $errno           уровень ошибки в виде целого числа
-     * @param string $errstr       сообщение об ошибке
+     * @param int $errno           код ошибки
+     * @param string $errstr       текст ошибки
      * @param string $errfile      имя файла, в котором произошла ошибка
      * @param string $errline      номер строки, в которой произошла ошибка
      * @param array $errcontext    массив всех переменных, существующих в области видимости, где произошла ошибка
-     * @todo вывод только при включенной отладке, добавить протоколирование
      */
     public function errorHandler($errno, $errstr, 
                                  $errfile = null, $errline = null, 
