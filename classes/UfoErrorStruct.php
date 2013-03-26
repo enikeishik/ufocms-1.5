@@ -28,8 +28,9 @@ class UfoErrorStruct extends UfoStruct
     
     /**
      * Конструктор.
-     * @param int $code       код ошибки
-     * @param string $text    текст ошибки
+     * @param int $code                    код ошибки
+     * @param string $text                 текст ошибки
+     * @param string $pathRedirect = ''    путь переадресации для ошибок 301, 302
      */
     public function __construct($code, $text, $pathRedirect = '')
     {

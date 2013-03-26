@@ -170,4 +170,89 @@ class UfoCoreCest
         });
         $I->seeResultEquals(true);
     }
+    
+    //tests with errors
+    
+    public function errorInDb(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `initDb` with error');
+        $I->execute(function() {
+            $core = new UfoCore(new UfoConfig(array('dbLogin' => 'toor')));
+            ob_start();
+            $core->run();
+            $ret = ob_get_clean();
+            return false !== strpos($ret, '500 Internal Server Error');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function errorInSitePathBad(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `initSite` with error PathBad');
+        $I->execute(function() {
+            $_GET['path'] = '/#$%/';
+            $core = new UfoCore(new UfoConfig());
+            ob_start();
+            $core->run();
+            $ret = ob_get_clean();
+            return false !== strpos($ret, '404 Not Found');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function errorInSitePathUnclosed(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `initSite` with error PathUnclosed');
+        $I->execute(function() {
+            $_GET['path'] = '/asd';
+            $core = new UfoCore(new UfoConfig());
+            ob_start();
+            $core->run();
+            $ret = ob_get_clean();
+            return false !== strpos($ret, '301 Moved Permanently');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function errorInSiteFilenotexists(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `initSite` with error Filenotexists');
+        $I->execute(function() {
+            $_GET['path'] = '/asd.htm';
+            $core = new UfoCore(new UfoConfig());
+            ob_start();
+            $core->run();
+            $ret = ob_get_clean();
+            return false !== strpos($ret, '404 Not Found');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function errorInSitePathComplex(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `initSite` with error PathComplex');
+        $I->execute(function() {
+            $_GET['path'] = '/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/u/v/w/x/y/z/';
+            $core = new UfoCore(new UfoConfig());
+            ob_start();
+            $core->run();
+            $ret = ob_get_clean();
+            return false !== strpos($ret, '404 Not Found');
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function errorInSitePathNotexists(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `initSite` with error PathNotexists');
+        $I->execute(function() {
+            $_GET['path'] = '/asdasdasdasdasdasd/';
+            $core = new UfoCore(new UfoConfig());
+            ob_start();
+            $core->run();
+            $ret = ob_get_clean();
+            return false !== strpos($ret, '404 Not Found');
+        });
+        $I->seeResultEquals(true);
+    }
 }

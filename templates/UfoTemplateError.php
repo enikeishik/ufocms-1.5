@@ -59,7 +59,8 @@ class UfoTemplateError extends UfoTemplate
     {
         echo '<META NAME="ROBOTS" CONTENT="NOINDEX,NOFOLLOW">';
         if (301 == $this->errorData->code) {
-            echo '<META HTTP-EQUIV="REFRESH" CONTENT="0; http://' . $_SERVER['HTTP_HOST'] . $this->errorData->pathRedirect . '"';
+            $host = array_key_exists('HTTP_HOST', $_SERVER) ? $_SERVER['HTTP_HOST'] : 'localhost';
+            echo '<META HTTP-EQUIV="REFRESH" CONTENT="0; http://' . $host . $this->errorData->pathRedirect . '"';
         }
     }
     
@@ -102,8 +103,9 @@ class UfoTemplateError extends UfoTemplate
     {
         switch ($this->errorData->code) {
             case 301:
+                $host = array_key_exists('HTTP_HOST', $_SERVER) ? $_SERVER['HTTP_HOST'] : 'localhost';
                 echo 'The document has moved <a href="http://' . 
-                     $_SERVER['HTTP_HOST'] . $this->errorData->pathRedirect . 
+                     $host . $this->errorData->pathRedirect . 
                      '">here</a>.' . "\r\n";
                 break;
             case 403:

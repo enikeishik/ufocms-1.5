@@ -58,6 +58,11 @@ class UfoError
      */
     protected $errorData = null;
     
+    /**
+     * Конструктор.
+     * @param UfoErrorStruct $errorData    объект-структура с данными ошибки
+     * @param UfoContainer &$container     ссылка на объект-хранилище ссылок на объекты
+     */
     public function __construct(UfoErrorStruct $errorData, UfoContainer &$container)
     {
         $this->errorData = $errorData;
@@ -113,6 +118,10 @@ class UfoError
         return $this->errorData;
     }
     
+    /**
+     * Генерация основного содержимого страницы.
+     * @return string
+     */
     public function getPage()
     {
         $this->container->setError($this);

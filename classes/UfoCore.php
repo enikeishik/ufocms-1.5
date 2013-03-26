@@ -119,19 +119,19 @@ final class UfoCore
         }
         
         //В случае ошибки соединения с базой данных, производится попытка получить данные из кэша.
-        if (!$this->initDb()) {
+        try {
+            $this->initDb();
+        } catch (Exception $e) {
+            $this->debug->trace('Trying use cache', __CLASS__, __METHOD__, false);
             $this->page = $this->loadCache($this->cache);
             if (!is_null($this->page)) {
-                $this->debug->trace('Using cache');
+                $this->debug->trace('Trying use cache complete', __CLASS__, __METHOD__, true);
                 echo $this->page;
             } else {
-                $this->debug->trace('Cache not exists, generating error');
-                //error 500
-                $this->loadClass('UfoError');
-                $this->loadClass('UfoErrorStruct');
-                $e = new UfoError(new UfoErrorStruct(500, 'Database connection error'),
-                        $this->getContainer());
-                $this->page = $e->getPage();
+                $this->debug->trace('Trying use cache fail: cache not exists', __CLASS__, __METHOD__, true);
+                $this->debug->trace('Generating error', __CLASS__, __METHOD__, false);
+                $this->generateError(500, 'Database connection error', __CLASS__, __METHOD__, false);
+                $this->debug->trace('Generating error complete', __CLASS__, __METHOD__, false);
                 echo $this->page;
             }
             return;
@@ -140,17 +140,29 @@ final class UfoCore
         //инициализация класса абстрагирующего данные
         $this->initDbModel();
         
-        //инициализация объекта управления зарегистрированными пользователями сайта
-        if ($this->config->usersEnabled) {
-            
-        }
-        
         //инициализация объекта сайта
         try {
             $this->initSite();
         } catch (Exception $e) {
             echo $this->page;
-            exit();
+            return;
+        }
+        
+        //инициализация объекта управления зарегистрированными пользователями сайта
+        if ($this->config->usersEnabled) {
+            $this->loadClass('UfoUsers');
+            try {
+                $this->users = new UfoUsers($this->getContainer());
+            } catch (Exception $e) {
+                if ($this->config->usersOverrideError) {
+                    $this->config->usersEnabled = false;
+                } else {
+                    //error 500
+                    $this->generateError(500, 'Users initialisation error');
+                    echo $this->page;
+                    return;
+                }
+            }
         }
         
         //инициализация объекта текущего раздела сайта
@@ -158,7 +170,7 @@ final class UfoCore
             $this->initSection();
         } catch (Exception $e) {
             echo $this->page;
-            exit();
+            return;
         }
         
         //генерация содержимого страницы
@@ -261,34 +273,46 @@ final class UfoCore
      */
     public function tryCache()
     {
-        $this->debug->trace('Trying use cache', __CLASS__, __METHOD__, false);
+        $this->debug->trace('Trying use cache', 
+                            __CLASS__, __METHOD__, false);
         $this->loadClass('UfoCacheFs');
         $this->cache = new UfoCacheFs($this->pathRaw, 
                                       $this->config->cacheFsSettings);
         $this->page = $this->loadCache($this->cache);
-        $this->debug->trace(is_null($this->page) ? 'Cache not used' : 'Using cache', __CLASS__, __METHOD__, true);
+        $this->debug->trace(is_null($this->page) ? 'Cache not used' : 'Using cache', 
+                            __CLASS__, __METHOD__, true);
         return !is_null($this->page);
     }
     
     /**
      * Установка соединения с базой данных.
-     * @return boolean
+     * @throws Exception
      */
     public function initDb()
     {
         $this->debug->trace('Init database connection', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoDb');
-        $this->db = new UfoDb($this->config->dbSettings, $this->debug);
-        if (0 == $this->db->connect_errno) {
-            $this->debug->trace('Init database connection complete', __CLASS__, __METHOD__, true);
-            return true;
-        } else {
-            $this->debug->trace('Init database connection error: ' . 
-                              $this->db->connect_error . ', trying cache', __CLASS__, __METHOD__, true);
-            return false;
+        
+        try {
+            $this->db = new UfoDb($this->config->dbSettings, $this->debug);
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+            $this->debug->trace('Init database connection error: ' . $error, 
+                                __CLASS__, __METHOD__, true);
+            throw new Exception($error);
         }
         
-    }
+        if (0 == $this->db->connect_errno) {
+            $container =& $this->getContainer();
+            $container->setDb($this->db);
+            $this->debug->trace('Init database connection complete', 
+                                __CLASS__, __METHOD__, true);
+        } else {
+            $this->debug->trace('Init database connection error: ' . $this->db->connect_error, 
+                                __CLASS__, __METHOD__, true);
+            throw new Exception($this->db->connect_error);
+        }
+}
     
     /**
      * Инициализация объекта модели базы данных.
@@ -298,6 +322,8 @@ final class UfoCore
         $this->debug->trace('Creating database model', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoDbModel');
         $this->dbModel = new UfoDbModel($this->db);
+        $container =& $this->getContainer();
+        $container->setDbModel($this->dbModel);
         $this->debug->trace('Creating database model complete', __CLASS__, __METHOD__, true);
     }
     
@@ -307,75 +333,43 @@ final class UfoCore
      */
     public function initSite()
     {
-        $this->debug->trace('Loading container', __CLASS__, __METHOD__, false);
-        $container =& $this->getContainer();
-        $container->setDb($this->db);
-        $container->setDbModel($this->dbModel);
-        $this->debug->trace('Loading container complete', __CLASS__, __METHOD__, true);
-        
         $this->debug->trace('Creating site object', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoSite');
         try {
             $this->site = 
-                new UfoSite($this->pathRaw, $this->pathSystem, $container);
+                new UfoSite($this->pathRaw, $this->pathSystem, $this->getContainer());
+            $container =& $this->getContainer();
+            $container->setSite($this->site);
             $this->debug->trace('Creating site object complete', __CLASS__, __METHOD__, true);
-        } catch (UfoExceptionPathEmpty $e) {
+        } catch (UfoExceptionPathEmpty $e) { //не срабатывает, т.к. setPathRaw исключает этот случай
             $this->debug->trace($e->getMessage());
             //$this->redirect('http://' . $_SERVER['HTTP_HOST'] . '/');
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(301, $e->getMessage(), '/'), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(301, $e->getMessage(), '/');
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathBad $e) {
             $this->debug->trace($e->getMessage());
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(404, $e->getMessage());
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathUnclosed $e) {
             $this->debug->trace($e->getMessage());
             //$this->redirect('http://' . $_SERVER['HTTP_HOST'] . $this->pathRaw . '/');
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(301, $e->getMessage(), $this->pathRaw . '/'), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(301, $e->getMessage(), $this->pathRaw . '/');
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathFilenotexists $e) {
             $this->debug->trace($e->getMessage());
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(404, $e->getMessage());
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathComplex $e) {
             $this->debug->trace($e->getMessage());
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(404, $e->getMessage());
             throw new Exception($e->getMessage());
         } catch (UfoExceptionPathNotexists $e) {
             $this->debug->trace($e->getMessage());
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(404, $e->getMessage()), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(404, $e->getMessage());
             throw new Exception($e->getMessage());
         } catch (Exception $e) {
             $this->debug->trace($e->getMessage());
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(500, $e->getMessage()), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(500, $e->getMessage());
             throw new Exception($e->getMessage());
         }
         $this->pathRaw = $this->site->getPathRaw();
@@ -386,33 +380,23 @@ final class UfoCore
     /**
      * Инициализация объекта текущего раздела.
      * @throws Exception
-     * @todo инициализация структуры служебного раздела
      */
     public function initSection()
     {
-        $this->debug->trace('Loading container', __CLASS__, __METHOD__, false);
-        $container =& $this->getContainer();
-        $container->setSite($this->site);
-        $this->debug->trace('Loading container complete', __CLASS__, __METHOD__, true);
-        
         $this->debug->trace('Trying get section object', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoSection');
         $this->loadClass('UfoSectionStruct');
         try {
             if ('' == $this->pathSystem) {
-                $this->section = new UfoSection($this->path, $container);
+                $this->section = new UfoSection($this->path, $this->getContainer());
             } else {
                 $this->loadClass('UfoSystemSection');
-                $this->section = new UfoSystemSection($this->pathSystem, $container);
+                $this->section = new UfoSystemSection($this->pathSystem, $this->getContainer());
             }
             $this->debug->trace('Section object created', __CLASS__, __METHOD__, true);
         } catch (Exception $e) {
             $this->debug->trace('Exception: ' . $e->getMessage(), __CLASS__, __METHOD__, true);
-            $this->loadClass('UfoError');
-            $this->loadClass('UfoErrorStruct');
-            $ufoErr = new UfoError(new UfoErrorStruct(500, $e->getMessage()), 
-                                   $this->getContainer());
-            $this->page = $ufoErr->getPage();
+            $this->generateError(500, $e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
@@ -534,6 +518,21 @@ final class UfoCore
         if (!is_null($section =& $this->container->getSection())) {
             $this->section =& $section;
         }
+    }
+    
+    /**
+     * Генерация содержимого страницы вследствие возникшей ошибки.
+     * @param int $code                    код ошибки
+     * @param string $text                 текст ошибки
+     * @param string $pathRedirect = ''    путь переадресации для ошибок 301, 302
+     */
+    private function generateError($errno, $errstr, $pathRedirect = '')
+    {
+        $this->loadClass('UfoError');
+        $this->loadClass('UfoErrorStruct');
+        $ufoErr = new UfoError(new UfoErrorStruct($errno, $errstr, $pathRedirect),
+                               $this->getContainer());
+        $this->page = $ufoErr->getPage();
     }
     
     /**

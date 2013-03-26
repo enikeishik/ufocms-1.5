@@ -27,14 +27,24 @@ class UfoDb extends mysqli
      */
     protected $ufoDebug = null;
     
+    /**
+     * Конструктор.
+     * @param UfoDbSettings $settings    объект-хранилище параметров доступа к БД
+     * @param UfoDebug &$debug = null    ссылка на объект отладки
+     * @throws Exception
+     */
     public function __construct(UfoDbSettings $settings, UfoDebug &$debug = null)
     {
         $this->ufoDebug =& $debug;
         if (!$this->connected) {
-            parent::__construct($settings->getHost(), 
-                                $settings->getUser(), 
-                                $settings->getPassword(), 
-                                $settings->getName());
+            //подавляем вывод ошибок, т.к. иначе (даже при try-catch) выдается Warning
+            @parent::__construct($settings->getHost(), 
+                                 $settings->getUser(), 
+                                 $settings->getPassword(), 
+                                 $settings->getName());
+            if (0 != $this->connect_errno) {
+                throw new Exception($this->connect_error);
+            }
             if ('' != $cs = $settings->getCharset()) {
                 $this->query('SET NAMES ' . $cs);
             }
