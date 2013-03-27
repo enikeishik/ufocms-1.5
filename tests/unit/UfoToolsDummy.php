@@ -5,5 +5,10 @@ class UfoToolsDummy
 {
     use UfoTools;
     
+    private $config = null;
     
+    public function __construct()
+    {
+        $this->config = new UfoConfig();
+    }
 }

@@ -251,56 +251,8 @@ class UfoToolsCest
         }
     }
     
-    public function safeSql(\CodeGuy $I) {
-        $vals[] = array('SELECT * FROM mytable WHERE myid=123', 
-                        'SELECT * FROM mytable WHERE myid=123');
-        $vals[] = array("SELECT * FROM mytable WHERE mystring='abc'", 
-                        "SELECT * FROM mytable WHERE mystring=\'abc\'");
-        $f = __FUNCTION__;
-        foreach ($vals as $v) {
-            $I->execute(function() use ($v, $f) {
-                echo 'test `' . $v[0] . '`' . "\r\n";
-                echo 'expected result `' . $v[1] . '`' . "\r\n";
-                $res = $this->obj->$f($v[0]);
-                echo 'actual result `' . $res . '`' . "\r\n";
-                $ret = ($v[1] == $res);
-                var_dump($ret);
-                return $ret;
-            });
-            $I->seeResultEquals(true);
-        }
-    }
-    
-    public function jsAsString(\CodeGuy $I) {
-        $vals[] = array('var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
-                        'var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
-                        true);
-        $vals[] = array("var s = '';\r\nfunction retVal(v)\r\n{\r\n\treturn v;\r\n}\r\nvar newS = retVal(s);", 
-                        "var s = \'\';\\r\\nfunction retVal(v)\\r\\n{\\r\\n\treturn v;\\r\\n}\\r\\nvar newS = retVal(s);", 
-                        true);
-        $vals[] = array('var s = "<p>abc</p>";', 
-                        'var s = "<!p>abc<!/p>";', 
-                        true);
-        $vals[] = array('var s = "<p>abc</p>";', 
-                        'var s = "<p>abc</p>";', 
-                        false);
-        $f = __FUNCTION__;
-        foreach ($vals as $v) {
-            $I->execute(function() use ($v, $f) {
-                echo 'test `' . $v[0] . '`' . "\r\n";
-                echo 'expected result `' . $v[1] . '`' . "\r\n";
-                echo 'flag `' . (int) $v[2] . '`' . "\r\n";
-                $res = $this->obj->$f($v[0], $v[2]);
-                echo 'actual result `' . $res . '`' . "\r\n";
-                $ret = ($v[1] == $res);
-                var_dump($ret);
-                return $ret;
-            });
-            $I->seeResultEquals(true);
-        }
-    }
-    
     public function appendDigits(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array(1, '01', 2, true);
         $vals[] = array(1, '10', 2, false);
         $vals[] = array('1', '01', 2, true);
@@ -370,5 +322,80 @@ class UfoToolsCest
             });
             $I->seeResultEquals($v[1]);
         }
+    }
+    
+    public function safeSql(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('SELECT * FROM mytable WHERE myid=123', 
+                        'SELECT * FROM mytable WHERE myid=123');
+        $vals[] = array("SELECT * FROM mytable WHERE mystring='abc'", 
+                        "SELECT * FROM mytable WHERE mystring=\'abc\'");
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                $res = $this->obj->$f($v[0]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    public function jsAsString(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
+                        'var i = 0; function retVal(v) { return v; } var j = retVal(i);', 
+                        true);
+        $vals[] = array("var s = '';\r\nfunction retVal(v)\r\n{\r\n\treturn v;\r\n}\r\nvar newS = retVal(s);", 
+                        "var s = \'\';\\r\\nfunction retVal(v)\\r\\n{\\r\\n\treturn v;\\r\\n}\\r\\nvar newS = retVal(s);", 
+                        true);
+        $vals[] = array('var s = "<p>abc</p>";', 
+                        'var s = "<!p>abc<!/p>";', 
+                        true);
+        $vals[] = array('var s = "<p>abc</p>";', 
+                        'var s = "<p>abc</p>";', 
+                        false);
+        $f = __FUNCTION__;
+        foreach ($vals as $v) {
+            $I->execute(function() use ($v, $f) {
+                echo 'test `' . $v[0] . '`' . "\r\n";
+                echo 'expected result `' . $v[1] . '`' . "\r\n";
+                echo 'flag `' . (int) $v[2] . '`' . "\r\n";
+                $res = $this->obj->$f($v[0], $v[2]);
+                echo 'actual result `' . $res . '`' . "\r\n";
+                $ret = ($v[1] == $res);
+                var_dump($ret);
+                return $ret;
+            });
+            $I->seeResultEquals(true);
+        }
+    }
+    
+    public function writeLog(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->execute(function() {
+            $cfg = new UfoConfig();
+            $ret = $this->obj->writeLog('test', $cfg->logDebug);
+            echo 'expected: > 0' . "\r\n";
+            echo 'actual:   '; var_dump($ret); echo "\r\n";
+            return $ret > 0;
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function sendmail(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->execute(function() {
+            //$cfg = new UfoConfig();
+            $ret = $this->obj->sendmail('test@test', 'test', 'test', 'From: test@test');
+            echo 'expected: true' . "\r\n";
+            echo 'actual:   '; var_dump($ret); echo "\r\n";
+            return $ret;
+        });
+        $I->seeResultEquals(true);
     }
 }

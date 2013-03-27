@@ -93,6 +93,12 @@ final class UfoCore
     private $page = null;
     
     /**
+     * Объект ошибки.
+     * @var UfoError
+     */
+    private $error = null;
+    
+    /**
      * Точка входа приложения.
      */
     public static function main()
@@ -175,6 +181,10 @@ final class UfoCore
         
         //генерация содержимого страницы
         $this->generatePage();
+        if (!is_null($this->error)) {
+            $err = $this->error->getError();
+            $this->generateError($err->code, $err->text, $err->pathRedirect);
+        }
         
         //закрытие соединения с БД, уничтожение объектов
         $this->finalize();
@@ -457,6 +467,15 @@ final class UfoCore
     }
     
     /**
+     * Возвращает содержимое текущей страницы.
+     * @return string|null
+     */
+    public function getPage()
+    {
+        return $this->page;
+    }
+    
+    /**
      * Загрузка данных текущей страницы из кэша.
      * @param UfoCache $cache               объект работы с кэшем
      * @param boolean  $override = false    принудительно загрузить кэш, даже если он устарел
@@ -526,13 +545,27 @@ final class UfoCore
      * @param string $text                 текст ошибки
      * @param string $pathRedirect = ''    путь переадресации для ошибок 301, 302
      */
-    private function generateError($errno, $errstr, $pathRedirect = '')
+    public function generateError($errno, $errstr, $pathRedirect = '')
     {
         $this->loadClass('UfoError');
         $this->loadClass('UfoErrorStruct');
         $ufoErr = new UfoError(new UfoErrorStruct($errno, $errstr, $pathRedirect),
                                $this->getContainer());
         $this->page = $ufoErr->getPage();
+    }
+    
+    /**
+     * Регистрация ошибки.
+     * @param int $code                    код ошибки
+     * @param string $text                 текст ошибки
+     * @param string $pathRedirect = ''    путь переадресации для ошибок 301, 302
+     */
+    public function registerError($errno, $errstr, $pathRedirect = '')
+    {
+        $this->loadClass('UfoError');
+        $this->loadClass('UfoErrorStruct');
+        $this->error = new UfoError(new UfoErrorStruct($errno, $errstr, $pathRedirect),
+                                    $this->getContainer());
     }
     
     /**

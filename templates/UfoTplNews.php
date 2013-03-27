@@ -19,12 +19,12 @@ class UfoTplNews extends UfoTemplateGlobal
     /**
      * Вывод данных отдельного элемента.
      * @param array|false $item
-     * @todo вместо drawEmpty() генерировать ошибку 404.
      */
     protected function drawItem($item)
     {
         if (!is_array($item)) {
-            $this->drawEmpty();
+            //$this->drawEmpty();
+            $this->core->registerError(404, 'Запрашиваемая страница не найдена');
             return;
         }
         echo '<h2>' . $item['Title'] . '</h2>' . "\r\n";

@@ -23,8 +23,22 @@ class UfoTemplateError extends UfoTemplate
         header('Cache-Control: max-age=' . -1000000);
         header('Expires: ' . gmdate('D, d M Y H:i:s', time() - 1000000) . ' GMT');
         header('Content-type: text/html; charset=' . $this->config->httpCharset);
-        if (301 == $this->errorData->code) {
-            header('Location: http://' . $_SERVER['HTTP_HOST'] . $this->errorData->pathRedirect);
+        switch ($this->errorData->code) {
+            case 301:
+                header('Location: http://' . $_SERVER['HTTP_HOST'] . $this->errorData->pathRedirect);
+                break;
+            case 401:
+                header('HTTP/1.0 401 Authorization Required');
+                break;
+            case 403:
+                header('HTTP/1.0 403 Forbidden');
+                break;
+            case 404:
+                header('HTTP/1.0 404 Not Found');
+                break;
+            case 500:
+                header('HTTP/1.0 500 Internal Server Error');
+                break;
         }
     }
     
@@ -38,6 +52,9 @@ class UfoTemplateError extends UfoTemplate
         switch ($this->errorData->code) {
             case 301:
                 echo 'Moved Permanently';
+                break;
+            case 401:
+                echo 'Authorization Required';
                 break;
             case 403:
                 echo 'Forbidden';
@@ -83,6 +100,9 @@ class UfoTemplateError extends UfoTemplate
             case 301:
                 echo 'Moved Permanently';
                 break;
+            case 401:
+                echo 'Authorization Required';
+                break;
             case 403:
                 echo 'Forbidden';
                 break;
@@ -107,6 +127,9 @@ class UfoTemplateError extends UfoTemplate
                 echo 'The document has moved <a href="http://' . 
                      $host . $this->errorData->pathRedirect . 
                      '">here</a>.' . "\r\n";
+                break;
+            case 401:
+                echo 'This server could not verify that you are authorized to access the document requested.' . "\r\n";
                 break;
             case 403:
                 echo 'You don\'t have permission to access this page.' . "\r\n";

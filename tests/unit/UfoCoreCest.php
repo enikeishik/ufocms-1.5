@@ -35,8 +35,16 @@ class UfoCoreCest
         $this->obj = new UfoCore(new UfoConfig());
     }
     
-    public function initPhp(\CodeGuy $I) {
+    public function getPageIsNull(\CodeGuy $I) {
         $this->showTestCase(__CLASS__);
+        $this->showTest(__FUNCTION__);
+        $I->execute(function() {
+            return is_null($this->obj->getPage());
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function initPhp(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->executeMethod($this->obj, __FUNCTION__);
@@ -114,6 +122,14 @@ class UfoCoreCest
         $I->executeMethod($this->obj, __FUNCTION__);
     }
     
+    public function getPage(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->execute(function() {
+            return !is_null($this->obj->getPage());
+        });
+        $I->seeResultEquals(true);
+    }
+    
     public function main(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $I->execute(function() {
@@ -134,6 +150,18 @@ class UfoCoreCest
                 echo $e->getMessage();
                 return false;
             }
+        });
+        $I->seeResultEquals(true);
+    }
+    
+    public function generateError(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->execute(function() {
+            $core = new UfoCore(new UfoConfig());
+            $core->generateError(500, 'Test error');
+            $page = $core->getPage();
+            return !is_null($page) && false !== strpos($page, '500 Internal Server Error');
         });
         $I->seeResultEquals(true);
     }

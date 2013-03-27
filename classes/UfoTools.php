@@ -1,6 +1,7 @@
 <?php
 /**
  * Трейт вспомогательных функционалов.
+ * Классы использующие этот функционал должны содержать поле $config со ссылкой на объект конфигурации UfoConfig.
  * 
  * @author enikeishik
  *
@@ -283,14 +284,13 @@ trait UfoTools
      * @param string $str     преобразуемая строка SQL выражения
      * @param boolean $cut    обрезать строку до размера текстового поля (255 символов)
      * @return string
-     * @todo заменить 255 на константу или поле конфигурации
      */
     public function safeSql($str, $cut = false)
     {
         if (!$cut) {
             return addslashes($str);
         } else {
-            return addslashes(substr($str, 0, 255));
+            return addslashes(substr($str, 0, $this->config->dbVarcharLengthLimit));
         }
     }
     
@@ -339,7 +339,8 @@ trait UfoTools
      * @param string $subject           тема отправляемого письма
      * @param string $message           текст отправляемого письма
      * @param string $headers = null    дополнительные заголовки письма
-     * @todo tests
+     * @return boolean
+     * @todo smtp, tests
      */
     public function sendmail($to, $subject, $message, $headers = null)
     {

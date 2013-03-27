@@ -25,6 +25,7 @@ class UfoToolsExtCest
     }
     
     public function insertParagraphs(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array(" Тестовый текст\r\nразбитый на строки\r\n", 
                         "<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>", 
                         "\r\n");
@@ -68,6 +69,7 @@ class UfoToolsExtCest
     }
     
     public function removeParagraphs(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
                         "Тестовый текст\r\nразбитый на строки", 
                         "\r\n");
@@ -105,6 +107,7 @@ class UfoToolsExtCest
     }
     
     public function getFirstParagraph(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("<p>Тестовый текст</p>\r\n<p>разбитый на строки</p>\r\n", 
                         "<p>Тестовый текст</p>\r\n");
         $vals[] = array("Тестовый текст<p>Параграф после текста</p>\r\n", 
@@ -129,6 +132,7 @@ class UfoToolsExtCest
     }
     
     public function cutNice(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.</p>\r\n<p>разбитый на строки</p>\r\n", 
                         "Тестовый текст,", 
                         20, 0, true);
@@ -186,6 +190,7 @@ class UfoToolsExtCest
     }
     
     public function cutMiddle(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("Тестовый текст, первая строка содержащая краткий анонс.\r\nТекст разбитый на строки\r\n", 
                         "Тестовый ...строки\r\n", 
                         20, '...');
@@ -251,6 +256,7 @@ class UfoToolsExtCest
     }
     
     public function cutBySeparator(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --></p>\r\n<p>разбитый на строки</p>\r\n", 
                         "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>", 
                         '<!-- separator -->', false);
@@ -292,6 +298,7 @@ class UfoToolsExtCest
     }
     
     public function getTextPartBySeparator(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("<p>Тестовый текст, первая строка содержащая краткий анонс.<!-- separator --></p>\r\n<p>разбитый на строки<!-- separator --></p>\r\n<p>несколько раз</p>\r\n", 
                         "<p>Тестовый текст, первая строка содержащая краткий анонс.</p>", 
                         '<!-- separator -->', 0, false);
@@ -331,6 +338,7 @@ class UfoToolsExtCest
     }
     
     public function srcFromImg(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
         $vals[] = array("<img src=\"/path/image.jpg\" alt=\"\" />", 
                         "/path/image.jpg");
         $vals[] = array("<p>Тестовый <img src=\"/path/image.jpg\" alt=\"\" /> текст</p>\r\n<p>разбитый на строки</p>\r\n", 
