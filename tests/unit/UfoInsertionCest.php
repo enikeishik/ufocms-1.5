@@ -17,7 +17,7 @@ class UfoInsertionCest
         require_once $root . self::DS . 'config.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoDb.php';
-        require_once $root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
+        require_once $root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoInsertion.php';
     }
@@ -31,7 +31,7 @@ class UfoInsertionCest
             $cfg = new UfoConfig();
             $db = new UfoDb($cfg->dbSettings);
             try {
-                $this->obj = new UfoInsertion(new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => new UfoDbModel($db))));
+                $this->obj = new UfoInsertion(new UfoContainer(array('config' => $cfg, 'db' => $db, 'coreDbModel' => new UfoCoreDbModel($db))));
             } catch (Exception $e) {
                 echo 'Exception occurred: ' . $e . "\r\n";
             }

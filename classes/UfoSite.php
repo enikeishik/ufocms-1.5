@@ -30,9 +30,9 @@ class UfoSite
     
     /**
      * Ссылка на объект для работы с базой данных.
-     * @var UfoDbModel
+     * @var UfoCoreDbModel
      */
-    protected $dbModel = null;
+    protected $coreDbModel = null;
     
     /**
      * Ссылка на объект отладки.
@@ -57,9 +57,9 @@ class UfoSite
     {
         $this->config =& $container->getConfig();
         $this->db =& $container->getDb();
-        $this->dbModel =& $container->getDbModel();
+        $this->coreDbModel =& $container->getCoreDbModel();
         
-        if ($arr = $this->dbModel->getSiteParams()) {
+        if ($arr = $this->coreDbModel->getSiteParams()) {
             foreach ($arr as $param) {
                 switch($param['PType']) {
                     default:
@@ -184,7 +184,7 @@ class UfoSite
         $path = $this->pathRaw;
         
         //определяем присутствует ли путь в БД
-        if ($this->dbModel->isPathExists($path)) {
+        if ($this->coreDbModel->isPathExists($path)) {
             $this->path = $path;
         //если нет, разбиваем путь по слэшам, чтобы вычленить параметры в пути
         } else {
@@ -210,7 +210,7 @@ class UfoSite
             //убираем корневой путь, поскольку корневая (главная) страница всегда присутствует
             array_shift($paths);
             
-            if (!$this->path = $this->dbModel->getMaxExistingPath($paths)) {
+            if (!$this->path = $this->coreDbModel->getMaxExistingPath($paths)) {
                 throw new UfoExceptionPathNotexists('Path not exists');
                 return;
             }

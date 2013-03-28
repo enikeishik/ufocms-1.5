@@ -16,7 +16,7 @@ class UfoSectionCest
         require_once $root . self::DS . 'config.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoDb.php';
-        require_once $root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
+        require_once $root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoCore.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSection.php';
@@ -25,7 +25,7 @@ class UfoSectionCest
         $this->container = new UfoContainer();
         $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $root . self::DS . '_cache')));
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
-        $this->container->setDbModel(new UfoDbModel($this->container->getDb()));
+        $this->container->setCoreDbModel(new UfoCoreDbModel($this->container->getDb()));
         $this->container->setSite(new UfoSite('/', '', $this->container));
         //эта инициализация нужна чтобы объект ядра содержал ссылку на рабочий объект раздела
         //при генерации страницы задействуются вставки, использующие это

@@ -44,7 +44,7 @@ trait UfoTools
     /**
      * Динамическая загрузка структур модулей (класс-структура служебного раздела).
      * @param string $module               имя загружаемого модуля (основного класса модуля)
-     * @param string $insertion            имя загружаемого класса-структуры
+     * @param string $struct               имя загружаемого класса-структуры
      * @param string $path                 путь к пакте с файлами модулей
      * @param string $extention = 'php'    расширение файлов с основными классами модулей
      */
@@ -56,6 +56,23 @@ trait UfoTools
         $this->loadClass($struct,
                          $path . DIRECTORY_SEPARATOR . $module,
                          $extention);
+    }
+
+    /**
+     * Динамическая загрузка структур модулей (класс-структура служебного раздела).
+     * @param string $module               имя загружаемого модуля (основного класса модуля)
+     * @param string $dbModel              имя загружаемого класса модели данных
+     * @param string $path                 путь к пакте с файлами модулей
+     * @param string $extention = 'php'    расширение файлов с основными классами модулей
+     */
+    public function loadModuleDbModel($module,
+                                      $dbModel,
+                                      $path = 'modules',
+                                      $extention = 'php')
+    {
+        $this->loadClass($dbModel,
+                $path . DIRECTORY_SEPARATOR . $module,
+                $extention);
     }
     
     /**

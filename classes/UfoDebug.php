@@ -36,7 +36,7 @@ class UfoDebug
     
     /**
      * Буфер отладочной информации.
-     * @var array
+     * @var array<UfoDebugStruct>
      */
     protected $buffer = array();
     
@@ -57,6 +57,7 @@ class UfoDebug
      * @var int
      */
     protected $memoryUsedTotalMax = 0;
+    
     
     /**
      * Конструктор.
@@ -169,6 +170,41 @@ class UfoDebug
     public function getMemoryUsedTotalMax()
     {
         return $this->memoryUsedTotalMax;
+    }
+    
+    /**
+     * Возвращает время выполнения скрипта.
+     * @return float
+     */
+    public function getScriptExecutionTime()
+    {
+        if (0 < $cnt = count($this->buffer)) {
+            return $this->buffer[$cnt - 1]->scriptTime;
+        } else {
+            return 0;
+        }
+    }
+    
+    /**
+     * Возвращает элемент буфера с максимальным временем выполнения блока.
+     * @return UfoDebugStruct|null
+     */
+    public function getBlockMaxExecutionTime()
+    {
+        $max = 0;
+        $maxIdx = -1;
+        $cnt = count($this->buffer);
+        for ($i = 0; $i < $cnt; $i++) {
+            if ($max < $this->buffer[$i]->blockTime) {
+                $max = $this->buffer[$i]->blockTime;
+                $maxIdx = $i;
+            }
+        }
+        if (-1 != $maxIdx) {
+            return $this->buffer[$maxIdx];
+        } else {
+            return null;
+        }
     }
     
     /**

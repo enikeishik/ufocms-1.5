@@ -77,9 +77,9 @@ class UfoUsers
     
     /**
      * —сылка на объект дл€ работы с базой данных.
-     * @var UfoDbModel
+     * @var UfoCoreDbModel
      */
-    protected $dbModel = null;
+    protected $coreDbModel = null;
     
     /**
      * —сылка на объект UfoSite, представл€ющий сайт.
@@ -131,7 +131,7 @@ class UfoUsers
     {
         $arr = array();
         if ($this->isInt($userId)) {
-            if ($groups = $this->dbModel->getUserGroups($userId)) {
+            if ($groups = $this->coreDbModel->getUserGroups($userId)) {
                 $arr = array_values($groups);
             }
         }
@@ -145,7 +145,7 @@ class UfoUsers
      */
     public function isLoginExists($login)
     {
-        return $this->dbModel->isLoginExists($login);
+        return $this->coreDbModel->isLoginExists($login);
     }
     
     /**
@@ -208,7 +208,7 @@ class UfoUsers
         $this->core =& $this->container->getCore();
         $this->debug =& $this->container->getDebug();
         $this->db =& $this->container->getDb();
-        $this->dbModel =& $this->container->getDbModel();
+        $this->coreDbModel =& $this->container->getCoreDbModel();
         $this->site =& $this->container->getSite();
     }
     
@@ -219,7 +219,7 @@ class UfoUsers
     protected function setSettings()
     {
         $this->settings = new UfoUsersSettings();
-        if ($settings = $this->dbModel->getUsersSettings($this->settings->getFields())) {
+        if ($settings = $this->coreDbModel->getUsersSettings($this->settings->getFields())) {
             $this->settings->setValues($settings);
             unset($settings);
         } else {
@@ -246,7 +246,7 @@ class UfoUsers
         $this->item = null;
         if (isset($_COOKIE[self::C_COOKIE_TICKET_NAME]) 
         && 0 < strlen($_COOKIE[self::C_COOKIE_TICKET_NAME])) {
-            if ($user = $this->dbModel->getUsersCurrent($_COOKIE[self::C_COOKIE_TICKET_NAME])) {
+            if ($user = $this->coreDbModel->getUsersCurrent($_COOKIE[self::C_COOKIE_TICKET_NAME])) {
                 $this->item = new UfoUserStruct(array_merge($user, 
                                                             array('Groups' => $this->getUserGroups($user['Id']))));
             }

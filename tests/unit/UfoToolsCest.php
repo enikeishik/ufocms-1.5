@@ -22,7 +22,7 @@ class UfoToolsCest
         require_once $this->root . self::DS . 'config.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
-        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
@@ -69,6 +69,17 @@ class UfoToolsCest
         $I->seeResultEquals(true);
     }
     
+    public function loadModuleDbModel(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $class = 'UfoSysSitemap';
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->executeMethod($this->obj, __FUNCTION__, $class, $class . 'DbModel');
+        $I->execute(function() use ($class) {
+            return class_exists($class . 'DbModel');
+        });
+        $I->seeResultEquals(true);
+    }
+    
     public function loadInsertionModule(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $class = 'UfoModNews';
@@ -100,7 +111,7 @@ class UfoToolsCest
             $container = new UfoContainer();
             $container->setConfig(new UfoConfig());
             $container->setDb(new UfoDb($container->getConfig()->dbSettings));
-            $container->setDbModel(new UfoDbModel($container->getDb()));
+            $container->setCoreDbModel(new UfoCoreDbModel($container->getDb()));
             $container->setSite(new UfoSite('/', '', $container));
             $section = new UfoSection('/', $container);
             $section->initModule();

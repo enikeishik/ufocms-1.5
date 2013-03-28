@@ -29,9 +29,9 @@ class UfoInsertion
     
     /**
      * Объект для работы моделью данных.
-     * @var UfoDbModel
+     * @var UfoCoreDbModel
      */
-    private $dbModel = null;
+    private $coreDbModel = null;
     
     /**
      * Ссылка на объект отладки.
@@ -65,7 +65,7 @@ class UfoInsertion
     {
         $this->config =& $this->container->getConfig();
         $this->db =& $this->container->getDb();
-        $this->dbModel =& $this->container->getDbModel();
+        $this->coreDbModel =& $this->container->getCoreDbModel();
         $this->debug =& $this->container->getDebug();
     }
     
@@ -84,7 +84,7 @@ class UfoInsertion
     {
         $this->loadClass('UfoInsertionItemStruct');
         $this->loadClass('UfoInsertionItemSettings');
-        $items = $this->dbModel->getInsertionItems($targetId, $placeId, $offset, $limit);
+        $items = $this->coreDbModel->getInsertionItems($targetId, $placeId, $offset, $limit);
         ob_start();
         if (is_array($items) && 0 < count($items)) {
             $this->template->drawBegin($options);

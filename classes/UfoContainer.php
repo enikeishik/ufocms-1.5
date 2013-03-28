@@ -33,9 +33,9 @@ class UfoContainer
     
     /**
      * —сылка на объект модели данных.
-     * @var UfoDbModel
+     * @var UfoCoreDbModel
      */
-    protected $dbModel = null;
+    protected $coreDbModel = null;
     
     /**
      * —сылка на объект отладки.
@@ -139,15 +139,15 @@ class UfoContainer
     
     /**
      *
-     * @param UfoDbModel $dbModel
+     * @param UfoCoreDbModel $coreDbModel
      */
-    public function setDbModel(UfoDbModel &$dbModel) { $this->dbModel =& $dbModel; }
+    public function setCoreDbModel(UfoCoreDbModel &$coreDbModel) { $this->coreDbModel =& $coreDbModel; }
     
     /**
      *
-     * @return UfoDbModel
+     * @return UfoCoreDbModel
      */
-    public function &getDbModel() { return $this->dbModel; }
+    public function &getCoreDbModel() { return $this->coreDbModel; }
     
     /**
      * 

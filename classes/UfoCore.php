@@ -57,10 +57,10 @@ final class UfoCore
     private $db = null;
     
     /**
-     * Объект для работы моделью данных.
-     * @var UfoDbModel
+     * Объект для работы с моделью данных.
+     * @var UfoCoreDbModel
      */
-    private $dbModel = null;
+    private $coreDbModel = null;
     
     /**
      * Объект для работы с кэшем.
@@ -249,6 +249,9 @@ final class UfoCore
         //mod_rewrite в .htaccess в корневой папке сайта
         if (isset($_GET['path']) && '' != $_GET['path']) {
             $this->pathRaw = $_GET['path'];
+        //ErrorDocument в .htaccess
+        } else if (isset($_GET['error'])) {
+            $this->generateError((int) $_GET['error'], 'External error');
         //иначе это главная страница
         } else {
             $this->pathRaw = '/';
@@ -330,10 +333,10 @@ final class UfoCore
     public function initDbModel()
     {
         $this->debug->trace('Creating database model', __CLASS__, __METHOD__, false);
-        $this->loadClass('UfoDbModel');
-        $this->dbModel = new UfoDbModel($this->db);
+        $this->loadClass('UfoCoreDbModel');
+        $this->coreDbModel = new UfoCoreDbModel($this->db);
         $container =& $this->getContainer();
-        $container->setDbModel($this->dbModel);
+        $container->setCoreDbModel($this->coreDbModel);
         $this->debug->trace('Creating database model complete', __CLASS__, __METHOD__, true);
     }
     
@@ -525,8 +528,8 @@ final class UfoCore
         if (!is_null($db =& $this->container->getDb())) {
             $this->db =& $db;
         }
-        if (!is_null($dbModel =& $this->container->getDbModel())) {
-            $this->dbModel =& $dbModel;
+        if (!is_null($coreDbModel =& $this->container->getCoreDbModel())) {
+            $this->coreDbModel =& $coreDbModel;
         }
         if (!is_null($debug =& $this->container->getDebug())) {
             $this->debug =& $debug;

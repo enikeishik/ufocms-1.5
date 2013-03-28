@@ -25,7 +25,8 @@ class UfoTemplateError extends UfoTemplate
         header('Content-type: text/html; charset=' . $this->config->httpCharset);
         switch ($this->errorData->code) {
             case 301:
-                header('Location: http://' . $_SERVER['HTTP_HOST'] . $this->errorData->pathRedirect);
+                $host = array_key_exists('HTTP_HOST', $_SERVER) ? $_SERVER['HTTP_HOST'] : 'localhost';
+                header('Location: http://' . $host . $this->errorData->pathRedirect);
                 break;
             case 401:
                 header('HTTP/1.0 401 Authorization Required');
@@ -39,6 +40,9 @@ class UfoTemplateError extends UfoTemplate
             case 500:
                 header('HTTP/1.0 500 Internal Server Error');
                 break;
+            case 400: 
+            default:
+                header('HTTP/1.0 400 Bad Request');
         }
     }
     
@@ -65,6 +69,9 @@ class UfoTemplateError extends UfoTemplate
             case 500:
                 echo 'Internal Server Error';
                 break;
+            case 400: 
+            default:
+                echo 'Bad Request';
         }
         echo '</TITLE>' . "\r\n";
     }
@@ -112,6 +119,9 @@ class UfoTemplateError extends UfoTemplate
             case 500:
                 echo 'Internal Server Error';
                 break;
+            case 400: 
+            default:
+                echo 'Bad Request';
         }
         echo '</H1>' . "\r\n";
     }
@@ -129,7 +139,8 @@ class UfoTemplateError extends UfoTemplate
                      '">here</a>.' . "\r\n";
                 break;
             case 401:
-                echo 'This server could not verify that you are authorized to access the document requested.' . "\r\n";
+                echo 'This server could not verify that you are authorized' . 
+                     ' to access the document requested.' . "\r\n";
                 break;
             case 403:
                 echo 'You don\'t have permission to access this page.' . "\r\n";
@@ -142,6 +153,13 @@ class UfoTemplateError extends UfoTemplate
                      'misconfiguration and was unable to complete' . 
                      'your request.' . "\r\n";
                 break;
+            case 400: 
+            default:
+                echo 'The Web server (running the Web site) thinks' . 
+                     ' that the data stream sent by the client' . 
+                     ' (e.g. your Web browser or our CheckUpDown robot)' . 
+                     ' was `malformed` i.e. did not respect the HTTP protocol completely.' . 
+                     ' So the Web server was unable to understand the request and process it.' . "\r\n";
         }
     }
     

@@ -15,7 +15,7 @@ class UfoSystemSectionCest
         require_once $root . self::DS . 'config.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoDb.php';
-        require_once $root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
+        require_once $root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoCore.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $root . self::DS . 'classes' . self::DS . 'UfoSystemSection.php';
@@ -24,7 +24,7 @@ class UfoSystemSectionCest
         $this->container = new UfoContainer();
         $this->container->setConfig(new UfoConfig());
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));
-        $this->container->setDbModel(new UfoDbModel($this->container->getDb()));
+        $this->container->setCoreDbModel(new UfoCoreDbModel($this->container->getDb()));
         $this->container->setSite(new UfoSite($this->pathSystem, $this->pathSystem, $this->container));
         $core = new UfoCore($this->container->getConfig());
         $core->setContainer($this->container);

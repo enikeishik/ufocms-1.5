@@ -27,7 +27,35 @@ if (!is_null($parent)) {
 ?>
 </td>
 <td>
-<p><?php echo $this->module->getContent(); ?></p>
+<?php
+$items = $this->module->getContent();
+$host = array_key_exists('HTTP_HOST', $_SERVER) ? $_SERVER['HTTP_HOST'] : 'localhost';
+foreach ($items as $item) {
+    $indic = $item['indic'];
+    if (0 === strpos($indic, '!') ) {
+        $indic = substr($indic, 1);
+    }
+    if (-1 == $item['levelid']) {
+        echo '<div style="margin-bottom: 5px;">' .
+                '<div style="padding: 2px; background-color: #EEEEEE;"><a href="' . $item['path'] . '"><b>' . $indic . '</b></a></div>' .
+                '<div style="padding: 2px;">' . $item['metadesc'] . '</div>' .
+                '<div style="padding: 2px; color: #666666">http://' . $host . $item['path'] . '</div>' .
+                '</div>' . "\r\n";
+    } else if (0 == $item['levelid']) {
+        echo '<div style="margin-bottom: 5px; margin-top: 15px;">' .
+                '<div style="padding: 2px; background-color: #EEEEEE;"><a href="' . $item['path'] . '"><b>' . $indic . '</b></a></div>' .
+                '<div style="padding: 2px;">' . $item['metadesc'] . '</div>' .
+                '<div style="padding: 2px; color: #666666">http://' . $host . $item['path'] . '</div>' .
+                '</div>' . "\r\n";
+    } else {
+        echo '<div style="margin-left: ' . (20 * $item['levelid']) . 'px; margin-bottom: 5px;">' .
+                '<div><a href="' . $item['path'] . '">' . $indic . '</a></div>' .
+                '<div>' . $item['metadesc'] . '</div>' .
+                '<div style="color: #666666">http://' . $host . $item['path'] . '</div>' .
+                '</div>' . "\r\n";
+    }
+}
+?>
 </td>
 </tr>
 </table>

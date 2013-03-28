@@ -22,7 +22,7 @@ class UfoCoreCest
         require_once $this->root . self::DS . 'config.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
-        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSite.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
@@ -188,7 +188,7 @@ class UfoCoreCest
                 $container = new UfoContainer();
                 $container->setConfig(new UfoConfig());
                 $container->setDb(new UfoDb($container->getConfig()->dbSettings));
-                $container->setDbModel(new UfoDbModel($container->getDb()));
+                $container->setCoreDbModel(new UfoCoreDbModel($container->getDb()));
                 $this->obj->setContainer($container);
                 return '' != $this->obj->insertion();
             } catch (Exeption $e) {

@@ -33,9 +33,9 @@ abstract class UfoInsertionItemModule implements UfoInsertionItemModuleInterface
     
     /**
      * Объект для работы моделью данных.
-     * @var UfoDbModel
+     * @var UfoCoreDbModel
      */
-    private $dbModel = null;
+    private $coreDbModel = null;
     
     /**
      * Ссылка на объект отладки.
@@ -70,7 +70,7 @@ abstract class UfoInsertionItemModule implements UfoInsertionItemModuleInterface
     {
         $this->config =& $this->container->getConfig();
         $this->db =& $this->container->getDb();
-        $this->dbModel =& $this->container->getDbModel();
+        $this->coreDbModel =& $this->container->getCoreDbModel();
         $this->debug =& $this->container->getDebug();
     }
 }

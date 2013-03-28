@@ -13,12 +13,18 @@
 <script type="text/javascript" src="/favorites.js"></script>
 </head>
 <body>
+<div id="header">
+<a href="/">На главную</a>
+</div>
 <div id="colleft">
 <?php $tpl->drawInsertion(array('PlaceId' => 1)); ?>
 </div>
 <div id="colmiddle">
 <?php $tpl->drawBodyTitle(); ?>
 <?php $tpl->drawBodyContent(); ?>
+</div>
+<div id="footer">
+<a href="/sitemap/">Карта сайта</a>
 </div>
 </body>
 </html>

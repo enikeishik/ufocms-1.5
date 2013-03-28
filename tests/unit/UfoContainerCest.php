@@ -19,7 +19,7 @@ class UfoContainerCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoToolsExt.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
-        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDbModel.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDebug.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCore.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoUsers.php';
@@ -90,16 +90,16 @@ class UfoContainerCest
         $I->seeResultEquals(true);
     }
     
-    public function dbModelSetGet(\CodeGuy $I) {
+    public function coreDbModelSetGet(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
-        $I->wantTo('execute methods `setDbModel`, `getDbModel`');
+        $I->wantTo('execute methods `setCoreDbModel`, `getCoreDbModel`');
         $I->execute(function() {
             $obj = new UfoContainer();
-            $ret1 = $obj->getDbModel();
+            $ret1 = $obj->getCoreDbModel();
             $cfg = new UfoConfig();
-            $obj->setDbModel(new UfoDbModel(new UfoDb($cfg->dbSettings)));
-            $ret2 = $obj->getDbModel();
-            return is_null($ret1) && is_a($ret2, 'UfoDbModel');
+            $obj->setCoreDbModel(new UfoCoreDbModel(new UfoDb($cfg->dbSettings)));
+            $ret2 = $obj->getCoreDbModel();
+            return is_null($ret1) && is_a($ret2, 'UfoCoreDbModel');
         });
         $I->seeResultEquals(true);
     }
@@ -136,8 +136,8 @@ class UfoContainerCest
         $I->execute(function() {
             $cfg = new UfoConfig();
             $db = new UfoDb($cfg->dbSettings);
-            $dbModel = new UfoDbModel(new UfoDb($cfg->dbSettings));
-            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
+            $coreDbModel = new UfoCoreDbModel(new UfoDb($cfg->dbSettings));
+            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'coreDbModel' => $coreDbModel));
             $site = new UfoSite('/', '', $obj);
             $obj->setSite($site);
             
@@ -155,8 +155,8 @@ class UfoContainerCest
         $I->execute(function() {
             $cfg = new UfoConfig();
             $db = new UfoDb($cfg->dbSettings);
-            $dbModel = new UfoDbModel(new UfoDb($cfg->dbSettings));
-            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
+            $coreDbModel = new UfoCoreDbModel(new UfoDb($cfg->dbSettings));
+            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'coreDbModel' => $coreDbModel));
             
             $ret1 = $obj->getSite();
             $obj->setSite(new UfoSite('/', '', $obj));
@@ -172,8 +172,8 @@ class UfoContainerCest
         $I->execute(function() {
             $cfg = new UfoConfig();
             $db = new UfoDb($cfg->dbSettings);
-            $dbModel = new UfoDbModel(new UfoDb($cfg->dbSettings));
-            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
+            $coreDbModel = new UfoCoreDbModel(new UfoDb($cfg->dbSettings));
+            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'coreDbModel' => $coreDbModel));
             
             $ret1 = $obj->getSection();
             $obj->setSection(new UfoSection('/', $obj));
@@ -202,8 +202,8 @@ class UfoContainerCest
         $I->execute(function() {
             $cfg = new UfoConfig();
             $db = new UfoDb($cfg->dbSettings);
-            $dbModel = new UfoDbModel(new UfoDb($cfg->dbSettings));
-            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'dbModel' => $dbModel));
+            $coreDbModel = new UfoCoreDbModel(new UfoDb($cfg->dbSettings));
+            $obj = new UfoContainer(array('config' => $cfg, 'db' => $db, 'coreDbModel' => $coreDbModel));
             $site = new UfoSite('/', '', $obj);
             $obj->setSite($site);
             $section = new UfoSection(new UfoSectionStruct(array('id' => -1, 'moduleid' => -1)), $obj);

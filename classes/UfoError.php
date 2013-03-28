@@ -73,7 +73,6 @@ class UfoError
         if (isset($_SERVER['REMOTE_ADDR'])) {
             $data = $_SERVER['REMOTE_ADDR'];
         }
-        $data .= "\t" . $this->errorData;
         if (isset($_SERVER['REQUEST_URI'])) {
             $data .= "\t" . $_SERVER['REQUEST_URI'];
         } else {
@@ -89,6 +88,7 @@ class UfoError
         } else {
             $data .= "\t";
         }
+        $data .= "\t" . $this->errorData;
         if (500 == $this->errorData->code) {
             $this->writeLog($data, $this->config->logError);
         } else {

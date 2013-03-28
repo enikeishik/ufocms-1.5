@@ -1,5 +1,5 @@
 <?php
-require_once 'UfoTools.php';
+require_once 'classes/abstract/UfoDbModel.php';
 /**
  * Класс представляющий модель данных в БД.
  * Предоставляет методы для выполнения стандартных для системы запросов к БД, абстрагируя хранилище данных.
@@ -7,32 +7,8 @@ require_once 'UfoTools.php';
  * @author enikeishik
  *
  */
-class UfoDbModel
+class UfoCoreDbModel extends UfoDbModel
 {
-    use UfoTools;
-    
-    /**
-     * Ссылка на объект работы с базой данных.
-     * @var UfoDb
-     */
-    private $db = null;
-    
-    /**
-     * Часть SQL запроса, содержащая список полей раздела в таблице базы данных.
-     * Списки полей могут получаться динамически из классов-структур, поэтому это поле хранит полученные списки для повторного использования.
-     * @var string
-     */
-    protected $fieldsSql = array();
-    
-    /**
-     * Конструктор.
-     * @param UfoDb $db    ссылка на объект для работы с БД
-     */
-    public function __construct(UfoDb &$db)
-    {
-        $this->db =& $db;
-    }
-    
     /**
      * Получение данных раздела сайта.
      * @param mixed $section    идентификатор или путь раздела сайта
@@ -41,18 +17,7 @@ class UfoDbModel
      */
     public function getSection($section, $isParentId = false)
     {
-        if (!array_key_exists(__METHOD__, $this->fieldsSql) 
-        || '' == $this->fieldsSql[__METHOD__]) {
-            //получаем поля таблицы из полей класса-структуры
-            $this->loadClass('UfoSectionStruct');
-            $arr = get_class_vars('UfoSectionStruct');
-            $sql = '';
-            foreach ($arr as $fld => $val) {
-                $sql .= ',`' . $fld . '`';
-            }
-            $this->fieldsSql[__METHOD__] = substr($sql, 1);
-        }
-        $sql = 'SELECT ' . $this->fieldsSql[__METHOD__] . 
+        $sql = 'SELECT ' . $this->getSectionFields() . 
                ' FROM ' . $this->db->getTablePrefix() . 'sections' . 
                ' WHERE ';
         if (is_int($section)) {

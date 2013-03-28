@@ -38,9 +38,9 @@ class UfoSection implements UfoSectionInterface
     
     /**
      * —сылка на объект дл€ работы с базой данных.
-     * @var UfoDbModel
+     * @var UfoCoreDbModel
      */
-    protected $dbModel = null;
+    protected $coreDbModel = null;
     
     /**
      * —сылка на объект отладки.
@@ -89,7 +89,7 @@ class UfoSection implements UfoSectionInterface
         if (0 == $this->fields->moduleid) {
             throw new Exception('Incorrect moduleid');
         }
-        if (!$mod = $this->dbModel->getModuleName($this->fields->moduleid)) {
+        if (!$mod = $this->coreDbModel->getModuleName($this->fields->moduleid)) {
             throw new Exception('Module not found (module uid: ' . $this->fields->moduleid . ')');
         }
         //преобразуем от старого формата 'mod_news.php' к новому 'UfoModNews';
@@ -105,7 +105,7 @@ class UfoSection implements UfoSectionInterface
     {
         $this->config =& $this->container->getConfig();
         $this->db =& $this->container->getDb();
-        $this->dbModel =& $this->container->getDbModel();
+        $this->coreDbModel =& $this->container->getCoreDbModel();
         $this->debug =& $this->container->getDebug();
     }
     
@@ -118,7 +118,7 @@ class UfoSection implements UfoSectionInterface
     protected function setFields($section)
     {
         if (is_scalar($section)) {
-            if ($fields = $this->dbModel->getSection($section)) {
+            if ($fields = $this->coreDbModel->getSection($section)) {
                 $this->fields = new UfoSectionStruct($fields);
             } else {
                 throw new Exception('Fields not set');
@@ -228,7 +228,7 @@ class UfoSection implements UfoSectionInterface
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($parent = $this->dbModel->getSection($this->fields->parentid)) {
+        if ($parent = $this->coreDbModel->getSection($this->fields->parentid)) {
             $this->cache[__METHOD__] = $parent;
             return $parent;
         }
@@ -266,7 +266,7 @@ class UfoSection implements UfoSectionInterface
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($top = $this->dbModel->getSection($this->fields->topid)) {
+        if ($top = $this->coreDbModel->getSection($this->fields->topid)) {
             $this->cache[__METHOD__] = $top;
             return $top;
         }
@@ -308,7 +308,7 @@ class UfoSection implements UfoSectionInterface
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($children = $this->dbModel->getSection($this->fields->id, true)) {
+        if ($children = $this->coreDbModel->getSection($this->fields->id, true)) {
             $this->cache[__METHOD__] = $children;
             return $children;
         }
@@ -346,7 +346,7 @@ class UfoSection implements UfoSectionInterface
         if (array_key_exists(__METHOD__, $this->cache)) {
             return $this->cache[__METHOD__];
         }
-        if ($neighbors = $this->dbModel->getSection($this->fields->parentid, true)) {
+        if ($neighbors = $this->coreDbModel->getSection($this->fields->parentid, true)) {
             $this->cache[__METHOD__] = $neighbors;
             return $neighbors;
         }
@@ -387,10 +387,10 @@ class UfoSection implements UfoSectionInterface
             return $this->cache[$key];
         }
         $arr = array();
-        $parent = $this->dbModel->getSection($this->fields->parentid);
+        $parent = $this->coreDbModel->getSection($this->fields->parentid);
         while ($parent) {
             $arr[] = $parent;
-            $parent = $this->dbModel->getSection($parent->fields->parentid);
+            $parent = $this->coreDbModel->getSection($parent->fields->parentid);
         }
         if ($reversed) {
             $this->cache[$key] = array_reverse($arr);
