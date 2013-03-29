@@ -8,6 +8,7 @@ require_once 'classes/abstract/UfoStruct.php';
  */
 class UfoDebugStruct extends UfoStruct
 {
+    public $message = '';
     public $scriptTime = 0.0;
     public $blockTime = 0.0;
     public $memoryUsed = 0;
@@ -17,5 +18,5 @@ class UfoDebugStruct extends UfoStruct
     public $lineNumber = 0;
     public $dbQuery = '';
     public $dbError = '';
-    public $message = '';
+    public $callStack = '';
 }

@@ -623,6 +623,7 @@ final class UfoCore
      */
     public function insertion(array $options = null)
     {
+        $this->debug->trace('Creating insertion', __CLASS__, __METHOD__, false);
         $targetId = $this->section->getFields()->id;
         $placeId = 0;
         $offset = 0;
@@ -646,6 +647,12 @@ final class UfoCore
         }
         $this->loadClass('UfoInsertion');
         $insertion = new UfoInsertion($this->getContainer());
-        return $insertion->generate($targetId, $placeId, $offset, $limit, $options);
+        if (3 > $this->config->debugLevel) {
+            return $insertion->generate($targetId, $placeId, $offset, $limit, $options);
+        } else {
+            $ret = $insertion->generate($targetId, $placeId, $offset, $limit, $options);
+            $this->debug->trace('Creating insertion complete', __CLASS__, __METHOD__, true);
+            return $ret;
+        }
     }
 }

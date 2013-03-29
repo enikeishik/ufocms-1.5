@@ -173,19 +173,6 @@ class UfoDebug
     }
     
     /**
-     * Возвращает время выполнения скрипта.
-     * @return float
-     */
-    public function getScriptExecutionTime()
-    {
-        if (0 < $cnt = count($this->buffer)) {
-            return $this->buffer[$cnt - 1]->scriptTime;
-        } else {
-            return 0;
-        }
-    }
-    
-    /**
      * Возвращает элемент буфера с максимальным временем выполнения блока.
      * @return UfoDebugStruct|null
      */
@@ -208,50 +195,104 @@ class UfoDebug
     }
     
     /**
+     * Возвращает список вызовов функций.
+     * @return string
+     */
+    protected function getStackTrace()
+    {
+        $stack = array_reverse(debug_backtrace());
+        $arr = array();
+        $i = 0;
+        foreach ($stack as $item) {
+            if (isset($item['class'])) {
+                $arr[] = str_pad('', $i * 2) . $item['class'] . '::' . $item['function'];
+            } else {
+                $arr[] = str_pad('', $i * 2) . $item['function'];
+            }
+            $i++;
+        }
+        array_pop($arr);
+        return implode("\r\n", $arr);
+    }
+    
+    /**
      * Сбор отладочной информации.
      * @param string $message            текст сообщения
      * @param string $class = ''         класс вызова
      * @param string $method = ''        метод вызова
      * @param boolean $isTail = false    точка вызова, false - в начале метода, true - в конце метода
-     * @todo доделать.
      */
     public function trace($message, $class = '', $method = '', $isTail = false)
     {
         if (0 == $this->debugLevel) {
             return;
         }
-        switch ($this->debugLevel) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-                $ds = new UfoDebugStruct();
-                $ds->message = $message;
-                $ds->scriptTime = $this->getExecutionTime();
-                $ds->memoryUsed = memory_get_usage();
-                $ds->memoryUsedTotal = memory_get_usage(true);
-                $ds->className = $class;
-                $ds->methodName = $method;
+        
+        $ds = new UfoDebugStruct();
+        $ds->scriptTime = $this->getExecutionTime();
+        $ds->className = $class;
+        $ds->methodName = $method;
+        $ds->message = $message;
+        
+        if (1 < $this->debugLevel) {
+            $ds->memoryUsed = memory_get_usage();
+            $ds->memoryUsedTotal = memory_get_usage(true);
+            if ($this->memoryUsedMax < $ds->memoryUsed) {
+                $this->memoryUsedMax = $ds->memoryUsed;
+            }
+            if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
+                $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
+            }
+            
+            if (2 < $this->debugLevel) {
                 if (!$isTail) {
                     $this->setLastStartTime();
                 } else {
                     $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
                 }
-                $this->buffer[] = $ds;
-                if ($this->memoryUsedMax < $ds->memoryUsed) {
-                    $this->memoryUsedMax = $ds->memoryUsed;
+                
+                if (3 < $this->debugLevel) {
+                    
+                    if (4 < $this->debugLevel) {
+                        $ds->callStack = $this->getStackTrace();
+                    }
                 }
-                if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
-                    $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
-                }
-                $this->log($ds);
-                break;
+            }
         }
+        $this->buffer[] = $ds;
+        $this->log($ds);
+    }
+    
+    /**
+     * Вычленение из SQL запроса основной команды и таблиц.
+     * @param string $sql
+     * @return string [SQL_COMMAND table1 table2 ...]
+     */
+    protected function parseSql($sql)
+    {
+        $sql = ltrim($sql);
+        $ret = array();
+        if (0 === stripos($sql, 'SELECT ')) {
+            $ret[] = 'SELECT';
+        } else if (0 === stripos($sql, 'INSERT ')) {
+            $ret[] = 'INSERT';
+        } else if (0 === stripos($sql, 'UPDATE ')) {
+            $ret[] = 'UPDATE';
+        } else if (0 === stripos($sql, 'DELETE ')) {
+            $ret[] = 'DELETE';
+        } else if (0 === stripos($sql, 'TRUNCATE ')) {
+            $ret[] = 'TRUNCATE';
+        } else if (0 === stripos($sql, 'DROP ')) {
+            $ret[] = 'DROP';
+        } else {
+            return '';
+        }
+        $tables = array();
+        $pattern = '/' . $this->config->dbTablePrefix . '[^ ]+/';
+        if (preg_match_all($pattern, $sql, $tables)) {
+            return implode(' ', array_merge($ret, $tables[0]));
+        }
+        return $ret[0];
     }
     
     /**
@@ -265,27 +306,42 @@ class UfoDebug
         if (0 == $this->debugLevel) {
             return;
         }
+        
         $ds = new UfoDebugStruct();
         $ds->scriptTime = $this->getExecutionTime();
-        $ds->memoryUsed = memory_get_usage();
-        $ds->memoryUsedTotal = memory_get_usage(true);
-        if (!$isTail) {
-            $this->setLastStartTime();
-        } else {
-            $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
-        }
-        $ds->dbQuery = $query;
-        $ds->dbError = $error;
-        $this->buffer[] = $ds;
+        $ds->message = $this->parseSql($query);
         if ($isTail) {
             $this->dbQueriesCounter++;
         }
-        if ($this->memoryUsedMax < $ds->memoryUsed) {
-            $this->memoryUsedMax = $ds->memoryUsed;
+        
+        if (1 < $this->debugLevel) {
+            $ds->memoryUsed = memory_get_usage();
+            $ds->memoryUsedTotal = memory_get_usage(true);
+            if ($this->memoryUsedMax < $ds->memoryUsed) {
+                $this->memoryUsedMax = $ds->memoryUsed;
+            }
+            if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
+                $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
+            }
+            
+            if (2 < $this->debugLevel) {
+                if (!$isTail) {
+                    $this->setLastStartTime();
+                } else {
+                    $ds->blockTime = $this->getExecutionTime($this->lastStartTime);
+                }
+                
+                if (3 < $this->debugLevel) {
+                    $ds->dbQuery = $query;
+                    $ds->dbError = $error;
+                    
+                    if (4 < $this->debugLevel) {
+                        $ds->callStack = $this->getStackTrace();
+                    }
+                }
+            }
         }
-        if ($this->memoryUsedTotalMax < $ds->memoryUsedTotal) {
-            $this->memoryUsedTotalMax = $ds->memoryUsedTotal;
-        }
+        $this->buffer[] = $ds;
         $this->log($ds);
     }
     
@@ -295,6 +351,7 @@ class UfoDebug
      */
     protected function log(UfoDebugStruct $ds)
     {
-        $this->writeLog((string) $ds, $this->config->logDebug);
+        $this->writeLog(str_replace("\n", ' ', str_replace("\r", '', (string) $ds)), 
+                        $this->config->logDebug);
     }
 }
