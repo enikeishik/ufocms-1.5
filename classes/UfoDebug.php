@@ -14,7 +14,7 @@ class UfoDebug
      * Ссылка на объект конфигурации.
      * @var UfoConfig
      */
-    private $config = null;
+    protected $config = null;
     
     /**
      * Уровень протоколирования отладочной информации.

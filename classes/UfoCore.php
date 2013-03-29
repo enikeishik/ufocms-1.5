@@ -233,6 +233,10 @@ final class UfoCore
         //устанавливаем локаль, for strcomp, str_replace etc
         setlocale(LC_ALL, $this->config->phpLocales);
         
+        //включаем буферизацию вывода
+        ob_implicit_flush(false);
+        ob_start();
+        
         //устанавливаем собственный перехватчик ошибок, для их протоколирования
         set_error_handler(array(&$this, 'errorHandler'));
         
@@ -452,20 +456,29 @@ final class UfoCore
     public function shutdown()
     {
         $this->debug->trace('Shutdown', __CLASS__, __METHOD__, false);
+        
+        //сбрасываем буфер вывода клиенту
+        ob_end_flush();
+        flush();
+        
         if ($this->config->cacheFsSavetime > 0) {
             //восстанавливаем перехватчик ошибок по-умолчанию
             restore_error_handler();
+            
             //отключаем вывод ошибок
             ini_set('display_errors', '0');
             ini_set('error_reporting', 0);
+            
             //регистрируем функцию, вызываемую по завершении выполнения скрипта
             register_shutdown_function('UfoCacheFs::deleteOld', 
                                        $this->config);
         }
+        
         if ('' != $this->config->logPerformance) {
             $this->writeLog($this->pathRaw . "\t" . $this->debug->getPageExecutionTime(), 
                             $this->config->logPerformance);
         }
+        
         $this->debug->trace('Shutdown complete', __CLASS__, __METHOD__, true);
     }
     

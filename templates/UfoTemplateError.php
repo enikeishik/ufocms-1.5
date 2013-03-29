@@ -1,12 +1,12 @@
 <?php
-require_once 'classes/abstract/UfoTemplate.php';
+require_once 'UfoTemplateGlobal.php';
 /**
  * Класс содержит методы оформления страниц ошибок.
  * 
  * @author enikeishik
  *
  */
-class UfoTemplateError extends UfoTemplate
+class UfoTemplateError extends UfoTemplateGlobal
 {
     /**
      * Объект-структура с данными ошибки.
@@ -170,16 +170,5 @@ class UfoTemplateError extends UfoTemplate
     public function drawInsertion(array $options = null)
     {
         
-    }
-    
-    /**
-     * Вывод информации отладки (в конце страницы, в виде комментария HTML).
-     */
-    public function drawDebug()
-    {
-        if (is_null($this->debug)) {
-            return;
-        }
-        echo '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->' . "\r\n";
     }
 }
