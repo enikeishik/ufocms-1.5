@@ -194,6 +194,10 @@ final class UfoCore
         
         //выполнение служебных процедур (очистка кэша и т.п.)
         $this->shutdown();
+        
+        if ($this->config->debugDisplay) {
+            $this->debug->draw();
+        }
     }
     
     /**
@@ -446,6 +450,9 @@ final class UfoCore
         if (!is_null($this->db)) {
             $this->db->close();
             unset($this->db);
+        }
+        if ($this->section && $this->section->getField('flcache')) {
+            $this->cache->save(ob_get_contents());
         }
         $this->debug->trace('Finalization complete', __CLASS__, __METHOD__, true);
     }

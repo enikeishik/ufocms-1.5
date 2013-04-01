@@ -62,37 +62,4 @@ abstract class UfoTemplateGlobal extends UfoTemplate
     {
         echo $this->core->insertion($options);
     }
-    
-    /**
-     * Вывод информации отладки (в конце страницы, в виде комментария HTML).
-     */
-    public function drawDebug()
-    {
-        if (is_null($this->debug)) {
-            return;
-        }
-        if ($this->config->debugDisplay) {
-            if (2 < $this->config->debugLevel) {
-                echo '<pre>' . "\r\n";
-                $debug = $this->debug->getBuffer();
-                foreach ($debug as $debugData) {
-                    $data = (array) $debugData;
-                    foreach ($data as $key => $val) {
-                        echo $key . ': ' . $val . "\r\n"; 
-                    }
-                    echo "\r\n";
-                }
-                echo '</pre>' . "\r\n";
-            }
-            echo '<p>Script time: ' . $this->debug->getPageExecutionTime() . 
-                 '; SQL queries counter: ' . $this->debug->getDbQueriesCounter() . 
-                 '; memory max usage: ' . $this->debug->getMemoryUsedMax() . 
-                 ' (' . $this->debug->getMemoryUsedTotalMax() . ')</p>' . "\r\n";
-            if (null != $ds = $this->debug->getBlockMaxExecutionTime()) {
-                echo '<p>Block with max execition time: ' . $ds . '</p>' . "\r\n";
-            }
-        } else {
-            echo '<!-- Execution time: ' . $this->debug->getPageExecutionTime() . ' -->' . "\r\n";
-        }
-    }
 }

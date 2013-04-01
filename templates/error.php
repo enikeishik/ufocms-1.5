@@ -7,4 +7,3 @@
 <?php $tpl->drawBodyTitle(); ?>
 <?php $tpl->drawBodyContent(); ?>
 </BODY></HTML>
-<?php $tpl->drawDebug(); ?>

@@ -354,4 +354,16 @@ class UfoDebug
         $this->writeLog(str_replace("\n", ' ', str_replace("\r", '', (string) $ds)), 
                         $this->config->logDebug);
     }
+    
+    /**
+     * Вывод отладочной информации.
+     * @see UfoTemplateDebug
+     * @see UfoTemplateDebug::drawDebug
+     */
+    public function draw()
+    {
+        $this->loadTemplate('UfoTemplateDebug');
+        $tpl = new UfoTemplateDebug($this->config, $this);
+        $tpl->drawDebug();
+    }
 }

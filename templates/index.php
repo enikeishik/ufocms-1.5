@@ -28,4 +28,3 @@
 </div>
 </body>
 </html>
-<?php $tpl->drawDebug(); ?>
