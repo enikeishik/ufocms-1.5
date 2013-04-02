@@ -56,18 +56,26 @@ class UfoCoreCest
         $I->executeMethod($this->obj, __FUNCTION__);
     }
     
+    public function checkSystemPath(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->executeMethod($this->obj, __FUNCTION__);
+    }
+    
     public function isSystemPath(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() {
+            $this->obj->checkSystemPath();
             $ret1 = $this->obj->isSystemPath();
             var_dump($ret1);
             $_GET['path'] = '/sitemap/'; //временно устанавливаем путь служебного раздела
             $this->obj->setPathRaw();
+            $this->obj->checkSystemPath();
             $ret2 = $this->obj->isSystemPath();
+            var_dump($ret2);
             $_GET['path'] = '/'; //возвращаем реальный путь
             $this->obj->setPathRaw();
-            var_dump($ret2);
             return !$ret1 && $ret2;
         });
         $I->seeResultEquals(true);
@@ -206,9 +214,8 @@ class UfoCoreCest
         $I->wantTo('execute method `initDb` with error');
         $I->execute(function() {
             $core = new UfoCore(new UfoConfig(array('dbLogin' => 'toor')));
-            ob_start();
             $core->run();
-            $ret = ob_get_clean();
+            $ret = $core->getPage();
             return false !== strpos($ret, '500 Internal Server Error');
         });
         $I->seeResultEquals(true);
@@ -220,9 +227,8 @@ class UfoCoreCest
         $I->execute(function() {
             $_GET['path'] = '/#$%/';
             $core = new UfoCore(new UfoConfig());
-            ob_start();
             $core->run();
-            $ret = ob_get_clean();
+            $ret = $core->getPage();
             return false !== strpos($ret, '404 Not Found');
         });
         $I->seeResultEquals(true);
@@ -234,9 +240,8 @@ class UfoCoreCest
         $I->execute(function() {
             $_GET['path'] = '/asd';
             $core = new UfoCore(new UfoConfig());
-            ob_start();
             $core->run();
-            $ret = ob_get_clean();
+            $ret = $core->getPage();
             return false !== strpos($ret, '301 Moved Permanently');
         });
         $I->seeResultEquals(true);
@@ -248,9 +253,8 @@ class UfoCoreCest
         $I->execute(function() {
             $_GET['path'] = '/asd.htm';
             $core = new UfoCore(new UfoConfig());
-            ob_start();
             $core->run();
-            $ret = ob_get_clean();
+            $ret = $core->getPage();
             return false !== strpos($ret, '404 Not Found');
         });
         $I->seeResultEquals(true);
@@ -262,9 +266,8 @@ class UfoCoreCest
         $I->execute(function() {
             $_GET['path'] = '/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/u/v/w/x/y/z/';
             $core = new UfoCore(new UfoConfig());
-            ob_start();
             $core->run();
-            $ret = ob_get_clean();
+            $ret = $core->getPage();
             return false !== strpos($ret, '404 Not Found');
         });
         $I->seeResultEquals(true);
@@ -276,9 +279,8 @@ class UfoCoreCest
         $I->execute(function() {
             $_GET['path'] = '/asdasdasdasdasdasd/';
             $core = new UfoCore(new UfoConfig());
-            ob_start();
             $core->run();
-            $ret = ob_get_clean();
+            $ret = $core->getPage();
             return false !== strpos($ret, '404 Not Found');
         });
         $I->seeResultEquals(true);

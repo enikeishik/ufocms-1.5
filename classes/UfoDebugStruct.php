@@ -1,7 +1,7 @@
 <?php
 require_once 'classes/abstract/UfoStruct.php';
 /**
- * Класс-структура для хранения данных раздела.
+ * Класс-структура для хранения данных отладочной информации.
  *
  * @author enikeishik
  *

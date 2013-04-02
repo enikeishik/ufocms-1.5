@@ -18,7 +18,12 @@ echo 'MT: ' . memory_get_usage(true) . "<br />\r\n";
 */
 
 
+
+
+
+/*
 $sql = 'SELECT i.`Id`,i.`TargetId`,i.`PlaceId`,i.`OrderId`,i.`SourceId`,i.`SourcesIds`,i.`Title`,i.`ItemsStart`,i.`ItemsCount`,i.`ItemsLength`,i.`ItemsStartMark`,i.`ItemsStopMark`,i.`ItemsOptions`,s.path,m.mfileins FROM ufocms_insertions AS i INNER JOIN ufocms_sections AS s ON s.id=i.SourceId INNER JOIN ufocms_modules AS m ON m.muid=s.moduleid WHERE (i.TargetId=-1 OR i.TargetId=0) AND i.PlaceId=1 AND s.isenabled!=0 AND m.isenabled!=0 ORDER BY i.OrderId';
+*/
 /*
 //ex1
 $matches = null;
@@ -29,6 +34,7 @@ if (preg_match($pattern, $sql, $matches)) {
     echo '¬хождение не найдено';
 }
 */
+/*
 //ex2
 $arr = array();
 $matches = null;
@@ -50,3 +56,7 @@ if (0 === stripos($sql, 'SELECT ')) {
     
 }
 echo implode(' ', $arr);
+*/
+echo implode(',', array('123')) . "\r\n";
+echo implode(',', array('123', '456')) . "\r\n";
+echo implode(',', array('1','2','3')) . "\r\n";

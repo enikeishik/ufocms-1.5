@@ -34,9 +34,14 @@ class UfoCacheFs extends UfoCache
             $this->hash = str_replace('/', ',', $hash);
         }
         $this->lifetime = $settings->getLifetime();
-        $this->file = $settings->getDir() . DIRECTORY_SEPARATOR . 
-                      $this->hash . '.' . 
-                      $settings->getFileExt();
+        if ('' != $ext = $settings->getFileExt()) {
+            $this->file = $settings->getDir() . DIRECTORY_SEPARATOR . 
+                          $this->hash . '.' . 
+                          $settings->getFileExt();
+        } else {
+            $this->file = $settings->getDir() . DIRECTORY_SEPARATOR .
+                          $this->hash;
+        }
     }
     
     /**

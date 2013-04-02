@@ -10,4 +10,5 @@ class UfoSysSitemapStruct extends UfoSectionStruct
     public $path = '/sitemap/';
     public $indic = 'Карта сайта';
     public $title = 'Карта сайта';
+    public $flcache = 1;
 }

@@ -132,6 +132,7 @@ class UfoSite
     /**
      * Проверка пути на допустимость.
      * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists
+     * @todo использовать константу/переменнут вместо строки в throw, задействовать sprintf
      */
     protected function checkPath()
     {

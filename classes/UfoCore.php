@@ -105,6 +105,7 @@ final class UfoCore
     {
         $core = new UfoCore(new UfoConfig());
         $core->run();
+        $core->drawDebug();
     }
     
     /**
@@ -118,9 +119,12 @@ final class UfoCore
         
         $this->setPathRaw();
         
-        //если раздел не системный, пробуем использовать кэш
-        if (!$this->isSystemPath() && $this->tryCache()) {
-            echo $this->page;
+        $this->checkSystemPath();
+        
+        //пробуем использовать кэш
+        if ($this->tryCache()) {
+            //вывод сгенерированной страницы
+            $this->drawPage();
             return;
         }
         
@@ -132,13 +136,15 @@ final class UfoCore
             $this->page = $this->loadCache($this->cache);
             if (!is_null($this->page)) {
                 $this->debug->trace('Trying use cache complete', __CLASS__, __METHOD__, true);
-                echo $this->page;
+                //вывод сгенерированной страницы
+                $this->drawPage();
             } else {
                 $this->debug->trace('Trying use cache fail: cache not exists', __CLASS__, __METHOD__, true);
                 $this->debug->trace('Generating error', __CLASS__, __METHOD__, false);
                 $this->generateError(500, 'Database connection error', __CLASS__, __METHOD__, false);
                 $this->debug->trace('Generating error complete', __CLASS__, __METHOD__, false);
-                echo $this->page;
+                //вывод сгенерированной страницы
+                $this->drawPage();
             }
             return;
         }
@@ -150,7 +156,8 @@ final class UfoCore
         try {
             $this->initSite();
         } catch (Exception $e) {
-            echo $this->page;
+            //вывод сгенерированной страницы
+            $this->drawPage();
             return;
         }
         
@@ -165,7 +172,8 @@ final class UfoCore
                 } else {
                     //error 500
                     $this->generateError(500, 'Users initialisation error');
-                    echo $this->page;
+                    //вывод сгенерированной страницы
+                    $this->drawPage();
                     return;
                 }
             }
@@ -175,7 +183,8 @@ final class UfoCore
         try {
             $this->initSection();
         } catch (Exception $e) {
-            echo $this->page;
+            //вывод сгенерированной страницы
+            $this->drawPage();
             return;
         }
         
@@ -190,14 +199,10 @@ final class UfoCore
         $this->finalize();
         
         //вывод сгенерированной страницы
-        echo $this->page;
+        $this->drawPage();
         
         //выполнение служебных процедур (очистка кэша и т.п.)
         $this->shutdown();
-        
-        if ($this->config->debugDisplay) {
-            $this->debug->draw();
-        }
     }
     
     /**
@@ -271,21 +276,16 @@ final class UfoCore
     
     /**
      * Проверка является ли текущий раздел служебным.
-     * Данный метод должен срабатывать только один раз, затем надо проверять поле pathSystem.
-     * @return boolean
      */
-    public function isSystemPath()
+    public function checkSystemPath()
     {
-        if ('' != $this->pathSystem) {
-            return true;
-        }
+        $pathRaw = $this->pathRaw;
         foreach ($this->config->systemSections as $path => $class) {
-            if (0 === strpos($this->pathRaw, $path)) {
+            if (0 === strpos($pathRaw, $path)) {
                 $this->pathSystem = $path;
-                return true;
+                return;
             }
         }
-        return false;
     }
     
     /**
@@ -451,10 +451,31 @@ final class UfoCore
             $this->db->close();
             unset($this->db);
         }
-        if ($this->section && $this->section->getField('flcache')) {
-            $this->cache->save(ob_get_contents());
-        }
         $this->debug->trace('Finalization complete', __CLASS__, __METHOD__, true);
+    }
+    
+    /**
+     * Вывод сгенерированной страницы.
+     * Также при этом сбрасываются все буферы вывода.
+     */
+    public function drawPage()
+    {
+        $this->debug->trace('Drawing page', __CLASS__, __METHOD__, false);
+        
+        echo $this->page;
+        
+        //сброс буфера клиенту
+        ob_flush();
+        flush();
+        
+        //жесткий сброс всех буферов
+        if ($this->config->obHardFlush) {
+            while (ob_get_level()) {
+                ob_end_flush();
+            }
+        }
+        
+        $this->debug->trace('Drawing page complete', __CLASS__, __METHOD__, true);
     }
     
     /**
@@ -464,10 +485,12 @@ final class UfoCore
     {
         $this->debug->trace('Shutdown', __CLASS__, __METHOD__, false);
         
-        //сбрасываем буфер вывода клиенту
-        ob_end_flush();
-        flush();
+        //создание кэша
+        if ($this->section && $this->section->getField('flcache')) {
+            $this->cache->save($this->page);
+        }
         
+        //очистка кэша от устаревших данных, если задано время хранения кэша
         if ($this->config->cacheFsSavetime > 0) {
             //восстанавливаем перехватчик ошибок по-умолчанию
             restore_error_handler();
@@ -481,12 +504,36 @@ final class UfoCore
                                        $this->config);
         }
         
+        //запись времени выполнения скрипта в лог производительности
         if ('' != $this->config->logPerformance) {
             $this->writeLog($this->pathRaw . "\t" . $this->debug->getPageExecutionTime(), 
                             $this->config->logPerformance);
         }
         
         $this->debug->trace('Shutdown complete', __CLASS__, __METHOD__, true);
+    }
+    
+    /**
+     * Вывод отладочной информации.
+     */
+    public function drawDebug()
+    {
+        if ($this->config->debugDisplay) {
+            //начало новой буферизации, если нет никакой
+            if (false === ob_get_length()) {
+                ob_start();
+            }
+            $this->debug->draw();
+        }
+    }
+    
+    /**
+     * Является ли раздел служебным.
+     * @return boolean
+     */
+    public function isSystemPath()
+    {
+        return '' != $this->pathSystem;
     }
     
     /**
@@ -506,7 +553,7 @@ final class UfoCore
      */
     private function loadCache(UfoCache $cache, $override = false)
     {
-        if ($override || ($cache->exists() && !$cache->expired())) {
+        if ($override || (!$cache->expired())) {
             if ($data = $cache->load()) {
                 return $data;
             }
