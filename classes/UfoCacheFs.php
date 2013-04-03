@@ -9,17 +9,22 @@ require_once 'abstract/UfoCache.php';
  */
 class UfoCacheFs extends UfoCache
 {
-
+    use UfoTools;
+    
+    /**
+     * Установки кэширования.
+     * @var UfoCacheFsSettings
+     */
+    protected $settings = null;
+    
     /**
      * Файл, в котором хранится кэш для текущего хеша.
-     *
      * @var string
      */
     protected $file = '';
     
     /**
      * Конструктор класса.
-     *
      * @param string $hash                    хэш кэша
      * @param string $path                    папка кэша
      * @param UfoCacheFsSettings $settings    установки кэширования
@@ -33,20 +38,20 @@ class UfoCacheFs extends UfoCache
         } else {
             $this->hash = str_replace('/', ',', $hash);
         }
-        $this->lifetime = $settings->getLifetime();
+        $this->settings = $settings;
+        $this->lifetime = $this->settings->getLifetime();
         if ('' != $ext = $settings->getFileExt()) {
-            $this->file = $settings->getDir() . DIRECTORY_SEPARATOR . 
+            $this->file = $this->settings->getDir() . DIRECTORY_SEPARATOR . 
                           $this->hash . '.' . 
-                          $settings->getFileExt();
+                          $this->settings->getFileExt();
         } else {
-            $this->file = $settings->getDir() . DIRECTORY_SEPARATOR .
+            $this->file = $this->settings->getDir() . DIRECTORY_SEPARATOR .
                           $this->hash;
         }
     }
     
     /**
      * Получение кэша.
-     *
      * @return string
      */
     public function load()
@@ -59,7 +64,6 @@ class UfoCacheFs extends UfoCache
     
     /**
      * Сохранение данных в кэш
-     *
      * @param string $data  данные
      * @return boolean
      */
@@ -75,7 +79,6 @@ class UfoCacheFs extends UfoCache
     
     /**
      * Проверка существования кэша.
-     *
      * @return boolean
      */
     public function exists()
@@ -85,7 +88,6 @@ class UfoCacheFs extends UfoCache
     
     /**
      * Проверка не устарел ли кэш.
-     *
      * @return boolean
      */
     public function expired()
@@ -99,34 +101,31 @@ class UfoCacheFs extends UfoCache
     
     /**
      * Удаление файлов кэша, срок хранения которых истек.
-     * Метод сделан статическим, поскольку вызывается после завершения работы скрипта (register_shutdown_function).
-     * 
      * @param UfoConfig $config    объект конфигурации
-     *
      * @todo проверить необходимость отмены кэширования информации о файле системой посредством функции clearstatcache
-     * @todo сделать метод writeLog статическим и зайдествовать его
+     * @todo заменить текст ошибок на константы
+     * @todo tests
      */
-    public static function deleteOld(UfoConfig $config)
+    public function deleteOld()
     {
-        $settings =& $config->cacheFsSettings;
         clearstatcache();
-        $dir = $settings->getDir();
+        $dir = $this->settings->getDir();
         if ($dh = opendir($dir)) {
             while (($file = readdir($dh)) !== false) {
                 $filePath = $dir . '/' . $file;
                 if (is_file($filePath) && 0 !== strpos($file, '.')) {
                     $fileTime = time() - filectime($filePath);
-                    if ($settings->getLifetime() < $fileTime && $settings->getSavetime() < $fileTime) {
+                    if ($this->settings->getLifetime() < $fileTime 
+                        && $this->settings->getSavetime() < $fileTime) {
                         if (!@unlink($filePath)) {
-                            //$this->writeLog(, $config->logError);
-                            //api_WriteLog(C_LOGPATH_ERRORS, 'Can not unlink file ' . $file_path);
+                            $this->writeLog('Can not unlink file ' . $filePath, $config->logError);
                         }
                     }
                 }
             }
             closedir($dh);
         } else {
-            //api_WriteLog(C_LOGPATH_ERRORS, 'Can not open dir ' . $dir);
+            $this->writeLog('Can not open dir ' . $dir, $config->logError);
         }
     }
 }

@@ -18,6 +18,7 @@ class UfoCacheFsCest
     function __construct() {
         $this->root = __DIR__ . self::DS . '..' . self::DS . '..';
         require_once $this->root . self::DS . 'config.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCacheFs.php';
         //$config = new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache'));
         $config = new UfoConfig();

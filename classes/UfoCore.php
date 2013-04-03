@@ -481,11 +481,15 @@ final class UfoCore
     }
     
     /**
-     * Регистрация процедур выполняемых после завершения работы скрипта.
+     * Выполнение служебных процедур после выдачи контента клиенту.
      */
     public function shutdown()
     {
         $this->debug->trace('Shutdown', __CLASS__, __METHOD__, false);
+        
+        //отключаем вывод ошибок
+        ini_set('display_errors', '0');
+        ini_set('error_reporting', 0);
         
         //создание кэша
         if ($this->section && $this->section->getField('flcache')) {
@@ -493,17 +497,8 @@ final class UfoCore
         }
         
         //очистка кэша от устаревших данных, если задано время хранения кэша
-        if ($this->config->cacheFsSavetime > 0) {
-            //восстанавливаем перехватчик ошибок по-умолчанию
-            restore_error_handler();
-            
-            //отключаем вывод ошибок
-            ini_set('display_errors', '0');
-            ini_set('error_reporting', 0);
-            
-            //регистрируем функцию, вызываемую по завершении выполнения скрипта
-            register_shutdown_function('UfoCacheFs::deleteOld', 
-                                       $this->config);
+        if ('files' == $this->config->cacheType && $this->config->cacheFsSavetime > 0) {
+            $this->cache->deleteOld();
         }
         
         //запись времени выполнения скрипта в лог производительности
@@ -536,6 +531,16 @@ final class UfoCore
     public function isSystemPath()
     {
         return '' != $this->pathSystem;
+    }
+    
+    /**
+     * Возвращает тип устройства вывода (браузер, принтер, мобильное устройство и т.п.).
+     * @return string (browser|printer|mobile)
+     * @todo realisation, tests
+     */
+    public function getUserAgent()
+    {
+        return 'browser';
     }
     
     /**

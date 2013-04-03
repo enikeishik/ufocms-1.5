@@ -4,8 +4,7 @@ require_once 'classes/UfoToolsExt.php';
 require_once 'classes/exceptions/UfoExceptionPathNotexists.php';
 /**
  * јбрстрактный класс модул€, обслуживающего раздел, 
- * дочерние классы должны реализовывать 
- * интерфейс UfoModuleInterface или быть абстрактными.
+ * дочерние классы должны реализовывать интерфейс UfoModuleInterface или быть абстрактными.
  * ¬се классы модулей должны наследовать этот класс.
  * 
  * @author enikeishik
@@ -117,14 +116,23 @@ abstract class UfoModule implements UfoModuleInterface
      * √енераци€ основного содержимого страницы.
      * ћожет быть переопределен в дочерних классах дл€ реализации специфического вывода.
      * @return string
-     * @todo выбор макета
      */
     public function getPage()
     {
         ob_start();
-        $this->loadLayout($this->template);
-        //$this->loadLayout($this->template, 'print');
-        //$this->loadLayout($this->template, 'mobil');
+        switch ($this->core->getUserAgent()) {
+            case 'browser':
+                $this->loadLayout($this->template);
+                break;
+            case 'printer':
+                $this->loadLayout($this->template, 'print');
+                break;
+            case 'mobile':
+                $this->loadLayout($this->template, 'mobil');
+                break;
+            default:
+                $this->loadLayout($this->template);
+        }
         return ob_get_clean();
     }
     
