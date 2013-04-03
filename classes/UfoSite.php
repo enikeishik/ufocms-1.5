@@ -66,6 +66,7 @@ class UfoSite
                         $this->siteParams[$param['PName']] = $param['PValue'];
                 }
             }
+            unset($arr);
         }
         
         $this->pathRaw = $pathRaw;

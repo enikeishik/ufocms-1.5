@@ -1,5 +1,6 @@
 <?php
 /*
+unset освобождает память
 $a = array();
 echo 'M: ' . memory_get_usage() . "<br />\r\n";
 echo 'MT: ' . memory_get_usage(true) . "<br />\r\n<br />\r\n";
@@ -57,6 +58,177 @@ if (0 === stripos($sql, 'SELECT ')) {
 }
 echo implode(' ', $arr);
 */
+
+
+
+
+/*
+разделитель вставляется только между элементами, если элемент один, разделитель не используется
 echo implode(',', array('123')) . "\r\n";
 echo implode(',', array('123', '456')) . "\r\n";
 echo implode(',', array('1','2','3')) . "\r\n";
+*/
+
+
+
+/*
+ошибка уровня Notice
+$arr = array('a' => 1, 'b' => 2);
+echo $arr[a];
+*/
+
+
+
+/*
+современный PHP одинаково быстро обрабатывает локальные переменные и поля класса
+class A
+{
+    private $arr = array();
+    private $x = -1;
+    
+    public function __construct()
+    {
+        for ($i = 0; $i < 100000; $i++) {
+            $this->arr['k' . $i] = $i;
+        }
+    }
+    
+    public function m1()
+    {
+        $x = -1;
+        foreach ($this->arr as $key => $val) {
+            $x = $val;
+        }
+    }
+    
+    public function m2()
+    {
+        $x = -1;
+        $arr = $this->arr;
+        foreach ($arr as $key => $val) {
+            $x = $val;
+        }
+    }
+    
+    public function m22()
+    {
+        $x = -1;
+        $arr =& $this->arr;
+        foreach ($arr as $key => $val) {
+            $x = $val;
+        }
+    }
+    
+    public function m3()
+    {
+        $this->x = -1;
+        foreach ($this->arr as $key => $val) {
+            $this->x = $val;
+        }
+    }
+    
+    public function m4()
+    {
+        $x = -1;
+        $arr = $this->arr;
+        foreach ($arr as $key => $val) {
+            $x = $val;
+        }
+        $this->x = $x;
+    }
+}
+$o = new A();
+
+echo 'exec m1 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+$o->m1();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'exec m2 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+$o->m2();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'exec m22';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+$o->m2();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'exec m3 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+$o->m1();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'exec m4 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+$o->m2();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+*/
+
+
+
+/*
+использование unset практически не сказывается на производительности
+function a1()
+{
+    $arr = array();
+    for ($i = 0; $i < 10000; $i++) {
+        $arr['k' . $i] = str_repeat(' ', $i);
+        $x = $arr['k' . $i];
+        $y = $x;
+        $x = str_repeat(' ', $i);
+    }
+    return $y;
+}
+
+function a2()
+{
+    $arr = array();
+    for ($i = 0; $i < 10000; $i++) {
+        $arr['k' . $i] = str_repeat(' ', $i);
+        $x = $arr['k' . $i];
+        $y = $x;
+        unset($x);
+        $x = str_repeat(' ', $i);
+    }
+    unset($arr);
+    return $y;
+}
+
+echo 'M: ' . memory_get_usage() . "\r\n";
+echo 'MT: ' . memory_get_usage(true) . "\r\n";
+
+echo 'exec a1 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+for ($i = 0; $i < 10; $i++) {
+    a1();
+}
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'M: ' . memory_get_usage() . "\r\n";
+echo 'MT: ' . memory_get_usage(true) . "\r\n";
+
+echo 'exec a2 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+for ($i = 0; $i < 10; $i++) {
+    a2();
+}
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'M: ' . memory_get_usage() . "\r\n";
+echo 'MT: ' . memory_get_usage(true) . "\r\n";
+*/

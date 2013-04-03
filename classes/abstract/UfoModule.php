@@ -197,6 +197,8 @@ abstract class UfoModule implements UfoModuleInterface
                 case 'bool':
                 case 'boolean':
                     return true;
+                default:
+                    return substr($paramRaw, strlen($paramName));
             }
         
         //проверяем состоит ли параметр только из цифр

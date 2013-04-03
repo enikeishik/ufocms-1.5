@@ -279,9 +279,11 @@ final class UfoCore
      */
     public function checkSystemPath()
     {
-        $pathRaw = $this->pathRaw;
+        //нет нужды делать локальную переменную $pathRaw
+        //тесты показывают что современный PHP одинаково быстро
+        //обрабатывает локальные переменные и поля класса
         foreach ($this->config->systemSections as $path => $class) {
-            if (0 === strpos($pathRaw, $path)) {
+            if (0 === strpos($this->pathRaw, $path)) {
                 $this->pathSystem = $path;
                 return;
             }
