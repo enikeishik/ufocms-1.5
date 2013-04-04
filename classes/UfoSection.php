@@ -25,6 +25,12 @@ class UfoSection implements UfoSectionInterface
     protected $container = null;
     
     /**
+     * Объект набора текстовых описаний ошибок.
+     * @var UfoErrors
+     */
+    private $errors = null;
+    
+    /**
      * Ссылка на объект конфигурации.
      * @var UfoConfig
      */
@@ -77,7 +83,6 @@ class UfoSection implements UfoSectionInterface
      * @param mixed        $section       идентификатор, путь или данные раздела сайта
      * @param UfoContainer &$container    ссылка на объект-контейнер ссылок на объекты
      * @throws Exception
-     * @todo использовать константу/переменнут вместо строки в throw, задействовать sprintf
      */
     public function __construct($section, UfoContainer &$container)
     {
@@ -87,10 +92,11 @@ class UfoSection implements UfoSectionInterface
         $this->setFields($section);
         
         if (0 == $this->fields->moduleid) {
-            throw new Exception('Incorrect moduleid');
+            throw new Exception($this->errors->sectionModuleIdIncorrect);
         }
         if (!$mod = $this->coreDbModel->getModuleName($this->fields->moduleid)) {
-            throw new Exception('Module not found (module uid: ' . $this->fields->moduleid . ')');
+            throw new Exception(sprintf($this->errors->sectionModuleNotFound, 
+                                        (string) $this->fields->moduleid));
         }
         //преобразуем от старого формата 'mod_news.php' к новому 'UfoModNews';
         $mod = substr($mod, strpos($mod, '_') + 1);
@@ -103,6 +109,7 @@ class UfoSection implements UfoSectionInterface
      */
     protected function unpackContainer()
     {
+        $this->errors =& $this->container->getErrors();
         $this->config =& $this->container->getConfig();
         $this->db =& $this->container->getDb();
         $this->coreDbModel =& $this->container->getCoreDbModel();
@@ -113,7 +120,6 @@ class UfoSection implements UfoSectionInterface
      * Получение данных раздела в виде объекта-структуры UfoSectionStruct.
      * @param mixed $section    идентификатор, путь или данные раздела сайта
      * @throws Exception
-     * @todo использовать константу/переменнут вместо строки в throw
      */
     protected function setFields($section)
     {
@@ -121,21 +127,22 @@ class UfoSection implements UfoSectionInterface
             if ($fields = $this->coreDbModel->getSection($section)) {
                 $this->fields = new UfoSectionStruct($fields);
             } else {
-                throw new Exception('Fields not set');
+                throw new Exception(sprintf($this->errors->sectionFieldsUnset, 
+                                            (string) $section));
             }
         } else if (is_array($section)) {
             $this->fields = new UfoSectionStruct($section);
         } else if (is_object($section) && is_a($section, 'UfoSectionStruct')) {
             $this->fields = $section;
         } else {
-            throw new Exception('Incorrect $section: ' . var_export($section, true));
+            throw new Exception(sprintf($this->errors->sectionIncorrect, 
+                                        (string) var_export($section, true)));
         }
     }
     
     /**
      * Инициализация объекта модуля, обслуживающего раздел.
      * @throws Exception
-     * @todo использовать константу/переменнут вместо строки в throw
      */
     public function initModule()
     {
@@ -143,7 +150,7 @@ class UfoSection implements UfoSectionInterface
         $this->loadModule($this->moduleName);
         $this->module = new $this->moduleName($this->container);
         if (!is_a($this->module, 'UfoModule')) {
-            throw new Exception('Module class must extends UfoModule abstract class');
+            throw new Exception($this->errors->sectionModuleIncorrect);
         }
     }
     

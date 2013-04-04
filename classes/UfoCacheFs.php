@@ -18,6 +18,12 @@ class UfoCacheFs extends UfoCache
     protected $settings = null;
     
     /**
+     * Объект набора текстовых описаний ошибок.
+     * @var UfoErrors
+     */
+    private $errors = null;
+    
+    /**
      * Файл, в котором хранится кэш для текущего хеша.
      * @var string
      */
@@ -26,10 +32,10 @@ class UfoCacheFs extends UfoCache
     /**
      * Конструктор класса.
      * @param string $hash                    хэш кэша
-     * @param string $path                    папка кэша
      * @param UfoCacheFsSettings $settings    установки кэширования
+     * @param UfoErrors &$errors              ссылка на объект с текстами ошибок
      */
-    public function __construct($hash, UfoCacheFsSettings $settings)
+    public function __construct($hash, UfoCacheFsSettings $settings, UfoErrors &$errors)
     {
         if ('' == $hash) {
             $this->hash = 'empty,' . time();
@@ -48,6 +54,7 @@ class UfoCacheFs extends UfoCache
             $this->file = $this->settings->getDir() . DIRECTORY_SEPARATOR .
                           $this->hash;
         }
+        $this->errors =& $errors;
     }
     
     /**
@@ -101,14 +108,13 @@ class UfoCacheFs extends UfoCache
     
     /**
      * Удаление файлов кэша, срок хранения которых истек.
-     * @param UfoConfig $config    объект конфигурации
-     * @todo проверить необходимость отмены кэширования информации о файле системой посредством функции clearstatcache
-     * @todo заменить текст ошибок на константы
-     * @todo tests
      */
     public function deleteOld()
     {
-        clearstatcache();
+        //даже если некоторые файлы не удалятся сейчас это не страшно
+        //они удаятся при последующих вызовах этого метода/скрипта
+        //функция по тестам достаточно сильно затормаживает выполнение скрипта
+        //clearstatcache();
         $dir = $this->settings->getDir();
         if ($dh = opendir($dir)) {
             while (($file = readdir($dh)) !== false) {
@@ -118,14 +124,14 @@ class UfoCacheFs extends UfoCache
                     if ($this->settings->getLifetime() < $fileTime 
                         && $this->settings->getSavetime() < $fileTime) {
                         if (!@unlink($filePath)) {
-                            $this->writeLog('Can not unlink file ' . $filePath, $config->logError);
+                            $this->writeLog(sprintf($this->errors->fsUnlink, $filePath), $config->logError);
                         }
                     }
                 }
             }
             closedir($dh);
         } else {
-            $this->writeLog('Can not open dir ' . $dir, $config->logError);
+            $this->writeLog(sprintf($this->errors->fsOpenDir, $dir), $config->logError);
         }
     }
 }

@@ -53,20 +53,19 @@ class UfoSystemSection extends UfoSection
     /**
      * Инициализация объекта модуля, обслуживающего раздел.
      * @throws Exception
-     * @todo использовать константу/переменнут вместо строки в throw
      */
     public function initModule()
     {
         $this->container->setSection($this);
         //служебные разделы и обслуживающие их модули перечислены в конфигурации
         if (!array_key_exists($this->pathSystem, $this->config->systemSections)) {
-            throw new Exception('Module class not defined');
+            throw new Exception($this->errors->syssectModuleNotDefined);
         }
         $module = $this->config->systemSections[$this->pathSystem];
         $this->loadModule($module);
         $this->module = new $module($this->container);
         if (!is_a($this->module, 'UfoSystemModule')) {
-            throw new Exception('Module class must extends UfoSystemModule abstract class');
+            throw new Exception($this->errors->syssectModuleIncorrect);
         }
     }
 }

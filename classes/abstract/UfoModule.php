@@ -19,7 +19,13 @@ abstract class UfoModule implements UfoModuleInterface
      * @var UfoContainer
      */
     protected $container = null;
-
+    
+    /**
+     * Объект набора текстовых описаний ошибок.
+     * @var UfoErrors
+     */
+    private $errors = null;
+    
     /**
      * Ссылка на объект конфигурации.
      * @var UfoConfig
@@ -104,6 +110,7 @@ abstract class UfoModule implements UfoModuleInterface
      */
     protected function unpackContainer()
     {
+        $this->errors =& $this->container->getErrors();
         $this->config =& $this->container->getConfig();
         $this->core =& $this->container->getCore();
         $this->debug =& $this->container->getDebug();
@@ -152,7 +159,6 @@ abstract class UfoModule implements UfoModuleInterface
     /**
      * Разбор параметров в URL, которые преобразованы в массив.
      * @throws UfoExceptionPathNotexists
-     * @todo использовать константу/переменнут вместо строки в throw
      */
     protected function parseParams()
     {
@@ -179,7 +185,8 @@ abstract class UfoModule implements UfoModuleInterface
                 }
             }
             if (!$parsed) {
-                throw new UfoExceptionPathNotexists('Parameter ' . $param . ' not identified');
+                throw new UfoExceptionPathNotexists(sprintf($this->errors->moduleParamNotDefined, 
+                                                            $param));
             }
         }
     }

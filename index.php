@@ -14,5 +14,6 @@ algorithm
 
 //index.php
 require_once 'config.php';
+require_once 'errors.php';
 require_once 'classes/UfoCore.php';
 UfoCore::main();

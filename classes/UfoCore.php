@@ -15,6 +15,12 @@ final class UfoCore
     use UfoTools;
     
     /**
+     * Объект набора текстовых описаний ошибок.
+     * @var UfoErrors
+     */
+    private $errors = null;
+    
+    /**
      * Ссылка на объект конфигурации.
      * @var UfoConfig
      */
@@ -123,7 +129,7 @@ final class UfoCore
         
         //пробуем использовать кэш
         if ($this->tryCache()) {
-            //вывод сгенерированной страницы
+            //вывод сгенерированной страницы (кэш)
             $this->drawPage();
             return;
         }
@@ -132,18 +138,21 @@ final class UfoCore
         try {
             $this->initDb();
         } catch (Exception $e) {
+            //регистрация ошибки
+            $this->writeLog($e->getMessage(), $this->config->logError);
+            
             $this->debug->trace('Trying use cache', __CLASS__, __METHOD__, false);
             $this->page = $this->loadCache($this->cache);
             if (!is_null($this->page)) {
                 $this->debug->trace('Trying use cache complete', __CLASS__, __METHOD__, true);
-                //вывод сгенерированной страницы
+                //вывод сгенерированной страницы (кэш)
                 $this->drawPage();
             } else {
                 $this->debug->trace('Trying use cache fail: cache not exists', __CLASS__, __METHOD__, true);
                 $this->debug->trace('Generating error', __CLASS__, __METHOD__, false);
                 $this->generateError(500, 'Database connection error');
                 $this->debug->trace('Generating error complete', __CLASS__, __METHOD__, false);
-                //вывод сгенерированной страницы
+                //вывод сгенерированной страницы (ошибки)
                 $this->drawPage();
             }
             return;
@@ -156,7 +165,10 @@ final class UfoCore
         try {
             $this->initSite();
         } catch (Exception $e) {
-            //вывод сгенерированной страницы
+            //регистрация ошибки
+            $this->writeLog($e->getMessage(), $this->config->logError);
+            
+            //вывод сгенерированной страницы (ошибки)
             $this->drawPage();
             return;
         }
@@ -167,12 +179,18 @@ final class UfoCore
             try {
                 $this->users = new UfoUsers($this->getContainer());
             } catch (Exception $e) {
+                //регистрация ошибки
+                $this->writeLog($e->getMessage(), $this->config->logError);
+                
+                //если конфигурация допускает продолжение работы 
+                //без функционала пользователей - продолжаем, 
+                //иначе - генерируем ошибку
                 if ($this->config->usersOverrideError) {
                     $this->config->usersEnabled = false;
                 } else {
                     //error 500
                     $this->generateError(500, 'Users initialisation error');
-                    //вывод сгенерированной страницы
+                    //вывод сгенерированной страницы (ошибки)
                     $this->drawPage();
                     return;
                 }
@@ -183,7 +201,10 @@ final class UfoCore
         try {
             $this->initSection();
         } catch (Exception $e) {
-            //вывод сгенерированной страницы
+            //регистрация ошибки
+            $this->writeLog($e->getMessage(), $this->config->logError);
+            
+            //вывод сгенерированной страницы (ошибки)
             $this->drawPage();
             return;
         }
@@ -211,10 +232,12 @@ final class UfoCore
      */
     public function __construct(UfoConfig &$config)
     {
+        $this->errors = new UfoErrors();
         $this->config =& $config;
         $this->loadClass('UfoDebug');
         $this->debug = new UfoDebug($this->config);
         $container =& $this->getContainer();
+        $container->setErrors($this->errors);
         $container->setConfig($this->config);
         $container->setDebug($this->debug);
         $container->setCore($this);
@@ -300,7 +323,8 @@ final class UfoCore
                             __CLASS__, __METHOD__, false);
         $this->loadClass('UfoCacheFs');
         $this->cache = new UfoCacheFs($this->pathRaw, 
-                                      $this->config->cacheFsSettings);
+                                      $this->config->cacheFsSettings, 
+                                      $this->errors);
         $this->page = $this->loadCache($this->cache);
         $this->debug->trace(is_null($this->page) ? 'Cache not used' : 'Using cache', 
                             __CLASS__, __METHOD__, true);

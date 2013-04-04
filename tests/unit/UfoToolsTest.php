@@ -1,8 +1,12 @@
 <?php
+require_once 'Tools.php';
+
 use Codeception\Util\Stub;
 
 class UfoToolsTest extends \Codeception\TestCase\Test
 {
+    use Tools;
+   
    /**
     * @var \CodeGuy
     */
@@ -46,6 +50,8 @@ class UfoToolsTest extends \Codeception\TestCase\Test
     // tests
     public function testIsPath()
     {
+        $this->showTestCase(__CLASS__);
+        $this->showTest(__FUNCTION__);
         $vals[] = array('/asd/', true);
         $vals[] = array('/asd/qwe-zxc/~123_vfr/index.html', true);
         $vals[] = array('/', false);
@@ -58,5 +64,19 @@ class UfoToolsTest extends \Codeception\TestCase\Test
             $this->codeGuy->seeMethodReturns($this->obj, 'isPath', $v[1], array($v[0]));
         }
     }
-
+    
+    public function testIsSafeForPath() {
+        $this->showTest(__FUNCTION__);
+        $vals[] = array('/asd/', true);
+        $vals[] = array('/asd/qwe-zxc/~123_vfr/index.html', true);
+        $vals[] = array('/', true);
+        $vals[] = array('', true);
+        $vals[] = array('/as..d/', false);
+        foreach ($vals as $v) {
+            echo 'test `' . $v[0] . '`' . "\r\n";
+            $ret = $this->obj->isSafeForPath($v[0]);
+            var_dump($ret);
+            $this->codeGuy->seeMethodReturns($this->obj, 'isSafeForPath', $v[1], array($v[0]));
+        }
+    }
 }

@@ -86,6 +86,12 @@ class UfoContainer
     protected $error = null;
     
     /**
+     * Ссылка на объект набора текстовых описаний ошибок.
+     * @var UfoErrors
+     */
+    protected $errors = null;
+    
+    /**
      * Конструктор.
      * @param array $vars = null    массив ссылок на объекты
      */
@@ -244,4 +250,16 @@ class UfoContainer
      * @return UfoError
      */
     public function &getError() { return $this->error; }
+    
+    /**
+     * 
+     * @param UfoErrors $errors
+     */
+    public function setErrors(UfoErrors &$errors) { $this->errors =& $errors; }
+    
+    /**
+     * 
+     * @return UfoErrors
+     */
+    public function &getErrors() { return $this->errors; }
 }

@@ -232,3 +232,48 @@ echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
 echo 'M: ' . memory_get_usage() . "\r\n";
 echo 'MT: ' . memory_get_usage(true) . "\r\n";
 */
+
+
+
+/*
+2-3 секунды a1 против 0.0005-0.0009 a2
+function a1()
+{
+    for ($i = 0; $i < 1000; $i++) {
+        clearstatcache();
+        $file = __DIR__ . '/test.php';
+        $ftime = fileatime($file);
+    }
+    echo $ftime . "\r\n";
+}
+
+function a2()
+{
+    for ($i = 0; $i < 1000; $i++) {
+        $file = __DIR__ . '/test.php';
+        $ftime = fileatime($file);
+    }
+    echo $ftime . "\r\n";
+}
+
+echo 'exec a1 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+a1();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+
+echo 'exec a2 ';
+list($msec, $sec) = explode(chr(32), microtime());
+$start = $sec + $msec;
+a2();
+list($msec, $sec) = explode(chr(32), microtime());
+echo ' time: ' . round(($sec + $msec) - $start, 8) . "\r\n";
+*/
+
+
+
+
+
+$err = 'Can not unlink file %1s';
+echo sprintf($err, 'somefile.txt');

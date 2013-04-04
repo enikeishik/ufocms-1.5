@@ -17,6 +17,12 @@ class UfoSite
     use UfoTools;
     
     /**
+     * Объект набора текстовых описаний ошибок.
+     * @var UfoErrors
+     */
+    private $errors = null;
+    
+    /**
      * Ссылка на объект конфигурации.
      * @var UfoConfig
      */
@@ -58,6 +64,8 @@ class UfoSite
         $this->config =& $container->getConfig();
         $this->db =& $container->getDb();
         $this->coreDbModel =& $container->getCoreDbModel();
+        $this->debug =& $container->getDebug();
+        $this->errors =& $container->getErrors();
         
         if ($arr = $this->coreDbModel->getSiteParams()) {
             foreach ($arr as $param) {
@@ -133,7 +141,6 @@ class UfoSite
     /**
      * Проверка пути на допустимость.
      * @throws UfoExceptionPathEmpty, UfoExceptionPathBad, UfoExceptionPathUnclosed, UfoExceptionPathFilenotexists
-     * @todo использовать константу/переменнут вместо строки в throw, задействовать sprintf
      */
     protected function checkPath()
     {
@@ -145,12 +152,12 @@ class UfoSite
             return;
         }
         if ('' == $path) {
-            throw new UfoExceptionPathEmpty('Path empty, main page redirect required');
+            throw new UfoExceptionPathEmpty($this->errors->pathEmpty);
         }
         
         //если в пути есть недопустимые символы, вызываем ошибку 404
         if (!$this->isPath($path, false)) {
-            throw new UfoExceptionPathBad('Bad path');
+            throw new UfoExceptionPathBad($this->errors->pathBad);
         }
         
         //дополняем путь правым слешем по необходимости
@@ -162,14 +169,14 @@ class UfoSite
                 $this->pathRaw .= '/';
                 //перенаправляем только если нет POST запроса, иначе обрабатываем
                 if (!isset($_SERVER['REQUEST_METHOD'])) {
-                    throw new UfoExceptionPathUnclosed('Closing slash omitted');
+                    throw new UfoExceptionPathUnclosed($this->errors->pathUnclosed);
                     return;
                 } else if (0 != strcasecmp('POST', $_SERVER['REQUEST_METHOD'])) {
-                    throw new UfoExceptionPathUnclosed('Closing slash omitted');
+                    throw new UfoExceptionPathUnclosed($this->errors->pathUnclosed);
                     return;
                 }
             } else {
-                throw new UfoExceptionPathFilenotexists('Asking for a file which not exists');
+                throw new UfoExceptionPathFilenotexists($this->errors->pathFileNotExists);
                 return;
             }
         }
@@ -200,7 +207,7 @@ class UfoSite
             //если вложенность больше допустимой, выходим
             if ($this->config->pathNestingLimit < $pathPartsCount) {
                 //вызываем ошибку 404
-                throw new UfoExceptionPathComplex('Path is too complex');
+                throw new UfoExceptionPathComplex($this->errors->pathComplex);
                 return;
             }
             
@@ -213,7 +220,7 @@ class UfoSite
             array_shift($paths);
             
             if (!$this->path = $this->coreDbModel->getMaxExistingPath($paths)) {
-                throw new UfoExceptionPathNotexists('Path not exists');
+                throw new UfoExceptionPathNotexists($this->errors->pathNotExists);
                 return;
             }
         }
