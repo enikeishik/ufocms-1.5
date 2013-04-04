@@ -141,7 +141,7 @@ final class UfoCore
             } else {
                 $this->debug->trace('Trying use cache fail: cache not exists', __CLASS__, __METHOD__, true);
                 $this->debug->trace('Generating error', __CLASS__, __METHOD__, false);
-                $this->generateError(500, 'Database connection error', __CLASS__, __METHOD__, false);
+                $this->generateError(500, 'Database connection error');
                 $this->debug->trace('Generating error complete', __CLASS__, __METHOD__, false);
                 //вывод сгенерированной страницы
                 $this->drawPage();

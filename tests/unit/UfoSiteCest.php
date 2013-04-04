@@ -37,12 +37,12 @@ class UfoSiteCest
                 $obj1 = new UfoSite('/', '', $this->container);
                 $obj2 = new UfoSite('/users/1/', '/users/', $this->container);
                 try {
-                    $obj3 = new UfoSite('/asd', $this->container);
+                    $obj3 = new UfoSite('/asd', '', $this->container);
                 } catch (Exception $ee) {
                     
                 }
                 try {
-                    $obj4 = new UfoSite('/asdasdasdasdasdasdasd/', $this->container);
+                    $obj4 = new UfoSite('/asdasdasdasdasdasdasd/', '', $this->container);
                 } catch (Exception $ee) {
                     
                 }

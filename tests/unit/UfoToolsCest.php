@@ -140,7 +140,10 @@ class UfoToolsCest
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->execute(function() use ($obj, $url, $out) {
             ob_start();
-            $obj->redirect($url);
+            //in codeception header (and similar) generate an error, 
+            //because codeception already make output before
+            //so we use @ in here
+            @$obj->redirect($url);
             return ob_get_clean() == $out;
         });
         $I->seeResultEquals(true);

@@ -213,7 +213,7 @@ class UfoCoreCest
         $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `initDb` with error');
         $I->execute(function() {
-            $core = new UfoCore(new UfoConfig(array('dbLogin' => 'toor')));
+            $core = new UfoCore(new UfoConfig(array('dbLogin' => 'toor', 'cacheLifetime' => 0)));
             $core->run();
             $ret = $core->getPage();
             return false !== strpos($ret, '500 Internal Server Error');
