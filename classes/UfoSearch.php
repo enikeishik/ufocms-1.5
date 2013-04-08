@@ -16,6 +16,12 @@ class UfoSearch
     const QUERIES_LOG_ENABLED = true;
     
     /**
+     * Количество дней, в течении которых собирать статистику поисковых запросов.
+     * @var int
+     */
+    const QUERIES_LOG_DAYS = 30;
+    
+    /**
      * Максимальное количество слов в поисковом запросе.
      * @var int
      */
@@ -147,9 +153,9 @@ class UfoSearch
         
         $this->debug->trace('Search results count', __CLASS__, __METHOD__, false);
         
-        $ret = 0;
         if (0 == strlen($query)) {
-            return $ret;
+            $this->debug->trace('Search results count, query is empty', __CLASS__, __METHOD__, true);
+            return 0;
         }
         $q = $this->safeSql($query, true);
         
@@ -158,24 +164,26 @@ class UfoSearch
                ' FROM ' . $this->db->getTablePrefix() . 'search_results';
         if (0 < strlen($path) && isset($moduleid)) {
             $sql .= ' WHERE (ModuleId=' . $moduleid . ')' . 
-                    " AND (Url LIKE '" . api_GetSafePath($path) . "%')" . 
+                    " AND (Url LIKE '" . $this->safeSql($path) . "%')" . 
                     " AND (Query='" . $q . "')";
         } else if (isset($moduleid)) {
             $sql .= ' WHERE (ModuleId=' . $moduleid . ')' . 
                     " AND (Query='" . $q . "')";
         } else if (0 < strlen($path)) {
-            $sql .= " WHERE (Url LIKE '" . api_GetSafePath($path) . "%')" . 
+            $sql .= " WHERE (Url LIKE '" . $this->safeSql($path) . "%')" . 
                     " AND (Query='" . $q . "')";
         } else {
             $sql .= " WHERE Query='" . $q . "'";
         }
         if ($row = $this->db->getRowByQuery($sql)) {
-            $ret = $row['Cnt'];
+            $this->count = $row['Cnt'];
+        } else {
+            $this->count = -1;
         }
         
         $this->debug->trace('Search results count complete', __CLASS__, __METHOD__, true);
         
-        return $ret;
+        return $this->count;
     }
     
     /**
@@ -186,7 +194,6 @@ class UfoSearch
      * @param string $path = ''       путь раздела
      * @param int $moduleid = null    идентификатор модуля раздела
      * @return array<array>
-     * @todo заменить строку "Windows-1251" на константу или поле объекта конфигурации
      */
     public function getResults($query, $page = 1, $pageLength = 10, $path = '', $moduleid = null)
     {
@@ -196,6 +203,8 @@ class UfoSearch
         
         $this->debug->trace('Search results', __CLASS__, __METHOD__, false);
         
+        $q = $this->safeSql($query, true);
+        
         //записываем статистику поисковых запросов
         if (self::QUERIES_LOG_ENABLED) {
             if (1 == $page && !isset($_GET['nolog'])) {
@@ -203,11 +212,10 @@ class UfoSearch
             }
         }
         
-        $q = $this->safeSql($query, true);
         //переводим кирилицу в нижний регистр полностью,
         //поскольку стандартные строковые функции PHP
         //некоректно работают с разными регистрами кирилицы
-        $q = mb_strtolower($q, "Windows-1251");
+        $q = mb_strtolower($q);
         
         //проверяем существует ли уже такой запрос в таблице результатов поиска
         //если нет или устарел - делаем "сырой" поиск по индексу
@@ -229,13 +237,13 @@ class UfoSearch
                    ' FROM ' . $this->db->getTablePrefix() . 'search_results';
             if (0 < strlen($path) && isset($moduleid)) {
                 $sql .= ' WHERE (ModuleId=' . $moduleid . ')' . 
-                        " AND (Url LIKE '" . api_GetSafePath($path) . "%')" . 
+                        " AND (Url LIKE '" . $this->safeSql($path) . "%')" . 
                         " AND (Query='" . $q . "')";
             } else if (isset($moduleid)) {
                 $sql .= " WHERE (ModuleId=" . $moduleid . ")" . 
                         " AND (Query='" . $q . "')";
             } else if (0 < strlen($path)) {
-                $sql .= " WHERE (Url LIKE '" . api_GetSafePath($path) . "%')" . 
+                $sql .= " WHERE (Url LIKE '" . $this->safeSql($path) . "%')" . 
                         " AND (Query='" . $q . "')";
             } else {
                 $sql .= " WHERE Query='" . $q . "'";
@@ -269,7 +277,7 @@ class UfoSearch
     protected function getQueryWords($query)
     {
         //return explode(' ', $query);
-        return preg_split('/[\s,;:\.\?!=–—]+/', $query, -1, PREG_SPLIT_NO_EMPTY);
+        return preg_split('/ - |[\s,;:\.\?!=–—]+/', $query, -1, PREG_SPLIT_NO_EMPTY);
     }
     
     /**
@@ -369,5 +377,394 @@ class UfoSearch
         $this->db->query($sql);
         $this->debug->trace('Clear doubles, affected rows: ' . $this->db->affected_rows, __CLASS__, __METHOD__, false);
         return $this->db->affected_rows;
+    }
+    
+    /**
+     * Возвращает слова больше минимальной длинны.
+     * @param array words
+     * return array
+     */
+    protected function getLongWords(array $words)
+    {
+        $arr = array();
+        foreach ($words as $word) {
+            if (self::QUERIES_MINWORDLEN <= strlen($word)) {
+                $arr[] = $word;
+            }
+        }
+        return $arr;
+    }
+    
+    /**
+     * Разбор поискового запроса и поиск по индексу с записью результатов поиска в отдельную таблицу и установкой индекса релевантности для каждого найденного элемента.
+     * @param string $query    обработанный поисковый запрос
+     * @return int             количество найденных результатов
+     * @todo подумать над сохранением пустых результатов, чтобы снова не повторять RawSearch для таких запросов
+     */
+    protected function rawSearch($query)
+    {
+        $this->debug->trace('Raw search', __CLASS__, __METHOD__, false);
+        
+        //количество найденных результатов и флаг,
+        //что этих результатов не меньше чем RAWSEARCH_LIMIT
+        $rowsFinded = 0;
+        $rowsFindedEnough = false;
+        
+        //разбиваем поисковый запрос на слова, чтобы искать по каждому слову
+        $words = array_unique($this->getQueryWords($query));
+        $wordsCount = count($words);
+        
+        //*************************************
+        //сначала ищем поисковый запрос целиком
+        $rowsFinded += $this->searchWord($query, self::RELEVANCE_PHRASE, $query);
+        //если нашли не меньше чем надо, ставим флаг
+        $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+        
+        //если слово в запросе несколько и еще не нашли достаточно результатов
+        //ищем по всем словам в запросе
+        if (1 < $wordsCount && !$rowsFindedEnough) {
+            $words = $this->getLongWords($words);
+            $wordsCount = count($words);
+            if (0 == $wordsCount) {
+                $this->debug->trace('Raw search complete, all words in query are too small', __CLASS__, __METHOD__, true);
+                return $rowsFinded;
+            }
+            
+            if (1 < $wordsCount) {
+                //******************************************
+                //если слов несколько ищем все слова запроса
+                //в произвольном порядке, а не как в поисковом запросе
+                $rowsFinded += $this->searchWords($words, self::RELEVANCE_ALLWORDS, $query);
+                $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+            } else if ($words[0] != $query) {
+                //******************************************************************************
+                //если осталось только одно слово, ищем по нему с меньшим индексом релевантности
+                //ищем только если исходный запрос содержал мелкие слова, вырезанные выше
+                $rowsFinded += $this->searchWord($words[0], self::RELEVANCE_ALLWORDS, $query);
+                $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+            }
+            
+            if (!$rowsFindedEnough) {
+                $rowsFinded += $this->rawSearchStemmed();
+                $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+            }
+            
+        }
+        
+        if (0 < $rowsFinded) {
+            //********************************************************************
+            //удаляем дубли, дубли возникают, поскольку мы понижаем условия поиска
+            //и то что уже найдено заведомо содержит более простые формы и войдет в результат
+            $ret = $this->resultsClearDoubles();
+            if (false !== $ret) {
+                $rowsFinded -= $ret;
+            }
+        }
+        
+        $this->debug->trace('Raw search complete', __CLASS__, __METHOD__, true);
+        
+        return $rowsFinded;
+    }
+    
+    /**
+     * Поиск по словам из поискового запроса без окончаний.
+     * @param string $query    обработанный поисковый запрос
+     * @param array $words     массив слов из поискового запроса
+     * @return int             количество найденных результатов
+     */
+    protected function rawSearchStemmed($query, array $words)
+    {
+        $this->debug->trace('Raw search stemmed', __CLASS__, __METHOD__, false);
+        
+        //количество найденных результатов и флаг,
+        //что этих результатов не меньше чем RAWSEARCH_LIMIT
+        $rowsFinded = 0;
+        $rowsFindedEnough = false;
+        
+        //обрезаем окончания и пр. используя класс UfoSearchStemmer
+        $this->loadClass('UfoSearchStemmer');
+        $stemmer = new UfoSearchStemmer();
+        $wordsStemmed = null;
+        foreach ($words as $word) {
+            $wordsStemmed[] = $stemmer->stem($word);
+        }
+        if (!is_null($wordsStemmed)) {
+            //**********************************
+            //ищем по всем словам, без окончаний
+            $rowsFinded += self::RawSearch_SearchWords($wordsStemmed, self::RELEVANCE_STEMMEDWORDS, $query, true);
+            $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+        }
+        
+        /* думаю что поиск любого слова из фразы излишен, ограничимся поиском всех слов без окончаний
+         if (!$rowsFindedEnough) {
+            //****************************************************
+            if (self::QUERIES_MAXWORDS >= $wordsCount) {
+                //ищем каждое слово в поисковом запросе
+                if (1 < $wordsCount) {
+                    foreach ($words as $word) {
+                        $rowsFinded += self::RawSearch_SearchWord($word, self::RELEVANCE_WORD, $query);
+                        $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+                        if ($rowsFindedEnough) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        */
+        
+        $this->debug->trace('Raw search stemmed complete', __CLASS__, __METHOD__, true);
+        
+        return $rowsFinded;
+    }
+    
+    /**
+     * Поиск слова/фразы.
+     * Формирование SQL запросов для поиска в различных полях таблицы поискового индекса и передача этих запросов на выполнение.
+     * @param string $word            поисковая фраза или слово из фразы, только слова не меньше заданной длинны
+     * @param int $relevanceFactor    множитель для индекса релевантности, для целой фразы больше, для отдельных слов фразы - меньше
+     * @param string $query           обработанный поисковый запрос
+     * @return int                    количество найденных результатов
+     */
+    protected function searchWord($word, $relevanceFactor, $query)
+    {
+        $rowsFinded = 0;
+        $sql = 'SELECT Flag, ModuleId, Url, Title, MetaDesc, Content' .
+               ' FROM ' . $this->db->getTablePrefix() . 'search';
+        
+        //ищем сначала записи, где искомое встречается в каждом поле (заголовок, описание, ключевики, контент)
+        $sqlWhere = " WHERE Title LIKE '%" . $word . "%'" .
+                    " AND MetaDesc LIKE '%" . $word . "%'" .
+                    " AND MetaKeys LIKE '%" . $word . "%'" .
+                    " AND Content LIKE '%" . $word . "%'";
+        $ret = $this->searchWordExec($sql . $sqlWhere, 
+                                     ($relevanceFactor * self::RELEVANCE_TDKC), 
+                                     $query);
+        if (false !== $ret) {
+            $rowsFinded += $ret;
+        }
+        
+        //затем ищем записи, где искомое встречается в заголовке и контенте
+        $sqlWhere = " WHERE Title LIKE '%" . $word . "%'" .
+                    " AND Content LIKE '%" . $word . "%'";
+        $ret = $this->searchWordExec($sql . $sqlWhere, 
+                                     ($relevanceFactor * self::RELEVANCE_TC), 
+                                     $query);
+        if (false !== $ret) {
+            $rowsFinded += $ret;
+        }
+        
+        //затем ищем записи, где искомое встречается в заголове
+        $sqlWhere = " WHERE Title LIKE '%" . $word . "%'";
+        $ret = $this->searchWordExec($sql . $sqlWhere, 
+                                     ($relevanceFactor * self::RELEVANCE_T), 
+                                     $query);
+        if (false !== $ret) {
+            $rowsFinded += $ret;
+        }
+        
+        //затем ищем записи, где искомое встречается в контенте
+        $sqlWhere = " WHERE Content LIKE '%" . $word . "%'";
+        $ret = $this->searchWordExec($sql . $sqlWhere, 
+                                     ($relevanceFactor * self::RELEVANCE_C), 
+                                     $query);
+        if (false !== $ret) {
+            $rowsFinded += $ret;
+        }
+        
+        return $rowsFinded;
+    }
+    
+    /**
+     * Поиск всех слов.
+     * Формирование SQL запросов для поиска в различных полях таблицы поискового индекса и передача этих запросов на выполнение.
+     * @param string $w                    массив слов из поисковой фразы, только слова не меньше заданной длинны
+     * @param int $relevanceFactor         множитель для индекса релевантности, для целой фразы больше, для отдельных слов фразы - меньше
+     * @param string $query                обработанный поисковый запрос
+     * @param $ignoreMinwordlen = false    игнорировать минимальную длинну слова, используется для слов без окончаний
+     * @return int                         количество найденных результатов
+     */
+    protected function searchWords(array $words, $relevance_factor, $query, $ignoreMinwordlen = false)
+    {
+        $this->debug->trace('Search words', __CLASS__, __METHOD__, false);
+        
+        $rows_finded = 0;
+        $wordsCount = count($words);
+        
+        $sql = 'SELECT Flag, ModuleId, Url, Title, MetaDesc, Content' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'search ';
+        
+        $sqlWhereTdkc = "";
+        $sqlWhereTc = "";
+        $sqlWhereT = "";
+        $sqlWhereC = "";
+        foreach ($words as $word) {
+            if ($ignoreMinwordlen || self::QUERIES_MINWORDLEN <= strlen($word)) {
+                //ищем сначала записи, где искомое встречается в каждом поле (заголовок, описание, ключевики, контент)
+                $sqlWhereTdkc .= " AND Title LIKE '%" . $word . "%'" . 
+                                 " AND MetaDesc LIKE '%" . $word . "%'" . 
+                                 " AND MetaKeys LIKE '%" . $word . "%'" . 
+                                 " AND Content LIKE '%" . $word . "%'";
+                //затем ищем записи, где искомое встречается в заголовке и контенте
+                $sqlWhereTc .= " AND Title LIKE '%" . $word . "%'" . 
+                               " AND Content LIKE '%" . $word . "%'";
+                //затем ищем записи, где искомое встречается в заголове
+                $sqlWhereT .= " AND Title LIKE '%" . $word . "%'";
+                //затем ищем записи, где искомое встречается в контенте
+                $sqlWhereC .= " AND Content LIKE '%" . $word . "%'";
+            }
+        }
+        if (0 < strlen($sqlWhereTdkc)) {
+            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereTdkc, 4), 
+                                         ($relevanceFactor * self::RELEVANCE_TDKC), 
+                                         $query);
+            if (false !== $ret) {
+                $rowsFinded += $ret;
+            }
+        }
+        if (0 < strlen($sqlWhereTc)) {
+            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereTc, 4), 
+                                         ($relevanceFactor * self::RELEVANCE_TC), 
+                                          $query);
+            if (false !== $ret) {
+                $rowsFinded += $ret;
+            }
+        }
+        if (0 < strlen($sqlWhereT)) {
+            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereT, 4), 
+                                         ($relevanceFactor * self::RELEVANCE_T), 
+                                         $query);
+            if (false !== $ret) {
+                $rowsFinded += $ret;
+            }
+        }
+        if (0 < strlen($sqlWhereC)) {
+            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereC, 4), 
+                                         ($relevanceFactor * self::RELEVANCE_C), 
+                                         $query);
+            if (false !== $ret) {
+                $rowsFinded += $ret;
+            }
+        }
+        
+        $this->debug->trace('Search words complete', __CLASS__, __METHOD__, true);
+        
+        return $rowsFinded;
+    }
+    
+    /**
+     * Выполнение SQL запросов к таблице поискового индекса и запись полученных результатов в таблицу результатов поиска для их дальнейшего вывода из этой таблицы.
+     * @param string $sql       SQL запрос к таблице поискового индекса
+     * @param int $relevance    индекс релевантности
+     * @param string $query     обработанный поисковый запрос
+     * @return int|false        количество найденных результатов
+     */
+    protected function searchWordExec($sql, $relevance, $query)
+    {
+        if (false !== $result = $this->db->query($sql)) {
+            $rowsFinded = $result->num_rows;
+            if (0 == $rowsFinded) {
+                $result->free();
+                return 0;
+            } else if (self::RAWSEARCH_LIMIT < $rowsFinded) {
+                $result->free();
+                return false;
+            } else if (0 > $rowsFinded) {
+                $result->free();
+                return false;
+            }
+            
+            $sqlInsert = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results' . 
+                         ' (DateCreate,Relevance,Flag,ModuleId,Query,Url,Title,Descr,Content)' . 
+                         ' VALUES ';
+            $sqlItems = '';
+            $cnt = 0;
+            
+            while ($row = $result->fetch_assoc()) {
+                $sqlItems .= ',(NOW(),' . 
+                             $relevance . ',' . 
+                             $row['Flag'] . ',' . 
+                             $row['ModuleId'] . ',' . 
+                             "'" . $query . "'," . 
+                             "'" . $this->safeSql($row['Url']) . "'," . 
+                             "'" . $this->safeSql($row['Title']) . "'," . 
+                             "'" . $this->safeSql($row['MetaDesc']) . "'," . 
+                             "'" . $this->safeSql($row['Content']) . "')";
+                $cnt++;
+                //делаем вставку в таблицу результатов поиска 
+                //порциями по RESULTS_INSERT_LIMIT записей
+                if (0 == ($cnt % self::RESULTS_INSERT_LIMIT)) {
+                    mysql_query($sqlInsert . substr($sqlItems, 1));
+                    $sqlItems = '';
+                }
+            }
+            $this->db->query($sqlInsert . substr($sqlItems, 1));
+            $result->free();
+            return $rowsFinded;
+        }
+        return false;
+    }
+    
+    /**
+     * Запись поисковых запросов.
+     * @param string $query     обработанный поисковый запрос
+     */
+    protected function logSearchQuery($query)
+    {
+        $this->debug->trace('Log search query', __CLASS__, __METHOD__, false);
+        
+        $prefix = $this->db->getTablePrefix();
+        
+        //удаляем устаревшие запросы
+        $this->db->query('DELETE FROM ' . $prefix . 'search_queries' . 
+                         ' WHERE DATEDIFF(dtm, NOW())>' . self::QUERIES_LOG_DAYS);
+        
+        //добавляем новый запрос (в таблицу текущих запросов)
+        $this->db->query('INSERT INTO ' . $prefix . 'search_queries' . 
+                         " (dtm, query) VALUES(NOW(), '" . $query . "')");
+        
+        //проверяем был ли уже такой запрос (в таблице статистики запросов)
+        $exists = false;
+        $result = $this->db->query('SELECT COUNT(*) AS Cnt' . 
+                                   ' FROM ' . $prefix . 'search_queries_stat' . 
+                                   " WHERE query='" . $query . "'");
+        if (false !== $result) {
+            if (0 < $result->num_rows) {
+                if ($row = $result->fetch_assoc()) {
+                    if (0 < $row['Cnt']) {
+                        $exists = true;
+                    }
+                }
+            }
+        }
+        $result->free();
+        
+        //добавляем или обновляем статистику запросов
+        if ($exists) {
+            //получаем количество таких запросов если уже были
+            $cnt = 0;
+            $result = $this->db->query('SELECT COUNT(*) AS Cnt' . 
+                                       ' FROM ' . $prefix . 'search_queries' . 
+                                       " WHERE query='" . $query . "'");
+            if (false !== $result) {
+                if (0 < $result->num_rows) {
+                    if ($row = $result->fetch_assoc()) {
+                        $cnt = (int) $row['Cnt'];
+                    }
+                }
+            }
+            $result->free();
+            
+            $sql = 'UPDATE ' . $prefix . 'search_queries_stat' . 
+                   ' SET dtm=NOW(), cnttmp=' . $cnt . ', cntttl=cntttl+1' . 
+                   " WHERE query='" . $query . "'";
+        } else {
+            $sql = 'INSERT INTO ' . $prefix . 'search_queries_stat' . 
+                   ' (dtm, query, cnttmp, cntttl)' . 
+                   " VALUES(NOW(), '" . $query . "', 1, 1)";
+        }
+        $this->db->query($sql);
+        
+        $this->debug->trace('Log search query complete', __CLASS__, __METHOD__, true);
     }
 }

@@ -265,6 +265,9 @@ final class UfoCore
         //устанавливаем локаль, for strcomp, str_replace etc
         setlocale(LC_ALL, $this->config->phpLocales);
         
+        //устанавливаем внутреннюю кодировку скрипта
+        mb_internal_encoding($this->config->mbInternalEncoding);
+        
         //включаем буферизацию вывода
         ob_implicit_flush(false);
         ob_start();
