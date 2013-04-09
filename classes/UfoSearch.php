@@ -46,6 +46,12 @@ class UfoSearch
     const RESULTS_INSERT_LIMIT = 100;
     
     /**
+     * Время жизни результатов поиска в секундах.
+     * @var int
+     */
+    const RESULTS_EXPIRATION = 600; 
+    
+    /**
      * Вес в выдаче всей фразы.
      * @var int
      */
@@ -327,7 +333,7 @@ class UfoSearch
                 if ($row = $result->fetch_assoc()) {
                     $dtm = $row['dtm'];
                     $this->debug->trace('Search results expired complete', __CLASS__, __METHOD__, true);
-                    return (time() - $dtm) > C_EXE_SEARCH_RESULTS_EXPIRATION;
+                    return (time() - $dtm) > self::RESULTS_EXPIRATION;
                 }
             }
             $result->free();
@@ -362,7 +368,7 @@ class UfoSearch
         //так что может и запрос быстрее сработает
         //и база при этом не будет чрезмерно распухать
         return $this->db->query('DELETE FROM ' . $this->db->getTablePrefix() . 'search_results' . 
-                                ' WHERE (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(DateCreate))>' . C_EXE_SEARCH_RESULTS_EXPIRATION);
+                                ' WHERE (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(DateCreate))>' . self::RESULTS_EXPIRATION);
     }
     
     /**
