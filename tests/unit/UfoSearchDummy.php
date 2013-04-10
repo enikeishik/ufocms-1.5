@@ -39,4 +39,34 @@ class UfoSearchDummy extends UfoSearch
     {
         return parent::getLongWords($words);
     }
+    
+    public function resultsAdd($results)
+    {
+        return parent::resultsAdd($results);
+    }
+    
+    public function searchWordExec($sql, $relevance, $query)
+    {
+        return parent::searchWordExec($sql, $relevance, $query);
+    }
+    
+    public function searchWords(array $words, $relevanceFactor, $query, $ignoreMinwordlen = false)
+    {
+        return parent::searchWords($words, $relevanceFactor, $query, $ignoreMinwordlen);
+    }
+    
+    public function searchWord($word, $relevanceFactor, $query)
+    {
+        return parent::searchWord($word, $relevanceFactor, $query);
+    }
+    
+    public function rawSearchStemmed($query, array $words)
+    {
+        return parent::rawSearchStemmed($query, $words);
+    }
+    
+    public function rawSearch($query)
+    {
+        return parent::rawSearch($query);
+    }
 }

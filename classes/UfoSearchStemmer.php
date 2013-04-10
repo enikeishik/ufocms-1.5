@@ -53,7 +53,7 @@ class UfoSearchStemmer
             $this->r($rv, '/и$/', '');
             
             # Step 3
-            if ($this->preg_match(self::DERIVATIONAL, $rv)) {
+            if (preg_match(self::DERIVATIONAL, $rv)) {
                 $this->r($rv, '/ость?$/', '');
             }
             

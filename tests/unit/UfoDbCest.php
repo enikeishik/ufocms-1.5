@@ -8,7 +8,7 @@ class UfoDbCest
     const DS = DIRECTORY_SEPARATOR;
     
 const SQL_CREATE_TABLE = <<<'EOD'
-CREATE TABLE IF NOT EXISTS 
+CREATE TEMPORARY TABLE IF NOT EXISTS 
 codeception_unit_test (
 `Id` int(11) NOT NULL auto_increment, 
 `Title` varchar(255) NOT NULL default '', 

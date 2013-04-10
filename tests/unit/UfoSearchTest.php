@@ -54,7 +54,7 @@ class UfoSearchTest extends \Codeception\TestCase\Test
         $container->setDb($this->db);
         $this->obj = new UfoSearchDummy($container);
         
-        $prefix = self::DB_TABLE_PREFIX;
+        $prefix = $this->db->getTablePrefix();
 $sql[] = <<<EOD
 CREATE TEMPORARY TABLE `{$prefix}search` (
   `Id` int(11) NOT NULL auto_increment,
@@ -70,7 +70,7 @@ CREATE TEMPORARY TABLE `{$prefix}search` (
   PRIMARY KEY  (`Id`),
   KEY `Url` (`Url`),
   KEY `Hash` (`Hash`)
-ENGINE=MyISAM DEFAULT CHARSET=cp1251 AUTO_INCREMENT=1
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 AUTO_INCREMENT=1 ;
 EOD;
 $sql[] = <<<EOD
 CREATE TEMPORARY TABLE `{$prefix}search_queries` (
@@ -90,8 +90,9 @@ CREATE TEMPORARY TABLE `{$prefix}search_queries_stat` (
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 AUTO_INCREMENT=1 ;
 EOD;
+//Not TEMPORARY for testResultsClearDoubles and the same
 $sql[] = <<<EOD
-CREATE TEMPORARY TABLE `{$prefix}search_results` (
+CREATE TABLE `{$prefix}search_results` (
   `Id` int(11) NOT NULL auto_increment,
   `DateCreate` datetime NOT NULL default '0000-00-00 00:00:00',
   `Relevance` int(11) NOT NULL default '0',
@@ -114,10 +115,10 @@ EOD;
     
     public function __destruct()
     {
-        $sql[] = 'DROP TABLE ' . self::DB_TABLE_PREFIX . 'search';
-        $sql[] = 'DROP TABLE ' . self::DB_TABLE_PREFIX . 'search_queries';
-        $sql[] = 'DROP TABLE ' . self::DB_TABLE_PREFIX . 'search_queries_stat';
-        $sql[] = 'DROP TABLE ' . self::DB_TABLE_PREFIX . 'search_results';
+        $sql[] = 'DROP TABLE ' . $this->db->getTablePrefix() . 'search';
+        $sql[] = 'DROP TABLE ' . $this->db->getTablePrefix() . 'search_queries';
+        $sql[] = 'DROP TABLE ' . $this->db->getTablePrefix() . 'search_queries_stat';
+        $sql[] = 'DROP TABLE ' . $this->db->getTablePrefix() . 'search_results';
         foreach ($sql as $s) {
             $this->db->query($s);
         }
@@ -152,7 +153,7 @@ EOD;
         var_dump($ret);
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', false, array($query));
         //вставляем в таблицу результатов запрос
-        $sql = 'INSERT INTO ' . self::DB_TABLE_PREFIX . 'search_results (Query) VALUES(\'' . $query . '\')';
+        $sql = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results (Query) VALUES(\'' . $query . '\')';
         $this->db->query($sql);
         //проверяем существование вставленного запроса
         $ret = $this->obj->isResultsExists($query);
@@ -169,14 +170,14 @@ EOD;
         var_dump($ret);
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExpired', true, array($query));
         //вставляем в таблицу результатов запрос с текущей меткой времени
-        $sql = 'INSERT INTO ' . self::DB_TABLE_PREFIX . 'search_results (DateCreate,Query) VALUES(NOW(),\'' . $query . '\')';
+        $sql = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results (DateCreate,Query) VALUES(NOW(),\'' . $query . '\')';
         $this->db->query($sql);
         //проверяем устаревание вставленного запроса
         $ret = $this->obj->isResultsExpired($query);
         var_dump($ret);
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExpired', false, array($query));
         //изменяем метку времени на заведомо устаревшую
-        $sql = 'UPDATE ' . self::DB_TABLE_PREFIX . 'search_results SET DateCreate=\'1970-01-01 00:00:00\' WHERE Query=\'' . $query . '\'';
+        $sql = 'UPDATE ' . $this->db->getTablePrefix() . 'search_results SET DateCreate=\'1970-01-01 00:00:00\' WHERE Query=\'' . $query . '\'';
         $this->db->query($sql);
         //проверяем устаревание измененного запроса
         $ret = $this->obj->isResultsExpired($query);
@@ -189,7 +190,7 @@ EOD;
         $this->showTest(__FUNCTION__);
         $query = 'test delete';
         //вставляем в таблицу результатов запрос с текущей меткой времени
-        $sql = 'INSERT INTO ' . self::DB_TABLE_PREFIX . 'search_results (Query) VALUES(\'' . $query . '\')';
+        $sql = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results (Query) VALUES(\'' . $query . '\')';
         $this->db->query($sql);
         //проверяем существование вставленного запроса
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', true, array($query));
@@ -206,7 +207,7 @@ EOD;
         $this->showTest(__FUNCTION__);
         $query = 'test clearold';
         //вставляем в таблицу результатов запрос
-        $sql = 'INSERT INTO ' . self::DB_TABLE_PREFIX . 'search_results (DateCreate,Query) VALUES(NOW(),\'' . $query . '\')';
+        $sql = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results (DateCreate,Query) VALUES(NOW(),\'' . $query . '\')';
         $this->db->query($sql);
         //проверяем существование вставленного запроса
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', true, array($query));
@@ -217,7 +218,7 @@ EOD;
         //проверяем существование вставленного запроса
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', true, array($query));
         //изменяем метку времени на заведомо устаревшую
-        $sql = 'UPDATE ' . self::DB_TABLE_PREFIX . 'search_results SET DateCreate=\'1970-01-01 00:00:00\' WHERE Query=\'' . $query . '\'';
+        $sql = 'UPDATE ' . $this->db->getTablePrefix() . 'search_results SET DateCreate=\'1970-01-01 00:00:00\' WHERE Query=\'' . $query . '\'';
         $this->db->query($sql);
         //очищаем
         $ret = $this->obj->resultsClearOld($query);
@@ -225,5 +226,140 @@ EOD;
         $this->codeGuy->seeMethodReturns($this->obj, 'resultsClearOld', true, array($query));
         //проверяем отсутствие запроса
         $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', false, array($query));
+    }
+    
+    public function testResultsClearDoubles()
+    {
+        $this->showTest(__FUNCTION__);
+        //проверяем на пустой таблице что нет удаленных дублей
+        $this->codeGuy->seeMethodReturns($this->obj, 'resultsClearDoubles', 0);
+        //вставляем данные с дублями
+        $sqlIns = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results' . 
+                  ' (Relevance)' . 
+                  " VALUES (1),(10),(100),(1000)";
+        $this->db->query($sqlIns);
+        //проверяем что дубли удалены
+        $this->codeGuy->seeMethodReturns($this->obj, 'resultsClearDoubles', 3);
+    }
+    
+    public function testGetLongWords()
+    {
+        $this->showTest(__FUNCTION__);
+        //QUERIES_MINWORDLEN = 3
+        $vals[] = array(array('1234', '123', '12', '1', ''), array('1234', '123'));
+        $vals[] = array(array('qwer', 'qwe', 'qw', 'q', ''), array('qwer', 'qwe'));
+        $vals[] = array(array('йцук', 'йцу', 'йц', 'й', ''), array('йцук', 'йцу'));
+        foreach ($vals as $v) {
+            echo 'test:     '; var_dump($v[0]);
+            $ret = $this->obj->getLongWords($v[0]);
+            echo 'expected: '; var_dump($v[1]);
+            echo 'actual:   '; var_dump($ret);
+            $this->codeGuy->seeMethodReturns($this->obj, 'getLongWords', $v[1], array($v[0]));
+        }
+    }
+    
+    public function testResultsAdd()
+    {
+        $this->showTest(__FUNCTION__);
+        $query = 'test results add';
+        //проверяем отсутствие существования еще не вставленного результата
+        $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', false, array($query));
+        //вставляем результаты в таблицу результатов
+        $sql = ",(NOW(),1000,0,1,'" . $query . "','/url/','head title','meta description text','content of page')" . 
+               ",(NOW(),1000,0,1,'" . $query . "','/url/','head title','meta description text','content of page')";
+        $this->codeGuy->seeMethodReturns($this->obj, 'resultsAdd', true, array($sql));
+        //проверяем существование вставленного результата
+        $this->codeGuy->seeMethodReturns($this->obj, 'isResultsExists', true, array($query));
+    }
+    
+    public function testSearchWordExec()
+    {
+        $this->showTest(__FUNCTION__);
+        $word = 'test_search_word_exec';
+        $query = 'test search word exec test_search_word_exec';
+        //проверяем отсутствие слова в таблице сырых данных
+        $sql = 'SELECT Flag, ModuleId, Url, Title, MetaDesc, Content' . 
+               ' FROM ' . $this->db->getTablePrefix() . 'search' . 
+               " WHERE Content LIKE '%" . $word . "%'";
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWordExec', false, array($sql, 1, $query));
+        //вставляем в таблицу сырых данных данные, содержащие искомое слово
+        $sqlIns = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+                  ' (Content)' . 
+                  " VALUES ('Test content with searching word " . $word . ", test content with searching word. Test content with searching word.')";
+        $this->db->query($sqlIns);
+        //проверяем наличие строки содержащей слово в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWordExec', 1, array($sql, 1, $query));
+        //вставляем в таблицу сырых данных еще данные, содержащие искомое слово
+        $this->db->query($sqlIns);
+        //проверяем наличие двух строк, содержащих слова в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWordExec', 2, array($sql, 1, $query));
+    }
+    
+    public function testSearchWords()
+    {
+        $this->showTest(__FUNCTION__);
+        $query = 'test search words';
+        $words = array('test', 'search', 'words', 'so'); //'so' присуствует только во второй вставляемой строке
+        //проверяем отсутствие слов в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWords', 0, array($words, 1, $query));
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWords', 0, array($words, 1, $query, true));
+        //вставляем в таблицу сырых данных данные, содержащие искомые слова
+        $sqlIns = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+                  ' (Content)' . 
+                  " VALUES ('This is a " . $query . " in content.'),('This is a " . $query . " in some other content.')";
+        $this->db->query($sqlIns);
+        //проверяем наличие строк, содержащих слова в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWords', 2, array($words, 1, $query));
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWords', 1, array($words, 1, $query, true));
+    }
+    
+    public function testSearchWord()
+    {
+        $this->showTest(__FUNCTION__);
+        $query = 'some test_search_word included';
+        $word = 'test_search_word';
+        //проверяем отсутствие слов в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWord', 0, array($word, 1, $query));
+        //вставляем в таблицу сырых данных данные, содержащие искомое слово
+        $sqlIns = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+                  ' (Content)' . 
+                  " VALUES ('This is a " . $query . " in content.')," . 
+                  "('This is a " . $query . " in some other content.')";
+        $this->db->query($sqlIns);
+        //проверяем наличие строк, содержащих слова в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'searchWord', 2, array($word, 1, $query));
+    }
+    
+    public function testRawSearchStemmed()
+    {
+        $this->showTest(__FUNCTION__);
+        $query = 'красивые чайки летали';
+        $words = explode(' ', $query);
+        //проверяем отсутствие слов в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'rawSearchStemmed', 0, array($query, $words));
+        //вставляем в таблицу сырых данных данные, содержащие искомые слова
+        $sqlIns = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+                  ' (Content)' . 
+                  " VALUES ('Над рекой " . $query . " и ловили рыбу.')," . 
+                  "('Речные птицы - чайки - красивы когда летают.')";
+        $this->db->query($sqlIns);
+        //проверяем наличие строк, содержащих слова в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'rawSearchStemmed', 2, array($query, $words));
+    }
+    
+    public function testRawSearch()
+    {
+        $this->showTest(__FUNCTION__);
+        $query = 'плыли облака';
+        //проверяем отсутствие слов в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'rawSearch', 0, array($query));
+        //вставляем в таблицу сырых данных данные, содержащие искомые слова
+        $sqlIns = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+                  ' (Url,Content)' . 
+                  " VALUES ('/url1/','Над рекой " . $query . " и отражались в воде.')," . 
+                  "('/url2/','Облако плыло над рекой.')";
+        $this->db->query($sqlIns);
+        //проверяем наличие строк, содержащих слова в таблице сырых данных
+        $this->codeGuy->seeMethodReturns($this->obj, 'rawSearch', 2, array($query));
     }
 }

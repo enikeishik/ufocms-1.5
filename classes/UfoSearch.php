@@ -233,7 +233,6 @@ class UfoSearch
             $rowsFinded = $this->rawSearch($q);
         }
         
-        /* DEBUG api_DebugInfo('Search query start'); */
         $search[] = array();
         //делаем поиск по результатам если имеются результаты
         //или если использовался RawSearch и вернул > 0
@@ -451,7 +450,7 @@ class UfoSearch
             }
             
             if (!$rowsFindedEnough) {
-                $rowsFinded += $this->rawSearchStemmed();
+                $rowsFinded += $this->rawSearchStemmed($query, $words);
                 $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
             }
             
@@ -482,42 +481,20 @@ class UfoSearch
     {
         $this->debug->trace('Raw search stemmed', __CLASS__, __METHOD__, false);
         
-        //количество найденных результатов и флаг,
-        //что этих результатов не меньше чем RAWSEARCH_LIMIT
         $rowsFinded = 0;
-        $rowsFindedEnough = false;
         
         //обрезаем окончания и пр. используя класс UfoSearchStemmer
         $this->loadClass('UfoSearchStemmer');
         $stemmer = new UfoSearchStemmer();
-        $wordsStemmed = null;
+        $wordsStemmed = array();
         foreach ($words as $word) {
             $wordsStemmed[] = $stemmer->stem($word);
         }
-        if (!is_null($wordsStemmed)) {
+        if (0 < count($wordsStemmed)) {
             //**********************************
             //ищем по всем словам, без окончаний
-            $rowsFinded += self::RawSearch_SearchWords($wordsStemmed, self::RELEVANCE_STEMMEDWORDS, $query, true);
-            $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
+            $rowsFinded = $this->searchWords($wordsStemmed, self::RELEVANCE_STEMMEDWORDS, $query, true);
         }
-        
-        /* думаю что поиск любого слова из фразы излишен, ограничимся поиском всех слов без окончаний
-         if (!$rowsFindedEnough) {
-            //****************************************************
-            if (self::QUERIES_MAXWORDS >= $wordsCount) {
-                //ищем каждое слово в поисковом запросе
-                if (1 < $wordsCount) {
-                    foreach ($words as $word) {
-                        $rowsFinded += self::RawSearch_SearchWord($word, self::RELEVANCE_WORD, $query);
-                        $rowsFindedEnough = (self::RAWSEARCH_LIMIT <= $rowsFinded);
-                        if ($rowsFindedEnough) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        */
         
         $this->debug->trace('Raw search stemmed complete', __CLASS__, __METHOD__, true);
         
@@ -590,15 +567,15 @@ class UfoSearch
      * @param $ignoreMinwordlen = false    игнорировать минимальную длинну слова, используется для слов без окончаний
      * @return int                         количество найденных результатов
      */
-    protected function searchWords(array $words, $relevance_factor, $query, $ignoreMinwordlen = false)
+    protected function searchWords(array $words, $relevanceFactor, $query, $ignoreMinwordlen = false)
     {
         $this->debug->trace('Search words', __CLASS__, __METHOD__, false);
         
-        $rows_finded = 0;
+        $rowsFinded = 0;
         $wordsCount = count($words);
         
         $sql = 'SELECT Flag, ModuleId, Url, Title, MetaDesc, Content' . 
-               ' FROM ' . $this->db->getTablePrefix() . 'search ';
+               ' FROM ' . $this->db->getTablePrefix() . 'search';
         
         $sqlWhereTdkc = "";
         $sqlWhereTc = "";
@@ -621,7 +598,7 @@ class UfoSearch
             }
         }
         if (0 < strlen($sqlWhereTdkc)) {
-            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereTdkc, 4), 
+            $ret = $this->searchWordExec($sql . ' WHERE' . substr($sqlWhereTdkc, 4), 
                                          ($relevanceFactor * self::RELEVANCE_TDKC), 
                                          $query);
             if (false !== $ret) {
@@ -629,15 +606,15 @@ class UfoSearch
             }
         }
         if (0 < strlen($sqlWhereTc)) {
-            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereTc, 4), 
+            $ret = $this->searchWordExec($sql . ' WHERE' . substr($sqlWhereTc, 4), 
                                          ($relevanceFactor * self::RELEVANCE_TC), 
-                                          $query);
+                                         $query);
             if (false !== $ret) {
                 $rowsFinded += $ret;
             }
         }
         if (0 < strlen($sqlWhereT)) {
-            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereT, 4), 
+            $ret = $this->searchWordExec($sql . ' WHERE' . substr($sqlWhereT, 4), 
                                          ($relevanceFactor * self::RELEVANCE_T), 
                                          $query);
             if (false !== $ret) {
@@ -645,7 +622,7 @@ class UfoSearch
             }
         }
         if (0 < strlen($sqlWhereC)) {
-            $ret = $this->searchWordExec($sql . " WHERE" . substr($sqlWhereC, 4), 
+            $ret = $this->searchWordExec($sql . ' WHERE' . substr($sqlWhereC, 4), 
                                          ($relevanceFactor * self::RELEVANCE_C), 
                                          $query);
             if (false !== $ret) {
@@ -680,31 +657,27 @@ class UfoSearch
                 return false;
             }
             
-            $sqlInsert = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search_results' . 
-                         ' (DateCreate,Relevance,Flag,ModuleId,Query,Url,Title,Descr,Content)' . 
-                         ' VALUES ';
-            $sqlItems = '';
+            $sql = '';
             $cnt = 0;
-            
             while ($row = $result->fetch_assoc()) {
-                $sqlItems .= ',(NOW(),' . 
-                             $relevance . ',' . 
-                             $row['Flag'] . ',' . 
-                             $row['ModuleId'] . ',' . 
-                             "'" . $query . "'," . 
-                             "'" . $this->safeSql($row['Url']) . "'," . 
-                             "'" . $this->safeSql($row['Title']) . "'," . 
-                             "'" . $this->safeSql($row['MetaDesc']) . "'," . 
-                             "'" . $this->safeSql($row['Content']) . "')";
+                $sql .= ',(NOW(),' . 
+                        $relevance . ',' . 
+                        $row['Flag'] . ',' . 
+                        $row['ModuleId'] . ',' . 
+                        "'" . $query . "'," . 
+                        "'" . $this->safeSql($row['Url']) . "'," . 
+                        "'" . $this->safeSql($row['Title']) . "'," . 
+                        "'" . $this->safeSql($row['MetaDesc']) . "'," . 
+                        "'" . $this->safeSql($row['Content']) . "')";
                 $cnt++;
                 //делаем вставку в таблицу результатов поиска 
                 //порциями по RESULTS_INSERT_LIMIT записей
                 if (0 == ($cnt % self::RESULTS_INSERT_LIMIT)) {
-                    mysql_query($sqlInsert . substr($sqlItems, 1));
-                    $sqlItems = '';
+                    $this->resultsAdd($sql);
+                    $sql = '';
                 }
             }
-            $this->db->query($sqlInsert . substr($sqlItems, 1));
+            $this->resultsAdd($sql);
             $result->free();
             return $rowsFinded;
         }
@@ -712,8 +685,21 @@ class UfoSearch
     }
     
     /**
+     * Вставка результатов поиска в таблицу результатов.
+     * @param string $results    часть SQL запроса с данными
+     * @return boolean
+     */
+    protected function resultsAdd($results)
+    {
+        return $this->db->query('INSERT INTO ' . $this->db->getTablePrefix() . 'search_results' .
+                                ' (DateCreate,Relevance,Flag,ModuleId,Query,Url,Title,Descr,Content)' .
+                                ' VALUES ' . substr($results, 1));
+    }
+    
+    /**
      * Запись поисковых запросов.
      * @param string $query     обработанный поисковый запрос
+     * @todo test
      */
     protected function logSearchQuery($query)
     {
