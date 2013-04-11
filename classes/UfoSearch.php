@@ -106,6 +106,12 @@ class UfoSearch
     protected $container = null;
     
     /**
+     * Ссылка на объект конфигурации.
+     * @var UfoConfig
+     */
+    protected $config = null;
+    
+    /**
      * Ссылка на объект отладки.
      * @var UfoDebug
      */
@@ -116,12 +122,6 @@ class UfoSearch
      * @var UfoDb
      */
     protected $db = null;
-    
-    /**
-     * Количество найденных результатов.
-     * @var int
-     */
-    protected $count = -1;
     
     /**
      * Конструктор.
@@ -139,6 +139,7 @@ class UfoSearch
      */
     protected function unpackContainer()
     {
+        $this->config =& $this->container->getConfig();
         $this->debug =& $this->container->getDebug();
         $this->db =& $this->container->getDb();
     }
@@ -153,10 +154,6 @@ class UfoSearch
      */
     public function getResultsCount($query, $path = '', $moduleid = null)
     {
-        if (-1 != $this->count) {
-            return $this->count;
-        }
-        
         $this->debug->trace('Search results count', __CLASS__, __METHOD__, false);
         
         if (0 == strlen($query)) {
@@ -181,15 +178,14 @@ class UfoSearch
         } else {
             $sql .= " WHERE Query='" . $q . "'";
         }
+        $count = 0;
         if ($row = $this->db->getRowByQuery($sql)) {
-            $this->count = $row['Cnt'];
-        } else {
-            $this->count = -1;
+            $count = (int) $row['Cnt'];
         }
         
         $this->debug->trace('Search results count complete', __CLASS__, __METHOD__, true);
         
-        return $this->count;
+        return $count;
     }
     
     /**
@@ -199,7 +195,7 @@ class UfoSearch
      * @param int $pageLength = 10    количество записей на страницу
      * @param string $path = ''       путь раздела
      * @param int $moduleid = null    идентификатор модуля раздела
-     * @return array<array>
+     * @return array<array>|false     массив строк БД или пустой, или false при недопустимых параметрах
      */
     public function getResults($query, $page = 1, $pageLength = 10, $path = '', $moduleid = null)
     {
@@ -233,7 +229,7 @@ class UfoSearch
             $rowsFinded = $this->rawSearch($q);
         }
         
-        $search[] = array();
+        $search = array();
         //делаем поиск по результатам если имеются результаты
         //или если использовался RawSearch и вернул > 0
         if (0 < $rowsFinded) {
@@ -699,7 +695,6 @@ class UfoSearch
     /**
      * Запись поисковых запросов.
      * @param string $query     обработанный поисковый запрос
-     * @todo test
      */
     protected function logSearchQuery($query)
     {

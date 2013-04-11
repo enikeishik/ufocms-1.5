@@ -362,4 +362,89 @@ EOD;
         //проверяем наличие строк, содержащих слова в таблице сырых данных
         $this->codeGuy->seeMethodReturns($this->obj, 'rawSearch', 2, array($query));
     }
+    
+    public function testLogSearchQuery()
+    {
+        $this->showTest(__FUNCTION__);
+        $query = 'test log query';
+        $this->codeGuy->seeMethodReturns($this->obj, 'logSearchQuery', null, array($query));
+    }
+    
+    public function testGetResults()
+    {
+        $this->showTest(__FUNCTION__);
+        //$this->codeGuy->seeMethodReturns($this->obj, 'getResults', , array($query, $page = 1, $pageLength = 10, $path = '', $moduleid = null));
+        //очищаем таблицы с сырыми данными и результатами поиска
+        $sql = 'TRUNCATE TABLE ' . $this->db->getTablePrefix() . 'search';
+        $this->db->query($sql);
+        $sql = 'TRUNCATE TABLE ' . $this->db->getTablePrefix() . 'search_results';
+        $this->db->query($sql);
+        //заведомо не существующие поиски
+        $vals[] = array(array('not_exists_query', 1, 10, '', null), array());
+        $vals[] = array(array('incorrect_params', -1, 10, '', null), false);
+        $vals[] = array(array('плыли облака', 1, 10, '', null), array());
+        foreach ($vals as $v) {
+            echo 'test:     '; var_dump($v[0]);
+            $ret = $this->obj->getResults($v[0][0], $v[0][1], $v[0][2], $v[0][3], $v[0][4]);
+            echo 'expected: '; var_dump($v[1]);
+            echo 'actual:   '; var_dump($ret);
+            $this->codeGuy->seeMethodReturns($this->obj, 'getResults', $v[1], $v[0]);
+        }
+        //создаем сырые данные
+        $vals = array();
+        $sql = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+               ' (Url,Content)' . 
+               " VALUES ('/url1/','Над рекой плыли облака и отражались в воде.')," . 
+               "('/url2/','Облако плыло над рекой.')";
+        $this->db->query($sql);
+        //заведомо существующие поиски
+        $vals[] = array(array('плыли облака', 1, 10, '', null), array());
+        $vals[] = array(array('облака над рекой', 1, 10, '', null), array());
+        foreach ($vals as $v) {
+            echo 'test:     '; var_dump($v[0]);
+            $ret = $this->obj->getResults($v[0][0], $v[0][1], $v[0][2], $v[0][3], $v[0][4]);
+            echo 'expected: '; var_dump($v[1]);
+            echo 'actual:   '; var_dump($ret);
+            $this->codeGuy->seeMethodNotReturns($this->obj, 'getResults', $v[1], $v[0]);
+        }
+    }
+    
+    public function testGetResultsCount()
+    {
+        $this->showTest(__FUNCTION__);
+        //$this->codeGuy->seeMethodReturns($this->obj, 'getResultsCount', , array($query, $path = '', $moduleid = null));
+        //очищаем таблицы с сырыми данными и результатами поиска
+        $sql = 'TRUNCATE TABLE ' . $this->db->getTablePrefix() . 'search';
+        $this->db->query($sql);
+        $sql = 'TRUNCATE TABLE ' . $this->db->getTablePrefix() . 'search_results';
+        $this->db->query($sql);
+        //заведомо не существующие поиски
+        $vals[] = array(array('not_exists_query', '', null), 0);
+        $vals[] = array(array('плыли облака', '', null), 0);
+        foreach ($vals as $v) {
+            echo 'test:     '; var_dump($v[0]);
+            $ret = $this->obj->getResultsCount($v[0][0], $v[0][1], $v[0][2]);
+            echo 'expected: '; var_dump($v[1]);
+            echo 'actual:   '; var_dump($ret);
+            $this->codeGuy->seeMethodReturns($this->obj, 'getResultsCount', $v[1], $v[0]);
+        }
+        //создаем сырые данные
+        $vals = array();
+        $sql = 'INSERT INTO ' . $this->db->getTablePrefix() . 'search' . 
+               ' (Url,Content)' . 
+               " VALUES ('/url1/','Над рекой плыли облака и отражались в воде.')," . 
+               "('/url2/','Облако плыло над рекой.')";
+        $this->db->query($sql);
+        //заведомо существующие поиски
+        $vals[] = array(array('плыли облака', '', null), 2);
+        $vals[] = array(array('облака над рекой', '', null), 2);
+        foreach ($vals as $v) {
+            echo 'test:     '; var_dump($v[0]);
+            $ret = $this->obj->getResults($v[0][0], 1, 10, $v[0][1], $v[0][2]);
+            $ret = $this->obj->getResultsCount($v[0][0], $v[0][1], $v[0][2]);
+            echo 'expected: '; var_dump($v[1]);
+            echo 'actual:   '; var_dump($ret);
+            $this->codeGuy->seeMethodReturns($this->obj, 'getResultsCount', $v[1], $v[0]);
+        }
+    }
 }

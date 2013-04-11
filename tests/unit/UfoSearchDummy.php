@@ -69,4 +69,9 @@ class UfoSearchDummy extends UfoSearch
     {
         return parent::rawSearch($query);
     }
+    
+    public function logSearchQuery($query)
+    {
+        return parent::logSearchQuery($query);
+    }
 }
