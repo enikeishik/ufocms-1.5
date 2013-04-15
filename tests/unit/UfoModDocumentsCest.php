@@ -20,6 +20,7 @@ class UfoModDocumentsCest
         $_GET['path'] = '/';
         $this->root = __DIR__ . self::DS . '..' . self::DS . '..';
         require_once $this->root . self::DS . 'config.php';
+        require_once $this->root . self::DS . 'errors.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoToolsExt.php';
         require_once $this->root . self::DS . 'modules' . self::DS . 'UfoModDocuments' . self::DS . 'UfoModDocuments.php';
@@ -30,6 +31,7 @@ class UfoModDocumentsCest
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSection.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoSectionStruct.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoContainer.php';
+        require_once $this->root . self::DS . 'classes' . self::DS . 'UfoError.php';
         $this->container = new UfoContainer();
         $this->container->setConfig(new UfoConfig(array('cacheFsDir' => $this->root . self::DS . '_cache')));
         $this->container->setDb(new UfoDb($this->container->getConfig()->dbSettings));

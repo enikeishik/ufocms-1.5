@@ -13,7 +13,7 @@ class UfoSysSearch extends UfoSystemModule
         if (isset($_GET['q'])) {
             $query = (string) $_GET['q'];
             $this->loadClass('UfoSearch');
-            $search = new UfoSearch();
+            $search = new UfoSearch($this->container);
             
             $path = '';
             if (isset($_GET['p'])) {
@@ -43,7 +43,13 @@ class UfoSysSearch extends UfoSystemModule
             
             $results = $search->getResults($query, $page, $pageLength, $path, $moduleid);
             $resultsCount = $search->getResultsCount($query, $path, $moduleid);
+            if (is_array($results)) {
+                return array_merge($results, array('Count' => $resultsCount));
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
-        
     }
 }
