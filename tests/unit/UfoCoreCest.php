@@ -20,6 +20,7 @@ class UfoCoreCest
         $_GET['path'] = '/';
         $this->root = __DIR__ . self::DS . '..' . self::DS . '..';
         require_once $this->root . self::DS . 'config.php';
+        require_once $this->root . self::DS . 'errors.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoTools.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoDb.php';
         require_once $this->root . self::DS . 'classes' . self::DS . 'UfoCoreDbModel.php';
@@ -113,6 +114,12 @@ class UfoCoreCest
     }
     
     public function generatePage(\CodeGuy $I) {
+        $this->showTest(__FUNCTION__);
+        $I->wantTo('execute method `' . __FUNCTION__ . '`');
+        $I->executeMethod($this->obj, __FUNCTION__);
+    }
+    
+    public function indexPage(\CodeGuy $I) {
         $this->showTest(__FUNCTION__);
         $I->wantTo('execute method `' . __FUNCTION__ . '`');
         $I->executeMethod($this->obj, __FUNCTION__);

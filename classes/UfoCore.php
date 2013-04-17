@@ -214,6 +214,8 @@ final class UfoCore
         if (!is_null($this->error)) {
             $err = $this->error->getError();
             $this->generateError($err->code, $err->text, $err->pathRedirect);
+        } else if ($this->config->indexNative) {
+            
         }
         
         //закрытие соединения с БД, уничтожение объектов
@@ -468,6 +470,26 @@ final class UfoCore
         $this->debug->trace('Generating page', __CLASS__, __METHOD__, false);
         $this->page = $this->section->getPage();
         $this->debug->trace('Generating page complete', __CLASS__, __METHOD__, true);
+    }
+    
+    /**
+     * Индексация содержимого текущей страницы.
+     */
+    public function indexPage()
+    {
+        if ('' != $this->pathSystem || is_null($this->section)) {
+            return;
+        }
+        if ($this->section->getModule()->getParam('rss')) {
+            return;
+        }
+        $this->loadClass('UfoIndexer');
+        $idx = new UfoIndexer($this->getContainer());
+        $idx->index($this->pathRaw, 
+                    $this->page, 
+                    ($this->section->getField('isenabled') && $this->section->getField('insearch')), 
+                    $this->section->getField('flsearch'), 
+                    $this->section->getField('moduleid'));
     }
     
     /**
