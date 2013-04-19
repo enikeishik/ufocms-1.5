@@ -26,6 +26,10 @@ abstract class UfoStruct
         }
     }
     
+    /**
+     * Волшебный метод, для формирования представления экземпляра класса (объекта) в виде строки.
+     * @return string
+     */
     public function __toString()
     {
         $out = '';
