@@ -16,7 +16,7 @@ class UfoModGbook extends UfoIneractiveModule
      * Объект-структура хранящий значения параметров, передаваемых в URL.
      * Переопределена здесь чтобы получить тип текущего класса, 
      * а не абстрактного родительского класса (для IDE).
-     * @var UfoModNewsParams
+     * @var UfoModGbookParams
      */
     protected $params = null;
     
@@ -36,6 +36,9 @@ class UfoModGbook extends UfoIneractiveModule
     {
         parent::__construct($container);
         $this->moduleSettings = $this->getSettings();
+        if (1 == $this->params->action) {
+            $this->addItem();
+        }
     }
     
     /**

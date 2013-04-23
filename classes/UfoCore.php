@@ -483,6 +483,7 @@ final class UfoCore
         if ($this->section->getModule()->getParam('rss')) {
             return;
         }
+        $this->debug->trace('Indexing page', __CLASS__, __METHOD__, false);
         $this->loadClass('UfoIndexer');
         $idx = new UfoIndexer($this->getContainer());
         $idx->index($this->pathRaw, 
@@ -490,6 +491,7 @@ final class UfoCore
                     ($this->section->getField('isenabled') && $this->section->getField('insearch')), 
                     $this->section->getField('flsearch'), 
                     $this->section->getField('moduleid'));
+        $this->debug->trace('Indexing page complete', __CLASS__, __METHOD__, true);
     }
     
     /**

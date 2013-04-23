@@ -157,6 +157,7 @@ class UfoIndexer
                    "','" . $this->safeSql($index) .
                    "','" . $hash . "',NOW())";
         }
+        
         return $this->db->query($sql);
     }
     
