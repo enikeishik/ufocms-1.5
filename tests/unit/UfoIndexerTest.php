@@ -17,7 +17,7 @@ class UfoIndexerTest extends \Codeception\TestCase\Test
     protected $db = null;
     
     /**
-     * @var UfoSearchDummy
+     * @var UfoIndexerDummy
      */
     protected $obj = null;
    

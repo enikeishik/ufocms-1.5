@@ -1,7 +1,7 @@
 <?php
 require_once 'classes/UfoIndexer.php';
 /**
- * Класс наследует класс UfoSearch и делает все подлежащие тестированию методы публичными.
+ * Класс наследует класс UfoIndexer и делает все подлежащие тестированию методы публичными.
  */
 class UfoIndexerDummy extends UfoIndexer
 {

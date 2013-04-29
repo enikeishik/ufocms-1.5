@@ -102,16 +102,187 @@ class UfoCaptcha
         $this->captchaStruct = $params;
     }
     
-    public function getData()
+    /**
+     * ѕолучение данных из хранилища.
+     * @return array
+     */
+    protected function getStorageData()
     {
-        
+        if (!is_readable($this->storageFile)) {
+            return array();
+        }
+        $data = file_get_contents($this->storageFile);
+        if (!$data) {
+            return array();
+        }
+        return explode("\n",
+                       str_replace("\r", '', $data));
     }
     
+    /**
+     * ѕолучение значени€ по ключу.
+     * @return string
+     */
+    protected function getDataByKey($key)
+    {
+        if ('' == $key) {
+            return false;
+        }
+        $arr = $this->getStorageData();
+        for ($i = 0, $arrCount = count($arr); $i < $arrCount; $i++) {
+            $item = explode("\t", $arr[$i]);
+            if (3 == count($item)) {
+                if ($key == $item[1]) {
+                    return $item[2];
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * —охранение данных в хранилище.
+     * @param string $timestamp    метка времени создани€ данных
+     * @param string $key          ключ данных
+     * @param string $value        значение данных
+     * @return boolean
+     */
+    protected function saveToStorage($timestamp, $key, $value)
+    {
+        if (!$handle = fopen($this->storageFile, 'a')) {
+            return false;
+        }
+        fwrite($handle, $timestamp . "\t" . $key . "\t" . $value . "\r\n");
+        fclose($handle);
+        return true;
+    }
+    
+    /**
+     * ќчистка хранилища от устаревших данных.
+     * @return boolean
+     */
+    protected function clearOldStorageData()
+    {
+        $oldTimestamp = time() - $this->storageLifetime;
+        $arr = $this->getStorageData();
+        $arr_ = array();
+        for ($i = 0, $arrCount = count($arr); $i < $arrCount; $i++) {
+            $item = explode("\t", $arr[$i]);
+            if (3 == count($item)) {
+                if (((int) $item[0]) > $oldTimestamp) {
+                    $arr_[] = $arr[$i] . "\r\n";
+                }
+            }
+        }
+        if (!$handle = fopen($this->storageFile, 'w')) {
+            return false;
+        }
+        fwrite($handle, implode('', $arr_));
+        fclose($handle);
+        return true;
+    }
+    
+    /**
+     * ¬озвращает строку случайных данных определенной длинны.
+     * @param int $strLen = 4         длина генерируемой строки
+     * @param string $strPad = '0'    символ дополнени€ до заданной длинны
+     * @return string
+     */
+    protected function getRandomData($strLen = 4, $strPad = '0')
+    {
+        return str_pad((string) rand(1, 9999), $strLen, $strPad, STR_PAD_LEFT);
+    }
+    
+    /**
+     * ¬ывод картинки с ошибкой.
+     */
+    public function drawImageError()
+    {
+        //выводим картинку с надписью 'ERROR', пока вывод пустой картинки
+        @header('Content-type: image/gif');
+        echo "\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\xFF\xFF\xFF" .
+             "\x00\x00\x00\x21\xF9\x04\x01\x00\x00\x00\x00\x2C\x00\x00\x00\x00" .
+             "\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3B";
+    }
+    
+    /**
+     * ќтображение картинки с CAPTCHA.
+     * @todo заменить числа константами
+     */
     public function drawImage()
     {
+        if (!isset($_GET[$this->htGetFieldKey])) {
+            return false;
+        }
         
+        $data = $this->getDataByKey($_GET[$this->htGetFieldKey]);
+        if (false === $data) {
+            $this->drawImageError();
+            return false;
+        }
+        if ($this->captchaStruct->letterSeparator != '') {
+            $dataLength = strlen($data);
+            $dataSeparated = '';
+            for ($i = 0; $i < $dataLength; $i++) {
+                $dataSeparated .= $data{$i} . $this->captchaStruct->letterSeparator;
+            }
+            $data = substr($dataSeparated, 
+                           0, 
+                           strlen($dataSeparated) - strlen($this->captchaStruct->letterSeparator));
+        }
+        
+        //генерируем картинку с данными, искажа€ их по необходимости
+        if (false === $img = @imagecreate(120, 60)) {
+            $this->drawImageError();
+            return false;
+        }
+        $x = rand(5, 60);
+        $y = rand(5, 40);
+        $bg =  @imagecolorallocate($img, 
+                                   $this->captchaStruct->bgColor['red'], 
+                                   $this->captchaStruct->bgColor['green'], 
+                                   $this->captchaStruct->bgColor['blue']);
+        $fg =  @imagecolorallocate($img, 
+                                   $this->captchaStruct->fgColor['red'], 
+                                   $this->captchaStruct->fgColor['green'], 
+                                   $this->captchaStruct->fgColor['blue']);
+        if (!@imagestring($img, $this->captchaStruct->fontSize, $x, $y, $data, $fg)) {
+            $this->drawImageError();
+            return false;
+        }
+        @header('Content-type: image/jpeg');
+        if (!@imagejpeg($img, null, $this->jpeg_quality)) {
+            $this->drawImageError();
+            return false;
+        }
+        @imagedestroy($img);
+        return true;
     }
     
+    /**
+     * ѕолучение данных CAPTCHA (имена полей, значение ключа).
+     * @return array
+     */
+    public function getData()
+    {
+        //генерируем случайные данные
+        $randomData = $this->getRandomData();
+        //отметка текущего времени
+        $timestamp = time();
+        //уникальный ключ дл€ каждой записи
+        $ticket = $timestamp . rand(0, 1000000);
+        //убираем устаревшие записи и добавл€ем новую
+        $this->clearOldStorageData();
+        $this->saveToStorage($timestamp, $ticket, $randomData);
+        return array('GetFieldKey'    => $this->htGetFieldKey, 
+                     'PostFieldKey'   => $this->htPostFieldKey, 
+                     'PostFieldValue' => $this->htPostFieldValue, 
+                     'Ticket'         => $ticket);
+    }
+    
+    /**
+     * ¬ывод HTML кода CAPTCHA.
+     */
     public function draw()
     {
         $this->loadTemplate('UfoTemplateCaptcha');
@@ -119,6 +290,21 @@ class UfoCaptcha
         $tpl->drawCaptcha();
     }
     
+    /**
+     * ¬озвращает сгенерированных HTML код CAPTCHA.
+     * @return string
+     */
+    public function getCaptcha()
+    {
+        ob_start();
+        $this->draw();
+        return ob_get_clean();
+    }
+    
+    /**
+     * ѕроверка переданных клиентом данных на соответствие показанным.
+     * @return boolean
+     */
     public function check()
     {
         if (!isset($_POST[$this->htPostFieldKey])
@@ -141,66 +327,5 @@ class UfoCaptcha
             }
         }
         return false;
-    }
-    
-    protected function getStorageData()
-    {
-        if (!is_readable($this->storageFile)) {
-            return array();
-        }
-        $data = file_get_contents($this->storageFile);
-        if (!$data) {
-            return array();
-        }
-        return explode("\n",
-                       str_replace("\r", '', $data));
-    }
-    
-    protected function getDataByKey($key)
-    {
-        if ('' == $key) {
-            return false;
-        }
-        $arr = $this->getStorageData();
-        for ($i = 0, $arrCount = count($arr); $i < $arrCount; $i++) {
-            $item = explode("\t", $arr[$i]);
-            if (3 == count($item)) {
-                if ($key == $item[1]) {
-                    return $item[2];
-                }
-            }
-        }
-        return false;
-    }
-    
-    protected function saveToStorage($timestamp, $key, $value)
-    {
-        if (!$handle = fopen($this->storageFile, 'a')) {
-            return false;
-        }
-        fwrite($handle, $timestamp . "\t" . $key . "\t" . $value . "\r\n");
-        fclose($handle);
-        return true;
-    }
-    
-    protected function clearOldStorageData()
-    {
-        $oldTimestamp = time() - $this->storageLifetime;
-        $arr = $this->getStorageData();
-        $arr_ = array();
-        for ($i = 0, $arrCount = count($arr); $i < $arrCount; $i++) {
-            $item = explode("\t", $arr[$i]);
-            if (3 == count($item)) {
-                if (((int) $item[0]) > $oldTimestamp) {
-                    $arr_[] = $arr[$i] . "\r\n";
-                }
-            }
-        }
-        if (!$handle = fopen($this->storageFile, 'w')) {
-            return false;
-        }
-        fwrite($handle, implode('', $arr_));
-        fclose($handle);
-        return true;
     }
 }
